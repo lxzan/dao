@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal"
 	"github.com/lxzan/dao/types"
 	"strconv"
@@ -8,7 +9,7 @@ import (
 
 var QuickSort = internal.QuickSort
 
-func incr_order[T comparable[T]](a, b T) types.Ordering {
+func incr_order[T hashmap.comparable[T]](a, b T) types.Ordering {
 	if a > b {
 		return types.Greater
 	} else if a == b {
@@ -18,7 +19,7 @@ func incr_order[T comparable[T]](a, b T) types.Ordering {
 	}
 }
 
-func decr_order[T comparable[T]](a, b T) types.Ordering {
+func decr_order[T hashmap.comparable[T]](a, b T) types.Ordering {
 	if a > b {
 		return types.Less
 	} else if a == b {
