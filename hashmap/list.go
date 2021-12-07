@@ -1,59 +1,15 @@
 package hashmap
 
-type queue[T any] struct {
-	length int
-	head   *element[T]
-	tail   *element[T]
+type comparable[T any] interface{ type string, int8, int16, int32, int64, int, uint8, uint16, uint32, uint64, uint }
+
+type element[K comparable[K], V any] struct {
+	Ptr     uint32
+	NextPtr uint32
+	Data    entry[K, V]
 }
 
-type element[T any] struct {
-	next  *element[T]
-	Value T
-}
-
-func (c *queue[T]) Len() int {
-	return c.length
-}
-
-func (c *queue[T]) Push(v T) {
-	var ele = &element[T]{Value: v}
-	if c.length > 0 {
-		c.tail.next = ele
-		c.tail = ele
-		c.length++
-	} else {
-		c.head = ele
-		c.tail = ele
-		c.length++
-	}
-}
-
-func (c *queue[T]) Head() *element[T] {
-	return c.head
-}
-
-func (c *queue[T]) Pop() *element[T] {
-	switch c.length {
-	case 0:
-		return nil
-	case 1:
-		var result = c.head
-		c.head = nil
-		c.tail = nil
-		c.length = 0
-		return result
-	default:
-		var result = c.head
-		c.head = c.head.next
-		c.length--
-		return result
-	}
-}
-
-func (c *queue[T]) doForEach(ele *element[T], fn func(T)) {
-	if ele == nil {
-		return
-	}
-	fn(ele.Value)
-	c.doForEach(ele.next, fn)
+type entry[K comparable[K], V any] struct {
+	HashCode uint32
+	Key      K
+	Val      V
 }
