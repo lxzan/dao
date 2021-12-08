@@ -1,8 +1,9 @@
-package stack
+package linkedlist
 
-type stack[T any] struct {
+type queue[T any] struct {
 	length int
 	head   *element[T]
+	tail   *element[T]
 }
 
 type element[T any] struct {
@@ -10,32 +11,35 @@ type element[T any] struct {
 	Value T
 }
 
-func (c *stack[T]) Len() int {
+func (c *queue[T]) Len() int {
 	return c.length
 }
 
-func (c *stack[T]) Push(v T) {
+func (c *queue[T]) Push(v T) {
 	var ele = &element[T]{Value: v}
 	if c.length > 0 {
-		ele.next = c.head
-		c.head = ele
+		c.tail.next = ele
+		c.tail = ele
+		c.length++
 	} else {
 		c.head = ele
+		c.tail = ele
+		c.length++
 	}
-	c.length++
 }
 
-func (c *stack[T]) Head() *element[T] {
+func (c *queue[T]) Front() *element[T] {
 	return c.head
 }
 
-func (c *stack[T]) Pop() *element[T] {
+func (c *queue[T]) Pop() *element[T] {
 	switch c.length {
 	case 0:
 		return nil
 	case 1:
 		var result = c.head
 		c.head = nil
+		c.tail = nil
 		c.length = 0
 		return result
 	default:
