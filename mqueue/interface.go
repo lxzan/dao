@@ -1,4 +1,4 @@
-package multi_queue
+package mqueue
 
 type Pointer uint32
 
