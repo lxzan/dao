@@ -13,10 +13,7 @@ type hashmap[K comparable[K], V any] struct {
 func newHashMap[K comparable[K], V any](capacity ...uint32) *hashmap[K, V] {
 	var size uint32 = 8
 	if len(capacity) > 0 {
-		size = 1
-		for capacity[0] > size {
-			size <<= 1
-		}
+		size = capacity[0]
 	}
 
 	var m = &hashmap[K, V]{

@@ -37,19 +37,15 @@ func hashKey(b []byte) uint64 {
 			sum += alphabetMap[b[i]] * bases[i]
 		}
 	} else {
-		var indexes = make([]byte, 8)
-		indexes[0] = 0
-		indexes[1] = byte(n - 1)
-		indexes[2] = (indexes[0] + indexes[1]) / 2
-		indexes[3] = (indexes[0] + indexes[2]) / 2
-		indexes[4] = (indexes[1] + indexes[2]) / 2
-		indexes[5] = (indexes[0] + indexes[3]) / 2
-		indexes[6] = (indexes[1] + indexes[4]) / 2
-		indexes[7] = (indexes[2] + indexes[3]) / 2
-
-		for i, j := range indexes {
-			sum += alphabetMap[b[j]] * bases[i]
+		var temp = make([]byte, 8)
+		for i := 0; i < n; i++ {
+			temp[i%8] ^= b[i]
 		}
+		for i, j := range temp {
+			sum += alphabetMap[j] * bases[i]
+		}
+		sum = sum ^ (sum << 32)
+		sum >>= 32
 	}
 	return sum
 }
