@@ -35,3 +35,20 @@ func (c *Queue) Push(p Pair) {
 	}
 	c.length++
 }
+
+func (c *Queue) ForEach(fn func(ele *ListElement) (next bool)) {
+	if c.length == 0 {
+		return
+	}
+
+	var ele = c.head
+	var flag = true
+	for {
+		flag = fn(ele)
+		if ele.Next != nil && flag {
+			ele = ele.Next
+		} else {
+			break
+		}
+	}
+}

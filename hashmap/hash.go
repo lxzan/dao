@@ -1,12 +1,18 @@
 package hashmap
 
-const B = 62
+const B = 36 // 36进制, 忽略大小写
 
-var bases = [8]uint64{1, 62, 3844, 238328, 14776336, 916132832, 56800235584, 3521614606208}
+var bases = [8]uint64{}
 
 var alphabetMap [256]uint64
 
 func init() {
+	var base uint64 = 1
+	for i := 0; i < 8; i++ {
+		bases[0] = base
+		base *= B
+	}
+
 	for i := 0; i < 256; i++ {
 		var k = uint8(i)
 		var v uint8 = 0
@@ -15,7 +21,7 @@ func init() {
 		} else if k >= 'A' && k <= 'Z' {
 			v = k - 'A' + 10
 		} else if k >= 'a' && k <= 'z' {
-			v = k - 'a' + 36
+			v = k - 'a' + 10
 		} else {
 			v = k % B
 		}

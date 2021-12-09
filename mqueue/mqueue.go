@@ -42,8 +42,7 @@ func (c *mqueue[T]) End(ele *element[T]) bool {
 	return ele.NextPtr == 0
 }
 
-func (c *mqueue[T]) Empty(ptr Pointer) bool {
-	var ele = c.buckets[ptr]
+func (c *mqueue[T]) Empty(ele *element[T]) bool {
 	return ele == nil || ele.Ptr == 0
 }
 
@@ -58,11 +57,11 @@ func (c *mqueue[T]) NextID() Pointer {
 	}
 
 	var ele element
-	[T]
-	c.buckets = append(c.buckets, &ele)
-	result := c.serial
-	c.serial++
-	return Pointer(result)
+[T]
+c.buckets = append(c.buckets, &ele)
+result := c.serial
+c.serial++
+return Pointer(result)
 }
 
 // Push append an element

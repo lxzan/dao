@@ -42,17 +42,17 @@ func (c *Trie) format(key *string) (int, uint64) {
 
 func (c *Trie) Set(key string, val int) {
 	length, x := c.format(&key)
-	var node = &QueryNode{
+	var node = &queryNode{
 		Node:  c.root,
 		X:     x,
-		Times: length * 4,
+		Times: length * int(BIT),
 		Key:   key,
 		Val:   val,
 	}
 	c.set(node)
 }
 
-type QueryNode struct {
+type queryNode struct {
 	Node  *Element
 	X     uint64
 	Times int
@@ -61,17 +61,31 @@ type QueryNode struct {
 }
 
 //var deep = 0
-func (c *Trie) set(cur *QueryNode) {
+func (c *Trie) set(cur *queryNode) {
 	cur.Times--
 	var idx = cur.X % BIT
 	if cur.Times == 0 {
 		if cur.Node.List == nil {
 			cur.Node.List = NewQueue()
 		}
-		cur.Node.List.Push(Pair{
-			Key: cur.Key,
-			Val: cur.Val,
+
+		var exist = false
+		cur.Node.List.ForEach(func(ele *ListElement) (next bool) {
+			if ele.Value.Key == cur.Key {
+				exist = true
+				ele.Value.Val = cur.Val
+				return false
+			}
+			return true
 		})
+
+		if !exist {
+			c.length++
+			cur.Node.List.Push(Pair{
+				Key: cur.Key,
+				Val: cur.Val,
+			})
+		}
 		return
 	}
 
@@ -85,33 +99,86 @@ func (c *Trie) set(cur *QueryNode) {
 	c.set(cur)
 }
 
-//func (c *Trie) Get(key string) (int, bool) {
-//	var x = c.FormatKey(key)
-//	var val = 0
-//	var exist = false
-//	c.get(c.nodes, x, key, &val, &exist)
-//	return val, exist
-//}
-//
-//func (c *Trie) get(node *TrieNode, x uint32, key string, val *int, exist *bool) {
-//	if x == 0 {
-//		if node.List != nil {
-//			node.List.ForEach(func(ele *Element) bool {
-//				var p = ele.Value
-//				if p.Key == key {
-//					*exist = true
-//					*val = p.Val
-//					return false
-//				}
-//				return true
-//			})
-//		}
-//		return
-//	}
-//
-//	var idx = x % BIT
-//	if node.Children[idx] == nil {
-//		return
-//	}
-//	c.get(node.Children[idx], x/BIT, key, val, exist)
-//}
+func (c *Trie) Get(key string) (int, bool) {
+	length, x := c.format(&key)
+	var node = &queryNode{
+		Node:  c.root,
+		X:     x,
+		Times: length * 4,
+		Key:   key,
+	}
+	exist := c.get(node)
+	return node.Val, exist
+}
+
+func (c *Trie) get(cur *queryNode) (exist bool) {
+	cur.Times--
+	var idx = cur.X % BIT
+	if cur.Times == 0 {
+		if cur.Node.List == nil {
+			return false
+		}
+
+		cur.Node.List.ForEach(func(ele *ListElement) (next bool) {
+			if ele.Value.Key == cur.Key {
+				cur.Val = ele.Value.Val
+				exist = true
+				return false
+			}
+			return true
+		})
+		return
+	}
+
+	if cur.Node.Children[idx] == nil {
+		return false
+	}
+	cur.X /= BIT
+	cur.Node = cur.Node.Children[idx]
+	return c.get(cur)
+}
+
+func (c *Trie) PrefixMatch(key string) []Pair {
+	length, x := c.format(&key)
+	var node = &queryNode{
+		Node:  c.root,
+		X:     x,
+		Times: length * 4,
+		Key:   key,
+	}
+
+	var arr = make([]Pair, 0)
+	c.matchPairs(c.matchElement(node), &arr)
+	return arr
+}
+
+func (c *Trie) matchElement(cur *queryNode) *Element {
+	cur.Times--
+	var idx = cur.X % BIT
+	if cur.Times == 0 {
+		return cur.Node
+
+	}
+	if cur.Node.Children[idx] == nil {
+		return nil
+	}
+	cur.X /= BIT
+	cur.Node = cur.Node.Children[idx]
+	return c.matchElement(cur)
+}
+
+func (c *Trie) matchPairs(cur *Element, arr *[]Pair) {
+	if cur == nil {
+		return
+	}
+
+	if cur.List != nil {
+		cur.List.ForEach(func(ele *ListElement) (next bool) {
+			*arr = append(*arr, ele.Value)
+			return true
+		})
+	}
+	for _, item := range cur.Children {
+		c.matchPairs(item, arr)
+	}
+}
