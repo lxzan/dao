@@ -71,7 +71,7 @@ func (c *hashmap[K, V]) findElement(key *K, ele *element[K, V]) (result, tail *e
 }
 
 func (c *hashmap[K, V]) Get(key K) (val V, exist bool) {
-	var idx1 = c.hash(&key) & (c.capacity - 1)
+	var idx1 = c.hash(&key) % c.capacity
 	var idx2 = c.indexes[idx1]
 	if idx2 == 0 {
 		return val, false
@@ -141,7 +141,7 @@ func (c *hashmap[K, V]) deleteElement(key *K, prev, cur, next *element[K, V]) (d
 
 func (c *hashmap[K, V]) Set(key K, val V) {
 	var hashCode = c.hash(&key)
-	var idx1 = hashCode & (c.capacity - 1)
+	var idx1 = hashCode % c.capacity
 	var idx2 = c.indexes[idx1]
 	if idx2 == 0 {
 		var cursor = c.NextID()
