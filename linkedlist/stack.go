@@ -1,47 +1,59 @@
 package linkedlist
 
-type stack[T any] struct {
+func NewStack[T any]() *Stack[T] {
+	return new(Stack[T])
+}
+
+type Stack[T any] struct {
 	length int
-	head   *element[T]
+	head   *Iterator[T]
 }
 
-type element[T any] struct {
-	next  *element[T]
-	Data T
+func (c *Stack[T]) Next(iter *Iterator[T]) *Iterator[T] {
+	return iter.next
 }
 
-func (c *stack[T]) Len() int {
-	return c.length
-}
-
-func (c *stack[T]) Push(v T) {
-	var ele = &element[T]{Data: v}
-	if c.length > 0 {
-		ele.next = c.head
-		c.head = ele
-	} else {
-		c.head = ele
-	}
-	c.length++
-}
-
-func (c *stack[T]) Front() *element[T] {
+func (c *Stack[T]) Begin() *Iterator[T] {
 	return c.head
 }
 
-func (c *stack[T]) Pop() *element[T] {
-	switch c.length {
-	case 0:
-		return nil
-	case 1:
-		var result = c.head
-		c.head = nil
-		c.length = 0
-		return result
-	default:
-		var result = c.head
-		c.head = c.head.next
-		c.length--
-		return result
+func (c *Stack[T]) End(iter *Iterator[T]) bool {
+	return iter == nil
+}
+
+func (c *Stack[T]) Len() int {
+	return c.length
+}
+
+func (c *Stack[T]) Clear() {
+	c.head = nil
+	c.length = 0
+}
+
+func (c *Stack[T]) Push(values ...T) {
+	for _, v := range values {
+		var ele = new(Iterator[T])
+		ele.Data = v
+		if c.length > 0 {
+			ele.next = c.head
+			c.head = ele
+		} else {
+			c.head = ele
+		}
+		c.length++
 	}
+}
+
+func (c *Stack[T]) Front() *Iterator[T] {
+	return c.head
+}
+
+func (c *Stack[T]) Pop() *Iterator[T] {
+	if c.length == 0 {
+		return nil
+	}
+	var result = c.head
+	c.head = c.head.next
+	c.length--
+	return result
 }

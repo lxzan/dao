@@ -1,62 +1,92 @@
 package heap
 
-func newHeap[T any](less func(a, b T) bool) *heap[T] {
-	var obj heap[T]
-	obj.data = make([]T, 0)
-	obj.less = less
-	return &obj
+import "github.com/lxzan/dao"
+
+func MinHeap[T dao.Comparable[T]](a, b T) bool {
+	return a < b
 }
 
-type heap[T any] struct {
-	data []T
-	less func(a, b T) bool
+func MaxHeap[T dao.Comparable[T]](a, b T) bool {
+	return a > b
 }
 
-func (c heap[T]) Len() int {
-	return len(c.data)
+func New[T any](cap int, less func(a, b T) bool) *Heap[T] {
+	return &Heap[T]{
+		Data: make([]T, 0, cap),
+		Less: less,
+	}
 }
 
-func (c heap[T]) Get(i int) T {
-	return c.data[i]
+func Init[T any](arr []T, less func(a, b T) bool) *Heap[T] {
+	var h = &Heap[T]{
+		Data: arr,
+		Less: less,
+	}
+	var n = len(arr)
+	for i := 1; i < n; i++ {
+		h.Up(i)
+	}
+	return h
 }
 
-func (c *heap[T]) Swap(i, j int) {
-	c.data[i], c.data[j] = c.data[j], c.data[i]
+type Heap[T any] struct {
+	Data []T
+	Less func(a, b T) bool
 }
 
-func (c *heap[T]) Push(eles ...T) {
+func (c Heap[T]) Len() int {
+	return len(c.Data)
+}
+
+func (c *Heap[T]) Swap(i, j int) {
+	c.Data[i], c.Data[j] = c.Data[j], c.Data[i]
+}
+
+func (c *Heap[T]) Push(eles ...T) {
 	for _, item := range eles {
-		c.data = append(c.data, item)
-		c.up(c.Len() - 1)
+		c.Data = append(c.Data, item)
+		c.Up(c.Len() - 1)
 	}
 }
 
-func (c *heap[T]) up(i int) {
+func (c *Heap[T]) Up(i int) {
 	var j = (i - 1) / 2
-	if j >= 0 && c.less(c.data[i], c.data[j]) {
+	if j >= 0 && c.Less(c.Data[i], c.Data[j]) {
 		c.Swap(i, j)
-		c.up(j)
+		c.Up(j)
 	}
 }
 
-func (c *heap[T]) Pop() T {
+func (c *Heap[T]) Pop() T {
 	var n = c.Len()
-	var result = c.data[0]
-	c.data[0] = c.data[n-1]
-	c.data = c.data[:n-1]
-	c.down(0, n-1)
+	var result = c.Data[0]
+	c.Data[0] = c.Data[n-1]
+	c.Data = c.Data[:n-1]
+	c.Down(0, n-1)
 	return result
 }
 
-func (c *heap[T]) down(i, n int) {
+func (c *Heap[T]) Down(i, n int) {
 	var j = 2*i + 1
-	if j < n && c.less(c.data[j], c.data[i]) {
+	if j < n && c.Less(c.Data[j], c.Data[i]) {
 		c.Swap(i, j)
-		c.down(j, n)
+		c.Down(j, n)
 	}
 	var k = 2*i + 2
-	if k < n && c.less(c.data[k], c.data[i]) {
+	if k < n && c.Less(c.Data[k], c.Data[i]) {
 		c.Swap(i, k)
-		c.down(k, n)
+		c.Down(k, n)
 	}
+}
+
+func (c *Heap[T]) Sort() []T {
+	var n = c.Len()
+	if n >= 2 {
+		for i := n - 1; i >= 2; i-- {
+			c.Swap(0, i)
+			c.Down(0, i)
+		}
+		c.Swap(0, 1)
+	}
+	return c.Data
 }

@@ -1,64 +1,89 @@
 package segment_tree
 
-type segment_tree_interface[T any, Element any] interface {
-	New(T) Element
-	Merge(Element, Element) Element
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }
 
-type segment_tree[T any, Element segment_tree_interface[T, Element]] struct {
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+type Element struct {
 	L     int
 	R     int
-	Node  N
-	LNode *segment_tree[T, Element]
-	RNode *segment_tree[T, Element]
+	Sum   int
+	LNode *Element
+	RNode *Element
 }
 
-func newLineTree[T any, Element segment_tree_interface[T, Element]](arr []T) *segment_tree[T, Element] {
-	var n = len(arr)
-	if n == 0 {
-		panic("arr cannot be empty!")
+type SegmentTree struct {
+	root *Element
+	arr  []int
+}
+
+func New(arr []int) *SegmentTree {
+	var obj = &SegmentTree{
+		root: &Element{
+			L: 0,
+			R: len(arr) - 1,
+		},
+		arr: arr,
 	}
-	var obj = &segment_tree[T, Element]{
-		L: 0,
-		R: len(arr) - 1,
-	}
-	var vnode Element
-	obj.build(obj, arr, vnode)
+	obj.build(obj.root)
 	return obj
 }
 
-func (c *segment_tree[T, Element]) build(cur *segment_tree[T, Element], arr []T, vnode Element) {
+func (c *SegmentTree) build(cur *Element) {
 	if cur.L == cur.R {
-		cur.Node = vnode.New(arr[cur.L])
+		cur.Sum = c.arr[cur.L]
 		return
 	}
 
 	var mid = (cur.L + cur.R) / 2
-	cur.LNode = &segment_tree[T, Element]{L: cur.L, R: mid}
-	cur.RNode = &segment_tree[T, Element]{L: mid + 1, R: cur.R}
-	c.build(cur.LNode, arr, vnode)
-	c.build(cur.RNode, arr, vnode)
-	cur.Node = vnode.Merge(cur.LNode.Node, cur.RNode.Node)
+	cur.LNode = &Element{
+		L: cur.L,
+		R: mid,
+	}
+	cur.RNode = &Element{
+		L: mid + 1,
+		R: cur.R,
+	}
+	c.build(cur.LNode)
+	c.build(cur.RNode)
+	cur.Sum = cur.LNode.Sum + cur.RNode.Sum
 }
 
-func (c *segment_tree[T, Element]) Query(left int, right int) Element {
-	var result Element
-	var serial = 0
-	c.doQuery(&serial, c, left, right, &result)
+func (c *SegmentTree) Query(left int, right int) int {
+	var result = 0
+	c.doQuery(c.root, left, right, &result)
 	return result
 }
 
-func (c *segment_tree[T, Element]) doQuery(serial *int, cur *segment_tree[T, Element], left int, right int, result *N) {
+func (c *SegmentTree) doQuery(cur *Element, left int, right int, result *int) {
 	if cur.L >= left && cur.R <= right {
-		if *serial == 0 {
-			*result = cur.Node
-		} else {
-			*result = result.Merge(*result, cur.Node)
-		}
-		*serial++
+		*result += cur.Sum
 	} else if !(cur.L > right || cur.R < left) {
-		c.doQuery(serial, cur.LNode, left, right, result)
-		c.doQuery(serial, cur.RNode, left, right, result)
+		c.doQuery(cur.LNode, left, right, result)
+		c.doQuery(cur.RNode, left, right, result)
 	}
 }
 
+func (c *SegmentTree) Update(i, v int) {
+	c.doUpdate(c.root, c.root.L, c.root.R, i, v-c.arr[i])
+	c.arr[i] = v
+}
+
+func (c *SegmentTree) doUpdate(cur *Element, left int, right int, i int, delta int) {
+	if cur.L >= left && cur.R <= right {
+		cur.Sum += delta
+	} else if !(cur.L > right || cur.R < left) {
+		c.doUpdate(cur.LNode, left, right, i, delta)
+		c.doUpdate(cur.RNode, left, right, i, delta)
+	}
+}

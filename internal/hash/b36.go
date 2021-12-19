@@ -1,16 +1,22 @@
-package hashmap
+package hash
 
-const B = 36 // 36进制, 忽略大小写
+import "unsafe"
 
-var bases = [8]uint64{}
+const (
+	B16 = 16
+	B36 = 36
+)
 
-var alphabetMap [256]uint64
+var (
+	bases36 = [8]uint64{}
+	map36   [256]uint64
+)
 
 func init() {
 	var base uint64 = 1
 	for i := 0; i < 8; i++ {
-		bases[0] = base
-		base *= B
+		bases36[i] = base
+		base *= B36
 	}
 
 	for i := 0; i < 256; i++ {
@@ -23,18 +29,19 @@ func init() {
 		} else if k >= 'a' && k <= 'z' {
 			v = k - 'a' + 10
 		} else {
-			v = k % B
+			v = k % B36
 		}
-		alphabetMap[k] = uint64(v)
+		map36[k] = uint64(v)
 	}
 }
 
-func hashKey(b []byte) uint64 {
+func Alphabet64(str *string) uint64 {
+	var b = *(*[]byte)(unsafe.Pointer(str))
 	var n = len(b)
 	var sum uint64 = 0
 	if n <= 8 {
 		for i := 0; i < n; i++ {
-			sum += alphabetMap[b[i]] * bases[i]
+			sum += map36[b[i]] * bases36[i]
 		}
 	} else {
 		var temp = make([]byte, 8)
@@ -42,10 +49,8 @@ func hashKey(b []byte) uint64 {
 			temp[i%8] ^= b[i]
 		}
 		for i, j := range temp {
-			sum += alphabetMap[j] * bases[i]
+			sum += map36[j] * bases36[i]
 		}
-		sum = sum ^ (sum << 32)
-		sum >>= 32
 	}
 	return sum
 }

@@ -1,231 +1,157 @@
 package hashmap
 
-import "unsafe"
+import (
+	"github.com/lxzan/dao"
+	"github.com/lxzan/dao/rapid"
+	"unsafe"
+)
 
-type hashmap[K comparable[K], V any] struct {
-	length   int
-	serial   uint32
-	capacity uint32
-	indexes  []uint32
-	buckets  []element[K, V]
+const (
+	offset32 = 2166136261
+	prime32  = 16777619
+)
+
+type HashMap[K dao.Hashable[K], V any] struct {
+	load_factor float64 // load_factor=1.0
+	size        uint32  // cap=2^n
+	indexes     []rapid.EntryPoint
+	storage     *rapid.Rapid[K, V]
 }
 
-func newHashMap[K comparable[K], V any](capacity ...uint32) *hashmap[K, V] {
-	var size uint32 = 8
-	if len(capacity) > 0 {
-		size = capacity[0]
+func New[K dao.Hashable[K], V any](size ...uint32) *HashMap[K, V] {
+	if len(size) == 0 {
+		size = []uint32{8}
+	} else {
+		var vol uint32 = 8
+		for vol < size[0] {
+			vol <<= 1
+		}
+		size[0] = vol
 	}
-
-	var m = &hashmap[K, V]{
-		length:   0,
-		capacity: size,
-		buckets:  make([]element[K, V], size+1),
-		indexes:  make([]uint32, size),
-	}
+	var m = new(HashMap[K, V])
+	m.load_factor = 1.0
+	m.size = size[0]
+	m.indexes = make([]rapid.EntryPoint, size[0], size[0])
+	m.storage = rapid.New[K, V](size[0])
 	return m
 }
 
-func (c *hashmap[K, V]) Len() int {
-	return c.length
+func (c *HashMap[K, V]) Len() int {
+	return c.storage.Length
 }
 
-func (c *hashmap[K, V]) hash(key interface{}) uint32 {
-	switch key.(type) {
-	case *string:
-		var data = *(*[]byte)(unsafe.Pointer(key.(*string)))
-		return hashKey(data)
-	case *int:
-		var x = *(key.(*int))
-		return uint32(x ^ (x >> 32))
+func (c *HashMap[K, V]) SetLoadFactor(x float64) *HashMap[K, V] {
+	c.load_factor = x
+	return c
+}
+
+func (c *HashMap[K, V]) Hash(key *K) uint32 {
+	if unsafe.Sizeof(*key) == 16 {
+		return c.HashString(key)
 	}
-	return 0
+	return c.HashInt(key)
 }
 
-func (c *hashmap[K, V]) NextID() uint32 {
-	c.serial++
-	return c.serial
+func (c *HashMap[K, V]) HashString(key *K) uint32 {
+	data := *(*[]byte)(unsafe.Pointer(key))
+	var hashCode uint32 = offset32
+	for _, c := range data {
+		hashCode *= prime32
+		hashCode ^= uint32(c)
+	}
+	return hashCode
 }
 
-func (c *hashmap[K, V]) ForEach(fn func(key K, val V)) {
-	for i, _ := range c.buckets {
-		var item = &c.buckets[i]
-		if item.Ptr == 0 {
-			continue
+func (c *HashMap[K, V]) HashInt(key *K) uint32 {
+	switch unsafe.Sizeof(*key) {
+	case 8:
+		var x = *(*uint64)(unsafe.Pointer(key))
+		return uint32(x & (2<<32 - 1))
+	case 4:
+		return *(*uint32)(unsafe.Pointer(key))
+	case 2:
+		var x = *(*uint16)(unsafe.Pointer(key))
+		return uint32(x)
+	default:
+		var x = *(*uint8)(unsafe.Pointer(key))
+		return uint32(x)
+	}
+}
+
+// insert with unique check
+func (c *HashMap[K, V]) Insert(key K, val V) (replaced bool) {
+	c.increase()
+	var hashCode = c.Hash(&key)
+	var idx = hashCode & (c.size - 1)
+	var entrypoint = &c.indexes[idx]
+	if entrypoint.Head == 0 {
+		var ptr = c.storage.NextID()
+		entrypoint.Head = ptr
+		entrypoint.Tail = ptr
+	}
+	var data = new(rapid.Entry[K, V])
+	data.Key = key
+	data.Val = val
+	data.HashCode = hashCode
+	replaced = c.storage.Push(entrypoint, data)
+	return replaced
+}
+
+// find one
+func (c *HashMap[K, V]) Find(key K) (val V, exist bool) {
+	var hashCode = c.Hash(&key)
+	var idx = hashCode & (c.size - 1)
+	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
+		if i.Data.Key == key {
+			return i.Data.Val, true
 		}
-		fn(item.Data.Key, item.Data.Val)
 	}
+	return val, exist
 }
 
-func (c *hashmap[K, V]) findElement(key *K, ele *element[K, V]) (result, tail *element[K, V]) {
-	if *key == ele.Data.Key {
-		return ele, nil
-	}
-	if ele.NextPtr != 0 {
-		return c.findElement(key, &c.buckets[ele.NextPtr])
-	} else {
-		return nil, ele
-	}
-}
-
-func (c *hashmap[K, V]) Get(key K) (val V, exist bool) {
-	var idx1 = c.hash(&key) % c.capacity
-	var idx2 = c.indexes[idx1]
-	if idx2 == 0 {
-		return val, false
-	}
-	if result, _ := c.findElement(&key, &c.buckets[idx2]); result != nil {
-		return result.Data.Val, true
-	}
-	return val, false
-}
-
-// Delete key exist return true
-func (c *hashmap[K, V]) Delete(key K) bool {
-	var idx1 = c.hash(&key) % c.capacity
-	var idx2 = c.indexes[idx1]
-	if idx2 == 0 {
+// delete one
+func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
+	var hashCode = c.Hash(&key)
+	var idx = hashCode & (c.size - 1)
+	var entrypoint = c.indexes[idx]
+	if entrypoint.Head == 0 {
 		return false
 	}
-
-	var dst = &c.buckets[idx2]
-	var next *element[K, V]
-	if dst.NextPtr != 0 {
-		next = &c.buckets[dst.NextPtr]
+	for i := c.storage.Begin(entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
+		if i.Data.Key == key {
+			return c.storage.Delete(&entrypoint, i)
+		}
 	}
-	deleted, empty := c.deleteElement(&key, nil, dst, next)
-	if deleted {
-		c.length--
-	}
-	if empty {
-		c.indexes[idx1] = 0
-	}
-	return deleted
+	return false
 }
 
-func (c *hashmap[K, V]) deleteElement(key *K, prev, cur, next *element[K, V]) (deleted, empty bool) {
-	if cur == nil {
-		return false, false
-	}
-
-	if cur.Data.Key == *key {
-		if prev != nil && next != nil {
-			prev.NextPtr = next.Ptr
-			cur.Ptr = 0
-			cur.NextPtr = 0
-		} else if prev != nil && next == nil {
-			prev.NextPtr = 0
-			cur.Ptr = 0
-			cur.NextPtr = 0
-		} else if prev == nil && next != nil {
-			*cur = *next
-			next.Ptr = 0
-			next.NextPtr = 0
-		} else {
-			empty = true
-			cur.Ptr = 0
-			cur.NextPtr = 0
+// update directly
+func (c *HashMap[K, V]) ForEach(fn func(item *rapid.Entry[K, V]) (continued bool)) {
+	var n = len(c.storage.Buckets)
+	for i := 1; i < n; i++ {
+		var item = &c.storage.Buckets[i]
+		if item.Ptr != 0 {
+			if !fn(&item.Data) {
+				break
+			}
 		}
-		deleted = true
-		return
-	}
-
-	var last *element[K, V]
-	if next != nil && next.NextPtr != 0 {
-		last = &c.buckets[next.NextPtr]
-	}
-	return c.deleteElement(key, cur, next, last)
-}
-
-func (c *hashmap[K, V]) Set(key K, val V) {
-	var hashCode = c.hash(&key)
-	var idx1 = hashCode % c.capacity
-	var idx2 = c.indexes[idx1]
-	if idx2 == 0 {
-		var cursor = c.NextID()
-		if cursor > c.capacity {
-			c.incr()
-			c.Set(key, val)
-			return
-		}
-
-		c.indexes[idx1] = cursor
-		c.buckets[cursor] = element[K, V]{
-			Ptr:     cursor,
-			NextPtr: 0,
-			Data: entry[K, V]{
-				HashCode: hashCode,
-				Key:      key,
-				Val:      val,
-			},
-		}
-		c.length++
-		return
-	}
-
-	var dst = &c.buckets[idx2]
-	result, tail := c.findElement(&key, dst)
-	if result != nil {
-		result.Data.Val = val
-	} else {
-		var cursor = c.NextID()
-		if cursor > c.capacity {
-			c.incr()
-			c.Set(key, val)
-			return
-		}
-
-		tail.NextPtr = cursor
-		c.buckets[cursor] = element[K, V]{
-			Ptr: cursor,
-			Data: entry[K, V]{
-				HashCode: hashCode,
-				Key:      key,
-				Val:      val,
-			},
-		}
-		c.length++
 	}
 }
 
-func (c *hashmap[K, V]) incr() {
-	var old = *c
-	var m = newHashMap[K, V](2 * old.capacity)
-	for i, _ := range old.buckets {
-		var item = &old.buckets[i]
-		if item.Ptr == 0 {
-			continue
-		}
-		m.setByIncr(&item.Data)
-	}
-	*c = *m
+func (c *HashMap[K, V]) Keys() []K {
+	var keys = make([]K, 0)
+	c.ForEach(func(item *rapid.Entry[K, V]) bool {
+		keys = append(keys, item.Key)
+		return true
+	})
+	return keys
 }
 
-func (c *hashmap[K, V]) setByIncr(pair *entry[K, V]) {
-	var idx1 = pair.HashCode & (c.capacity - 1)
-	var idx2 = c.indexes[idx1]
-	if idx2 == 0 {
-		var cursor = c.NextID()
-		c.indexes[idx1] = cursor
-		c.buckets[cursor] = element[K, V]{
-			Ptr:     cursor,
-			NextPtr: 0,
-			Data:    *pair,
-		}
-		c.length++
-		return
-	}
-
-	var dst = &c.buckets[idx2]
-	result, tail := c.findElement(&pair.Key, dst)
-	if result != nil {
-		result.Data.Val = pair.Val
-	} else {
-		var cursor = c.NextID()
-		tail.NextPtr = cursor
-		c.buckets[cursor] = element[K, V]{
-			Ptr:  cursor,
-			Data: *pair,
-		}
-		c.length++
-	}
+func (c *HashMap[K, V]) Values() []V {
+	var values = make([]V, 0)
+	c.ForEach(func(item *rapid.Entry[K, V]) bool {
+		values = append(values, item.Val)
+		return true
+	})
+	return values
 }

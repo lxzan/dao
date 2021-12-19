@@ -1,16 +1,16 @@
-package mqueue
+package rapid
 
-type array_stack []uint32
+type array_stack []Pointer
 
 func (c array_stack) Len() int {
 	return len(c)
 }
 
-func (c *array_stack) Push(v uint32) {
+func (c *array_stack) Push(v Pointer) {
 	*c = append(*c, v)
 }
 
-func (c *array_stack) Pop() uint32 {
+func (c *array_stack) Pop() Pointer {
 	var n = c.Len()
 	if n >= 1 {
 		var result = (*c)[n-1]
