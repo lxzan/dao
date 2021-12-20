@@ -11,7 +11,6 @@ goarch: amd64
 pkg: github.com/lxzan/dao/benchmark
 cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 ```
-- 1,000
 
 | Container        | Operate            | Elements | ns/op | allocs/op |
 | ---------------- | ------------------ | -------- |-------| --------- |
@@ -32,9 +31,9 @@ cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 | Heap             | Push               | 1,000    | 63.8  |           |
 
 
-- 1,000,000
-| Container        | Operate            | Elements | ns/op     | allocs/op |
-| ---------------- | ------------------ | -------- | --------- | --------- |
+
+| Container        | Operate            | Elements     | ns/op     | allocs/op |
+| ---------------- | ------------------ | --------     | --------- | --------- |
 | DoubleLinkedList | RPush              | 1,000,000    | 42.5 |           |
 | Dict             | Insert             | 1,000,000    | 1196.2 |           |
 | Dict             | Delete             | 1,000,000    | 1673.7 |           |
