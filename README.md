@@ -1,6 +1,18 @@
 # The Great Way is Simple
 > Simple and high-performance data structures and algorithms library
 
+
+
+### Benchmark
+
+| Container        | Operate | Elements | Cost(ns/op) |
+| ---------------- | ------- | -------- | ----------- |
+| DoubleLinkedList | RPush   | 1,000    | 29,704      |
+|                  |         |          |             |
+|                  |         |          |             |
+
+
+
 ### HashMap
 
 ```go
