@@ -7,11 +7,6 @@ import (
 	"unsafe"
 )
 
-const (
-	offset32 = 2166136261
-	prime32  = 16777619
-)
-
 type Pair[K dao.Hashable[K], V any] struct {
 	hashCode uint32
 	Key      K
@@ -49,7 +44,7 @@ func (c *HashMap[K, V]) Len() int {
 	return c.storage.Length
 }
 
-func (c *HashMap[K, V]) SetLoadFactor(x float64) *HashMap[K, V] {
+func (c *HashMap[K, V]) LoadFactor(x float64) *HashMap[K, V] {
 	c.load_factor = x
 	return c
 }
@@ -74,7 +69,7 @@ func (c *HashMap[K, V]) Hash(key *K) uint32 {
 }
 
 // insert with unique check
-func (c *HashMap[K, V]) Insert(key K, val V) (replaced bool) {
+func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
 	c.increase()
 	var hashCode = c.Hash(&key)
 	var idx = hashCode & (c.size - 1)
@@ -94,7 +89,7 @@ func (c *HashMap[K, V]) Insert(key K, val V) (replaced bool) {
 }
 
 // find one
-func (c *HashMap[K, V]) Find(key K) (val V, exist bool) {
+func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 	var hashCode = c.Hash(&key)
 	var idx = hashCode & (c.size - 1)
 	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {

@@ -22,7 +22,7 @@ func TestHashMap(t *testing.T) {
 
 	for _, item := range testdata {
 		var val = utils.Rand.Int()
-		m1.Insert(item, val)
+		m1.Set(item, val)
 		m2[item] = val
 	}
 
@@ -34,7 +34,7 @@ func TestHashMap(t *testing.T) {
 	for i := 0; i < test_count*2; i++ {
 		var key = utils.Alphabet.Generate(8)
 		var val = utils.Rand.Int()
-		m1.Insert(key, val)
+		m1.Set(key, val)
 		m2[key] = val
 	}
 
@@ -47,7 +47,7 @@ func TestHashMap(t *testing.T) {
 	}
 
 	for k, v := range m2 {
-		v1, ok := m1.Find(k)
+		v1, ok := m1.Get(k)
 		if !ok || v1 != v {
 			t.Error("error!")
 		}
@@ -60,7 +60,7 @@ func TestHashMap_ForEach(t *testing.T) {
 
 	for _, item := range testdata {
 		var val = utils.Rand.Int()
-		m1.Insert(string(item), val)
+		m1.Set(string(item), val)
 		m2[item] = val
 	}
 
