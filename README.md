@@ -13,7 +13,7 @@ cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 ```
 
 | Container        | Operate            | Elements | ns/op | allocs/op |
-| ---------------- | ------------------ | -------- |-------| --------- |
+| ---------------- | ------------------ | -------- | ----- | --------- |
 | DoubleLinkedList | RPush              | 1,000    | 29.7  |           |
 | Dict             | Insert             | 1,000    | 651.6 |           |
 | Dict             | Delete             | 1,000    | 59.3  |           |
@@ -22,10 +22,10 @@ cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 | Go Map           | Set                | 1,000    | 38.1  |           |
 | HashMap          | Get                | 1,000    | 17.0  |           |
 | Go Map           | Get                | 1,000    | 19.3  |           |
-| RBTree           | Insert             | 1,000    | 448.6 |           |
-| RBTree           | Find               | 1,000    | 238.1 |           |
-| RBTree           | Delete             | 1,000    | 675.2 |           |
-| RBTree           | Between (limit 10) | 1,000    | 624.1 |           |
+| RBTree           | Insert             | 1,000    | 341.7 |           |
+| RBTree           | Find               | 1,000    | 138.4 |           |
+| RBTree           | Delete             | 1,000    | 377.4 |           |
+| RBTree           | Between (limit 10) | 1,000    | 777.7 |           |
 | SegmentTree      | Query              | 1,000    | 190.8 |           |
 | SegmentTree      | Update             | 1,000    | 144.3 |           |
 | Heap             | Push               | 1,000    | 63.8  |           |
@@ -42,10 +42,10 @@ cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 | Go Map           | Set                | 1,000,000    | 122.3 |           |
 | HashMap          | Get                | 1,000,000    | 116.0 |           |
 | Go Map           | Get                | 1,000,000    | 91.3 |           |
-| RBTree           | Insert             | 1,000,000    | 2539.5 |           |
-| RBTree           | Find               | 1,000,000    | 3944.8 |           |
-| RBTree           | Delete             | 1,000,000    | 4573.4 |           |
-| RBTree           | Between (limit 10) | 1,000,000    | 6171.5 |           |
+| RBTree           | Insert             | 1,000,000    | 449.2 |           |
+| RBTree           | Find               | 1,000,000    | 251.9 |           |
+| RBTree           | Delete             | 1,000,000    | 574.6 |           |
+| RBTree           | Between (limit 10) | 1,000,000    | 3813.4 |           |
 | SegmentTree      | Query              | 1,000,000    | 1834.9 |           |
 | SegmentTree      | Update             | 1,000,000    | 1051.6 |           |
 | Heap             | Push               | 1,000,000    | 37.8 |           |
