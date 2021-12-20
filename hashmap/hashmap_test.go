@@ -48,7 +48,7 @@ func TestHashMap(t *testing.T) {
 
 	for k, v := range m2 {
 		v1, ok := m1.Get(k)
-		if !ok || v1 != v {
+		if !ok || *v1 != v {
 			t.Error("error!")
 		}
 	}
@@ -65,9 +65,9 @@ func TestHashMap_ForEach(t *testing.T) {
 	}
 
 	var sum = 0
-	m1.ForEach(func(item *Pair[string, int]) bool {
+	m1.ForEach(func(key string, val *int) bool {
 		sum++
-		if m2[item.Key] != item.Val {
+		if m2[key] != *val {
 			t.Error("error!")
 		}
 		return true
@@ -76,5 +76,21 @@ func TestHashMap_ForEach(t *testing.T) {
 	if m1.Len() != len(m2) || sum != len(m2) {
 		println(m1.Len(), len(m2))
 		t.Error("m1.length != m2.length")
+	}
+}
+
+func BenchmarkHashMap_Set(b *testing.B) {
+	const bench_count = 1000
+	var arr = make([]string, 0)
+	for i := 0; i < bench_count; i++ {
+		arr = append(arr, utils.Alphabet.Generate(8))
+	}
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		m := New[string, int](bench_count)
+		for j := 0; j < bench_count; j++ {
+			m.Set(arr[j], 1)
+		}
 	}
 }
