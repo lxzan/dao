@@ -1,37 +1,34 @@
 package segment_tree
 
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
+import (
+	"github.com/lxzan/dao"
+	"github.com/lxzan/dao/algorithm"
+)
+
+type Schema[T dao.Number[T]] struct {
+	MaxValue T
+	MinValue T
+	Sum      T
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
+type Element[T dao.Number[T]] struct {
+	left     int
+	right    int
+	son      *Element[T]
+	daughter *Element[T]
+	data     Schema[T]
 }
 
-type Element struct {
-	L     int
-	R     int
-	Sum   int
-	LNode *Element
-	RNode *Element
+type SegmentTree[T dao.Number[T]] struct {
+	root *Element[T]
+	arr  []T
 }
 
-type SegmentTree struct {
-	root *Element
-	arr  []int
-}
-
-func New(arr []int) *SegmentTree {
-	var obj = &SegmentTree{
-		root: &Element{
-			L: 0,
-			R: len(arr) - 1,
+func New[T dao.Number[T]](arr []T) *SegmentTree[T] {
+	var obj = &SegmentTree[T]{
+		root: &Element[T]{
+			left:  0,
+			right: len(arr) - 1,
 		},
 		arr: arr,
 	}
@@ -39,51 +36,79 @@ func New(arr []int) *SegmentTree {
 	return obj
 }
 
-func (c *SegmentTree) build(cur *Element) {
-	if cur.L == cur.R {
-		cur.Sum = c.arr[cur.L]
+func (c *SegmentTree[T]) build(cur *Element[T]) {
+	if cur.left == cur.right {
+		cur.data = Schema[T]{
+			MaxValue: c.arr[cur.left],
+			MinValue: c.arr[cur.left],
+			Sum:      c.arr[cur.left],
+		}
 		return
 	}
 
-	var mid = (cur.L + cur.R) / 2
-	cur.LNode = &Element{
-		L: cur.L,
-		R: mid,
+	var mid = (cur.left + cur.right) / 2
+	cur.son = &Element[T]{
+		left:  cur.left,
+		right: mid,
 	}
-	cur.RNode = &Element{
-		L: mid + 1,
-		R: cur.R,
+	cur.daughter = &Element[T]{
+		left:  mid + 1,
+		right: cur.right,
 	}
-	c.build(cur.LNode)
-	c.build(cur.RNode)
-	cur.Sum = cur.LNode.Sum + cur.RNode.Sum
+	c.build(cur.son)
+	c.build(cur.daughter)
+	cur.data = Schema[T]{
+		MaxValue: algorithm.Max[T](cur.son.data.MaxValue, cur.daughter.data.MaxValue),
+		MinValue: algorithm.Min[T](cur.son.data.MinValue, cur.daughter.data.MinValue),
+		Sum:      cur.son.data.Sum + cur.daughter.data.Sum,
+	}
 }
 
-func (c *SegmentTree) Query(left int, right int) int {
-	var result = 0
+func (c *SegmentTree[T]) Query(left int, right int) Schema[T] {
+	var result = Schema[T]{
+		MaxValue: c.arr[left],
+		MinValue: c.arr[left],
+		Sum:      0,
+	}
 	c.doQuery(c.root, left, right, &result)
 	return result
 }
 
-func (c *SegmentTree) doQuery(cur *Element, left int, right int, result *int) {
-	if cur.L >= left && cur.R <= right {
-		*result += cur.Sum
-	} else if !(cur.L > right || cur.R < left) {
-		c.doQuery(cur.LNode, left, right, result)
-		c.doQuery(cur.RNode, left, right, result)
+func (c *SegmentTree[T]) doQuery(cur *Element[T], left int, right int, result *Schema[T]) {
+	if cur.left >= left && cur.right <= right {
+		result.Sum += cur.data.Sum
+		result.MaxValue = algorithm.Max[T](result.MaxValue, cur.data.MaxValue)
+		result.MinValue = algorithm.Min[T](result.MinValue, cur.data.MinValue)
+	} else if !(cur.left > right || cur.right < left) {
+		c.doQuery(cur.son, left, right, result)
+		c.doQuery(cur.daughter, left, right, result)
 	}
 }
 
-func (c *SegmentTree) Update(i, v int) {
-	c.doUpdate(c.root, c.root.L, c.root.R, i, v-c.arr[i])
+func (c *SegmentTree[T]) Update(i int, v T) {
 	c.arr[i] = v
+	c.rebuild(c.root, i)
 }
 
-func (c *SegmentTree) doUpdate(cur *Element, left int, right int, i int, delta int) {
-	if cur.L >= left && cur.R <= right {
-		cur.Sum += delta
-	} else if !(cur.L > right || cur.R < left) {
-		c.doUpdate(cur.LNode, left, right, i, delta)
-		c.doUpdate(cur.RNode, left, right, i, delta)
+func (c *SegmentTree[T]) rebuild(cur *Element[T], i int) {
+	if !(i >= cur.left && i <= cur.right) {
+		return
+	}
+
+	if cur.left == cur.right && cur.left == i {
+		cur.data = Schema[T]{
+			MaxValue: c.arr[cur.left],
+			MinValue: c.arr[cur.left],
+			Sum:      c.arr[cur.left],
+		}
+		return
+	}
+
+	c.rebuild(cur.son, i)
+	c.rebuild(cur.daughter, i)
+	cur.data = Schema[T]{
+		MaxValue: algorithm.Max[T](cur.son.data.MaxValue, cur.daughter.data.MaxValue),
+		MinValue: algorithm.Min[T](cur.son.data.MinValue, cur.daughter.data.MinValue),
+		Sum:      cur.son.data.Sum + cur.daughter.data.Sum,
 	}
 }

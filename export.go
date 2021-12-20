@@ -33,7 +33,7 @@ type Comparable[T any] interface {
 }
 
 type Number[T any] interface {
-	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | float32 | float64
+	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float32 | ~float64
 }
 
 type Integer[T any] interface {
