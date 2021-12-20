@@ -1,8 +1,12 @@
 package rbtree
 
 import (
+	"fmt"
 	"github.com/lxzan/dao"
+	"github.com/lxzan/dao/algorithm"
 	"github.com/lxzan/dao/internal/utils"
+	"sort"
+	"strconv"
 	"testing"
 )
 
@@ -124,113 +128,143 @@ func TestRBTree_ForEach(t *testing.T) {
 	}
 }
 
-//func TestRBTree_Between(t *testing.T) {
-//	var tree = New[string, int]()
-//	var m = make(map[string]int)
-//	for i := 0; i < 10000; i++ {
-//		var length = utils.Rand.Intn(16) + 1
-//		var key = utils.Numeric.Generate(4)
-//		m[key] = length
-//		tree.Insert(key, length)
-//	}
-//
-//	var limit = 100
-//	for i := 0; i < 100; i++ {
-//		var left = utils.Numeric.Generate(4)
-//		x, _ := strconv.Atoi(left)
-//		var right = fmt.Sprintf("%04d", x+limit)
-//		if left > right {
-//			right, left = left, right
-//		}
-//		var keys1 = tree.Query(&QueryBuilder[string]{
-//			LeftFilter:  func(key string) bool { return key >= left },
-//			RightFilter: func(key string) bool { return key <= right },
-//			Limit:       limit,
-//			Order:       ASC,
-//		})
-//		var keys2 = make([]string, 0)
-//		for k, _ := range m {
-//			if k >= left && k <= right {
-//				keys2 = append(keys2, k)
-//			}
-//		}
-//		sort.Strings(keys2)
-//		if len(keys2) > limit {
-//			keys2 = keys2[:limit]
-//		}
-//
-//		if !utils.SameStrings(keys1, keys2) {
-//			t.Fatal("error!")
-//		}
-//	}
-//}
-//
-//func TestRBTree_GreaterEqual(t *testing.T) {
-//	var tree = New[string, int]()
-//	var m = make(map[string]int)
-//	for i := 0; i < 10000; i++ {
-//		var length = utils.Rand.Intn(16) + 1
-//		var key = utils.Numeric.Generate(4)
-//		m[key] = length
-//		tree.Insert(key, length)
-//	}
-//
-//	var limit = 100
-//	for i := 0; i < 100; i++ {
-//		var left = utils.Numeric.Generate(4)
-//		var keys1 = tree.Query(&QueryBuilder[string]{
-//			LeftFilter: func(key string) bool { return key >= left },
-//			Limit:      limit,
-//		})
-//		var keys2 = make([]string, 0)
-//		for k, _ := range m {
-//			if k >= left {
-//				keys2 = append(keys2, k)
-//			}
-//		}
-//		sort.Strings(keys2)
-//		if len(keys2) > limit {
-//			keys2 = keys2[:limit]
-//		}
-//
-//		if !utils.SameStrings(keys1, keys2) {
-//			t.Fatal("error!")
-//		}
-//	}
-//}
-//
-//func TestRBTree_LessEqual(t *testing.T) {
-//	var tree = New[string, int]()
-//	var m = make(map[string]int)
-//	for i := 0; i < 10000; i++ {
-//		var length = utils.Rand.Intn(16) + 1
-//		var key = utils.Numeric.Generate(4)
-//		m[key] = length
-//		tree.Insert(key, length)
-//	}
-//
-//	var limit = 100
-//	for i := 0; i < 100; i++ {
-//		var target = utils.Numeric.Generate(4)
-//		var keys1 = tree.Query(&QueryBuilder[string]{
-//			RightFilter: func(key string) bool { return key <= target },
-//			Limit:       limit,
-//			Order:       DESC,
-//		})
-//		var keys2 = make([]string, 0)
-//		for k, _ := range m {
-//			if k <= target {
-//				keys2 = append(keys2, k)
-//			}
-//		}
-//		sort.Strings(keys2)
-//		utils.ReverseStrings(keys2)
-//		if len(keys2) > limit {
-//			keys2 = keys2[:limit]
-//		}
-//
-//		if !utils.SameStrings(keys1, keys2) {
-//			t.Fatal("error!")
-//		}
-//	}
-//}
+func TestRBTree_Between(t *testing.T) {
+	var tree = New[entry](func(a, b *entry) dao.Ordering {
+		if a.Key > b.Key {
+			return dao.Greater
+		} else if a.Key == b.Key {
+			return dao.Equal
+		} else {
+			return dao.Less
+		}
+	})
+	var m = make(map[string]int)
+	for i := 0; i < 10000; i++ {
+		var length = utils.Rand.Intn(16) + 1
+		var key = utils.Numeric.Generate(4)
+		m[key] = length
+		tree.Insert(&entry{Key: key, Val: length})
+	}
+
+	var limit = 100
+	for i := 0; i < 100; i++ {
+		var left = utils.Numeric.Generate(4)
+		x, _ := strconv.Atoi(left)
+		var right = fmt.Sprintf("%04d", x+limit)
+		if left > right {
+			right, left = left, right
+		}
+		var keys1 = tree.Query(&QueryBuilder[entry]{
+			LeftFilter:  func(d *entry) bool { return d.Key >= left },
+			RightFilter: func(d *entry) bool { return d.Key <= right },
+			Limit:       limit,
+			Order:       ASC,
+		})
+		var keys2 = make([]string, 0)
+		for k, _ := range m {
+			if k >= left && k <= right {
+				keys2 = append(keys2, k)
+			}
+		}
+		sort.Strings(keys2)
+		if len(keys2) > limit {
+			keys2 = keys2[:limit]
+		}
+
+		if !utils.SameStrings(keys2, algorithm.GetKeys(keys1, func(x *entry) string {
+			return x.Key
+		})) {
+			t.Fatal("error!")
+		}
+	}
+}
+
+func TestRBTree_GreaterEqual(t *testing.T) {
+	var tree = New[entry](func(a, b *entry) dao.Ordering {
+		if a.Key > b.Key {
+			return dao.Greater
+		} else if a.Key == b.Key {
+			return dao.Equal
+		} else {
+			return dao.Less
+		}
+	})
+	var m = make(map[string]int)
+	for i := 0; i < 10000; i++ {
+		var length = utils.Rand.Intn(16) + 1
+		var key = utils.Numeric.Generate(4)
+		m[key] = length
+		tree.Insert(&entry{Key: key, Val: length})
+	}
+
+	var limit = 100
+	for i := 0; i < 100; i++ {
+		var left = utils.Numeric.Generate(4)
+		var keys1 = tree.Query(&QueryBuilder[entry]{
+			LeftFilter: func(d *entry) bool { return d.Key >= left },
+			Limit:      limit,
+		})
+		var keys2 = make([]string, 0)
+		for k, _ := range m {
+			if k >= left {
+				keys2 = append(keys2, k)
+			}
+		}
+		sort.Strings(keys2)
+		if len(keys2) > limit {
+			keys2 = keys2[:limit]
+		}
+
+		if !utils.SameStrings(keys2, algorithm.GetKeys(keys1, func(x *entry) string {
+			return x.Key
+		})) {
+			t.Fatal("error!")
+		}
+	}
+}
+
+func TestRBTree_LessEqual(t *testing.T) {
+	var tree = New[entry](func(a, b *entry) dao.Ordering {
+		if a.Key > b.Key {
+			return dao.Greater
+		} else if a.Key == b.Key {
+			return dao.Equal
+		} else {
+			return dao.Less
+		}
+	})
+	var m = make(map[string]int)
+	for i := 0; i < 10000; i++ {
+		var length = utils.Rand.Intn(16) + 1
+		var key = utils.Numeric.Generate(4)
+		m[key] = length
+		tree.Insert(&entry{Key: key, Val: length})
+	}
+
+	var limit = 100
+	for i := 0; i < 100; i++ {
+		var target = utils.Numeric.Generate(4)
+		var keys1 = tree.Query(&QueryBuilder[entry]{
+			RightFilter: func(d *entry) bool { return d.Key <= target },
+			Limit:       limit,
+			Order:       DESC,
+		})
+		var keys2 = make([]string, 0)
+		for k, _ := range m {
+			if k <= target {
+				keys2 = append(keys2, k)
+			}
+		}
+		sort.Strings(keys2)
+		utils.ReverseStrings(keys2)
+		if len(keys2) > limit {
+			keys2 = keys2[:limit]
+		}
+
+		if !utils.SameStrings(keys2, algorithm.GetKeys(keys1, func(x *entry) string {
+			return x.Key
+		})) {
+			t.Fatal("error!")
+		}
+	}
+}

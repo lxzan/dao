@@ -2,6 +2,7 @@ package rbtree
 
 import (
 	"github.com/lxzan/dao"
+	"github.com/lxzan/dao/heap"
 )
 
 func (c *RBTree[T]) Len() int {
@@ -167,72 +168,76 @@ const (
 	DESC Order = 1
 )
 
-//func AlwaysTrue[K dao.Comparable[K]](key K) bool {
-//	return true
-//}
-//
-//type QueryBuilder[T any] struct {
-//	LeftFilter  func(d *T) bool
-//	RightFilter func(d *T) bool
-//	Limit       int
-//	Order       Order
-//	results     *heap.Heap[K]
-//}
-//
-//func (c *QueryBuilder[K]) init() *QueryBuilder[K] {
-//	var typ = heap.MaxHeap[K]
-//	if c.Order == DESC {
-//		typ = heap.MinHeap[K]
-//	}
-//	if c.LeftFilter == nil {
-//		c.LeftFilter = AlwaysTrue[K]
-//	}
-//	if c.RightFilter == nil {
-//		c.RightFilter = AlwaysTrue[K]
-//	}
-//	if c.Limit <= 0 {
-//		c.results = heap.New[K](10, typ)
-//	} else {
-//		c.results = heap.New[K](c.Limit, typ)
-//	}
-//	return c
-//}
-//
-//func (c *RBTree[T]) Query(q *QueryBuilder[K]) []K {
-//	c.do_query1(c.root, q.init())
-//	return q.results.Sort()
-//}
-//
-//func (c *RBTree[T]) do_query1(node *rbtree_node[T], q *QueryBuilder[K]) {
-//	if c.end(node) {
-//		return
-//	}
-//	if q.LeftFilter(node.key) && q.RightFilter(node.key) {
-//		if q.results.Len() < q.Limit {
-//			q.results.Push(node.key)
-//			c.do_query2(node, q)
-//		} else if q.results.Less(q.results.Data[0], node.key) {
-//			q.results.Data[0] = node.key
-//			q.results.Down(0, q.Limit)
-//			c.do_query2(node, q)
-//		} else {
-//			c.do_query1(node.left, q)
-//		}
-//	} else {
-//		if !q.LeftFilter(node.key) {
-//			c.do_query1(node.right, q)
-//		} else if !q.RightFilter(node.key) {
-//			c.do_query1(node.left, q)
-//		}
-//	}
-//}
-//
-//func (c *RBTree[T]) do_query2(node *rbtree_node[T], q *QueryBuilder[K]) {
-//	if q.Order == ASC {
-//		c.do_query1(node.left, q)
-//		c.do_query1(node.right, q)
-//	} else {
-//		c.do_query1(node.right, q)
-//		c.do_query1(node.left, q)
-//	}
-//}
+func AlwaysTrue[T any](d *T) bool {
+	return true
+}
+
+type QueryBuilder[T any] struct {
+	LeftFilter  func(d *T) bool
+	RightFilter func(d *T) bool
+	Limit       int
+	Order       Order
+	results     *heap.Heap[*T]
+}
+
+func (c *QueryBuilder[T]) init(cmp func(a, b *T) dao.Ordering) *QueryBuilder[T] {
+	var typ = func(a, b *T) bool {
+		return cmp(a, b) == dao.Greater
+	}
+	if c.Order == DESC {
+		typ = func(a, b *T) bool {
+			return cmp(a, b) == dao.Less
+		}
+	}
+	if c.LeftFilter == nil {
+		c.LeftFilter = AlwaysTrue[T]
+	}
+	if c.RightFilter == nil {
+		c.RightFilter = AlwaysTrue[T]
+	}
+	if c.Limit <= 0 {
+		c.results = heap.New[*T](10, typ)
+	} else {
+		c.results = heap.New[*T](c.Limit, typ)
+	}
+	return c
+}
+
+func (c *RBTree[T]) Query(q *QueryBuilder[T]) []*T {
+	c.do_query1(c.root, q.init(c.cmp))
+	return q.results.Sort()
+}
+
+func (c *RBTree[T]) do_query1(node *rbtree_node[T], q *QueryBuilder[T]) {
+	if c.end(node) {
+		return
+	}
+	if q.LeftFilter(node.data) && q.RightFilter(node.data) {
+		if q.results.Len() < q.Limit {
+			q.results.Push(node.data)
+			c.do_query2(node, q)
+		} else if q.results.Less(q.results.Data[0], node.data) {
+			q.results.Data[0] = node.data
+			q.results.Down(0, q.Limit)
+			c.do_query2(node, q)
+		} else {
+			c.do_query1(node.left, q)
+		}
+	} else {
+		if !q.LeftFilter(node.data) {
+			c.do_query1(node.right, q)
+		} else if !q.RightFilter(node.data) {
+			c.do_query1(node.left, q)
+		}
+	}
+}
+
+func (c *RBTree[T]) do_query2(node *rbtree_node[T], q *QueryBuilder[T]) {
+	if q.Order == ASC {
+		c.do_query1(node.left, q)
+		c.do_query1(node.right, q)
+	} else {
+		c.do_query1(node.right, q)
+		c.do_query1(node.left, q)
+	}
+}
