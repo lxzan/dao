@@ -13,14 +13,31 @@ func BenchmarkSegmentTree_Query(b *testing.B) {
 	}
 	var tree = segment_tree.New[int, segment_tree.Schema[int]](arr, segment_tree.Init[int], segment_tree.Merge[int])
 
+	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
-			var j = rand.Intn(bench_count)
-			var k = rand.Intn(bench_count)
-			if j > k {
-				j, k = k, j
+			var left = rand.Intn(bench_count)
+			var right = rand.Intn(bench_count)
+			if left > right {
+				left, right = right, left
 			}
-			tree.Query(j, k)
+			tree.Query(left, right)
+		}
+	}
+}
+
+func BenchmarkSegmentTree_Update(b *testing.B) {
+	var arr1 = make([]int, 0)
+	for i := 0; i < bench_count; i++ {
+		arr1 = append(arr1, testvals[i])
+	}
+	var tree = segment_tree.New[int, segment_tree.Schema[int]](arr1, segment_tree.Init[int], segment_tree.Merge[int])
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < bench_count; j++ {
+			var x = rand.Intn(bench_count)
+			tree.Update(x, x)
 		}
 	}
 }

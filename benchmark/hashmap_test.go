@@ -57,11 +57,14 @@ func BenchmarkHashMap_Get(b *testing.B) {
 	for j := 0; j < bench_count; j++ {
 		m.Set(testkeys[j], testvals[j])
 	}
+
+	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
 			m.Get(testkeys[j])
 		}
 	}
+	b.StopTimer()
 }
 
 func BenchmarkGolang_Get(b *testing.B) {

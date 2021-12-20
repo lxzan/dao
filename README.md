@@ -1,17 +1,55 @@
 # The Great Way is Simple
-> Simple and high-performance data structures and algorithms library
+Simple and high-performance data structures and algorithms library
 
 
 
 ### Benchmark
 
-| Container        | Operate | Elements | Cost(ns/op) |
-| ---------------- | ------- | -------- | ----------- |
-| DoubleLinkedList | RPush   | 1,000    | 29,704      |
-|                  |         |          |             |
-|                  |         |          |             |
+```
+goos: windows
+goarch: amd64
+pkg: github.com/lxzan/dao/benchmark
+cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
+```
+- 1,000
+
+| Container        | Operate            | Elements | ns/op | allocs/op |
+| ---------------- | ------------------ | -------- |-------| --------- |
+| DoubleLinkedList | RPush              | 1,000    | 29.7  |           |
+| Dict             | Insert             | 1,000    | 651.6 |           |
+| Dict             | Delete             | 1,000    | 59.3  |           |
+| Dict             | Match (limit 10)   | 1,000    | 1532  |           |
+| HashMap          | Set                | 1,000    | 36.7  |           |
+| Go Map           | Set                | 1,000    | 38.1  |           |
+| HashMap          | Get                | 1,000    | 17.0  |           |
+| Go Map           | Get                | 1,000    | 19.3  |           |
+| RBTree           | Insert             | 1,000    | 448.6 |           |
+| RBTree           | Find               | 1,000    | 238.1 |           |
+| RBTree           | Delete             | 1,000    | 675.2 |           |
+| RBTree           | Between (limit 10) | 1,000    | 624.1 |           |
+| SegmentTree      | Query              | 1,000    | 190.8 |           |
+| SegmentTree      | Update             | 1,000    | 144.3 |           |
+| Heap             | Push               | 1,000    | 63.8  |           |
 
 
+- 1,000,000
+| Container        | Operate            | Elements | ns/op     | allocs/op |
+| ---------------- | ------------------ | -------- | --------- | --------- |
+| DoubleLinkedList | RPush              | 1,000,000    | 42.5 |           |
+| Dict             | Insert             | 1,000,000    | 1196.2 |           |
+| Dict             | Delete             | 1,000,000    | 1673.7 |           |
+| Dict             | Match (limit 10)   | 1,000,000    | 3667.6 |           |
+| HashMap          | Set                | 1,000,000    | 141.9 |           |
+| Go Map           | Set                | 1,000,000    | 122.3 |           |
+| HashMap          | Get                | 1,000,000    | 116.0 |           |
+| Go Map           | Get                | 1,000,000    | 91.3 |           |
+| RBTree           | Insert             | 1,000,000    | 2539.5 |           |
+| RBTree           | Find               | 1,000,000    | 3944.8 |           |
+| RBTree           | Delete             | 1,000,000    | 4573.4 |           |
+| RBTree           | Between (limit 10) | 1,000,000    | 6171.5 |           |
+| SegmentTree      | Query              | 1,000,000    | 1834.9 |           |
+| SegmentTree      | Update             | 1,000,000    | 1051.6 |           |
+| Heap             | Push               | 1,000,000    | 37.8 |           |
 
 ### HashMap
 
