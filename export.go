@@ -8,6 +8,10 @@ const (
 	Greater Ordering = 1
 )
 
+type Comparer[T any] interface {
+	Compare(a, b *T) Ordering
+}
+
 func ASC[T Comparable[T]](a, b T) Ordering {
 	if a > b {
 		return Greater

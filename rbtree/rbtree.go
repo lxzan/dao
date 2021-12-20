@@ -9,75 +9,79 @@ const (
 	RED   Color = 1
 )
 
-type rbtree_node[K dao.Comparable[K], V any] struct {
-	left   *rbtree_node[K, V]
-	right  *rbtree_node[K, V]
-	parent *rbtree_node[K, V]
+type rbtree_node[T any] struct {
+	left   *rbtree_node[T]
+	right  *rbtree_node[T]
+	parent *rbtree_node[T]
 	color  Color
-	key    K // unique, not empty
-	data   *V
+	data   *T // unique, not empty
 }
 
-func (c *rbtree_node[K, V]) resert_key() {
-	var key K
-	c.key = key
+func (c *rbtree_node[T]) resert_key() {
+	var data T
+	c.data = &data
 }
 
-func (c *rbtree_node[K, V]) set_black() {
+func (c *rbtree_node[T]) set_black() {
 	c.color = BLACK
 }
 
-func (c *rbtree_node[K, V]) set_red() {
+func (c *rbtree_node[T]) set_red() {
 	c.color = RED
 }
 
-func (c *rbtree_node[K, V]) is_black() bool {
+func (c *rbtree_node[T]) is_black() bool {
 	return c.color == BLACK
 }
 
-func (c *rbtree_node[K, V]) is_red() bool {
+func (c *rbtree_node[T]) is_red() bool {
 	return c.color == RED
 }
 
-func rbt_copy_color[K dao.Comparable[K], V any](n1, n2 *rbtree_node[K, V]) {
+func rbt_copy_color[T any](n1, n2 *rbtree_node[T]) {
 	n1.color = n2.color
 }
 
-func rbtree_min[K dao.Comparable[K], V any](node *rbtree_node[K, V], sentinel *rbtree_node[K, V]) *rbtree_node[K, V] {
+func rbtree_min[T any](node *rbtree_node[T], sentinel *rbtree_node[T]) *rbtree_node[T] {
 	for node.left != sentinel {
 		node = node.left
 	}
 	return node
 }
 
-type RBTree[K dao.Comparable[K], V any] struct {
-	key      K // empty key
+type RBTree[T any] struct {
 	length   int
-	root     *rbtree_node[K, V]
-	sentinel *rbtree_node[K, V]
+	cmp      func(a, b *T) dao.Ordering
+	root     *rbtree_node[T]
+	sentinel *rbtree_node[T]
 }
 
-func (c *RBTree[K, V]) is_key_empty(key K) bool {
-	return key == c.key
+func New[T any](cmp func(a, b *T) dao.Ordering) *RBTree[T] {
+	var node rbtree_node[T]
+	return &RBTree[T]{root: &node, sentinel: &node, length: 0, cmp: cmp}
 }
 
-func (c *RBTree[K, V]) begin() *rbtree_node[K, V] {
+func (c *RBTree[T]) is_key_empty(d *T) bool {
+	return d == nil
+}
+
+func (c *RBTree[T]) begin() *rbtree_node[T] {
 	return c.root
 }
 
-func (c *RBTree[K, V]) next(iter *rbtree_node[K, V], key K) *rbtree_node[K, V] {
-	if key > iter.key {
+func (c *RBTree[T]) next(iter *rbtree_node[T], ele *T) *rbtree_node[T] {
+	if c.cmp(ele, iter.data) == dao.Greater {
 		return iter.right
 	}
 	return iter.left
 }
 
-func (c *RBTree[K, V]) end(iter *rbtree_node[K, V]) bool {
+func (c *RBTree[T]) end(iter *rbtree_node[T]) bool {
 	return iter.data == nil
 }
 
-func (c *RBTree[K, V]) left_rotate(root **rbtree_node[K, V], sentinel *rbtree_node[K, V], node *rbtree_node[K, V]) {
-	var temp *rbtree_node[K, V]
+func (c *RBTree[T]) left_rotate(root **rbtree_node[T], sentinel *rbtree_node[T], node *rbtree_node[T]) {
+	var temp *rbtree_node[T]
 	temp = node.right
 	node.right = temp.left
 	if temp.left != sentinel {
@@ -95,8 +99,8 @@ func (c *RBTree[K, V]) left_rotate(root **rbtree_node[K, V], sentinel *rbtree_no
 	node.parent = temp
 }
 
-func (c *RBTree[K, V]) right_rotate(root **rbtree_node[K, V], sentinel *rbtree_node[K, V], node *rbtree_node[K, V]) {
-	var temp *rbtree_node[K, V]
+func (c *RBTree[T]) right_rotate(root **rbtree_node[T], sentinel *rbtree_node[T], node *rbtree_node[T]) {
+	var temp *rbtree_node[T]
 	temp = node.left
 	node.left = temp.right
 	if temp.right != sentinel {
@@ -114,10 +118,10 @@ func (c *RBTree[K, V]) right_rotate(root **rbtree_node[K, V], sentinel *rbtree_n
 	node.parent = temp
 }
 
-func (c *RBTree[K, V]) do_insert(temp *rbtree_node[K, V], node *rbtree_node[K, V], sentinel *rbtree_node[K, V]) {
-	var p **rbtree_node[K, V]
+func (c *RBTree[T]) do_insert(temp *rbtree_node[T], node *rbtree_node[T], sentinel *rbtree_node[T]) {
+	var p **rbtree_node[T]
 	for {
-		if node.key < temp.key {
+		if c.cmp(node.data, temp.data) == dao.Less {
 			p = &temp.left
 		} else {
 			p = &temp.right
@@ -135,10 +139,10 @@ func (c *RBTree[K, V]) do_insert(temp *rbtree_node[K, V], node *rbtree_node[K, V
 	node.set_red()
 }
 
-func (c *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
+func (c *RBTree[T]) do_delete(node *rbtree_node[T]) {
 	var red bool
-	var root **rbtree_node[K, V]
-	var sentinel, subst, temp, w *rbtree_node[K, V]
+	var root **rbtree_node[T]
+	var sentinel, subst, temp, w *rbtree_node[T]
 
 	/* a binary tree delete */
 
