@@ -15,7 +15,7 @@ func init() {
 	for i := 0; i < stree_count; i++ {
 		arr = append(arr, i)
 	}
-	stree = segment_tree.New[int, segment_tree.Schema[int]](arr)
+	stree = segment_tree.New[int, segment_tree.Schema[int]](arr, segment_tree.Init[int], segment_tree.Merge[int])
 }
 
 func BenchmarkSegmentTree_Query(b *testing.B) {

@@ -11,7 +11,7 @@ type Schema[T dao.Number[T]] struct {
 	Sum      T
 }
 
-func (c Schema[T]) Init(op Operate, x T) Schema[T] {
+func Init[T dao.Number[T]](op Operate, x T) Schema[T] {
 	var result = Schema[T]{
 		MaxValue: x,
 		MinValue: x,
@@ -23,7 +23,7 @@ func (c Schema[T]) Init(op Operate, x T) Schema[T] {
 	return result
 }
 
-func (c Schema[T]) Merge(a, b Schema[T]) Schema[T] {
+func Merge[T dao.Number[T]](a, b Schema[T]) Schema[T] {
 	return Schema[T]{
 		MaxValue: algorithm.Max[T](a.MaxValue, b.MaxValue),
 		MinValue: algorithm.Min[T](a.MinValue, b.MinValue),

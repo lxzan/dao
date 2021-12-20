@@ -13,7 +13,7 @@ func TestSegmentTree_Query(t *testing.T) {
 		arr = append(arr, utils.Rand.Intn(n))
 	}
 
-	var tree = New[int, Schema[int]](arr)
+	var tree = New[int, Schema[int]](arr, Init[int], Merge[int])
 
 	for i := 0; i < 1000; i++ {
 		var left = utils.Rand.Intn(n)

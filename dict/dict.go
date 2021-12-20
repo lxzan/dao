@@ -10,10 +10,6 @@ type Pair[T any] struct {
 	Val T
 }
 
-func (c Pair[T]) Equal(x *Pair[T]) bool {
-	return c.Key == x.Key
-}
-
 type Element struct {
 	EntryPoint rapid.EntryPoint
 	Children   []*Element
