@@ -20,6 +20,7 @@ func New[T any](sizes ...int) Slice[T] {
 	var capicity = 3
 	if n >= 1 {
 		size = sizes[0]
+		capicity += size
 	}
 	if n >= 2 {
 		capicity = sizes[1]

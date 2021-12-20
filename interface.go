@@ -48,13 +48,8 @@ type Hashable[T any] interface {
 	~string | ~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float64 | ~float32
 }
 
-type Equaler[T any] interface {
-	Equal(x *T) bool
-}
-
 type Hasher32[T any] interface {
 	GetHashCode() uint32
-	Equal(x T) bool
 }
 
 type Container interface {

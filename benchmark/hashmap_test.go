@@ -56,64 +56,64 @@ func BenchmarkHashMap_Insert(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		m := hashmap.New[string, int](hashmap_count)
 		for j := 0; j < hashmap_count; j++ {
-			m.Insert(testkeys[j], testvals[j])
+			m.Set(testkeys[j], testvals[j])
 		}
 	}
 }
 
-//func BenchmarkGolang_Insert(b *testing.B) {
-//	for i := 0; i < b.N; i++ {
-//		m := make(map[string]int, hashmap_count)
-//		for j := 0; j < hashmap_count; j++ {
-//			m[testkeys[j]] = testvals[j]
-//		}
-//	}
-//}
-//
-//func BenchmarkHashMap_Find(b *testing.B) {
-//	m := hashmap.New[string, int](hashmap_count)
-//	for j := 0; j < hashmap_count; j++ {
-//		m.Insert(testkeys[j], testvals[j])
-//	}
-//	for i := 0; i < b.N; i++ {
-//		for j := 0; j < hashmap_count; j++ {
-//			m.Find(testkeys[j])
-//		}
-//	}
-//}
-//
-//func BenchmarkGolang_Find(b *testing.B) {
-//	m := make(map[string]int, hashmap_count)
-//	for j := 0; j < hashmap_count; j++ {
-//		m[testkeys[j]] = testvals[j]
-//	}
-//	for i := 0; i < b.N; i++ {
-//		for j := 0; j < hashmap_count; j++ {
-//			_ = m[testkeys[j]]
-//		}
-//	}
-//}
-//
-//func BenchmarkHashMap_Delete(b *testing.B) {
-//	m := hashmap.New[string, int](hashmap_count)
-//	for j := 0; j < hashmap_count; j++ {
-//		m.Insert(testkeys[j], testvals[j])
-//	}
-//	for i := 0; i < b.N; i++ {
-//		for j := 0; j < hashmap_count/2; j++ {
-//			m.Delete(testkeys[j])
-//		}
-//	}
-//}
-//
-//func BenchmarkGolang_Delete(b *testing.B) {
-//	m := make(map[string]int, hashmap_count)
-//	for j := 0; j < hashmap_count; j++ {
-//		m[testkeys[j]] = testvals[j]
-//	}
-//	for i := 0; i < b.N; i++ {
-//		for j := 0; j < hashmap_count/2; j++ {
-//			delete(m, testkeys[j])
-//		}
-//	}
-//}
+func BenchmarkGolang_Insert(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		m := make(map[string]int, hashmap_count)
+		for j := 0; j < hashmap_count; j++ {
+			m[testkeys[j]] = testvals[j]
+		}
+	}
+}
+
+func BenchmarkHashMap_Find(b *testing.B) {
+	m := hashmap.New[string, int](hashmap_count)
+	for j := 0; j < hashmap_count; j++ {
+		m.Set(testkeys[j], testvals[j])
+	}
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < hashmap_count; j++ {
+			m.Get(testkeys[j])
+		}
+	}
+}
+
+func BenchmarkGolang_Find(b *testing.B) {
+	m := make(map[string]int, hashmap_count)
+	for j := 0; j < hashmap_count; j++ {
+		m[testkeys[j]] = testvals[j]
+	}
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < hashmap_count; j++ {
+			_ = m[testkeys[j]]
+		}
+	}
+}
+
+func BenchmarkHashMap_Delete(b *testing.B) {
+	m := hashmap.New[string, int](hashmap_count)
+	for j := 0; j < hashmap_count; j++ {
+		m.Set(testkeys[j], testvals[j])
+	}
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < hashmap_count/2; j++ {
+			m.Delete(testkeys[j])
+		}
+	}
+}
+
+func BenchmarkGolang_Delete(b *testing.B) {
+	m := make(map[string]int, hashmap_count)
+	for j := 0; j < hashmap_count; j++ {
+		m[testkeys[j]] = testvals[j]
+	}
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < hashmap_count/2; j++ {
+			delete(m, testkeys[j])
+		}
+	}
+}

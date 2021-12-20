@@ -4,6 +4,7 @@ import (
 	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/hash"
 	"github.com/lxzan/dao/rapid"
+	"github.com/lxzan/dao/slice"
 	"unsafe"
 )
 
@@ -20,6 +21,7 @@ type HashMap[K dao.Hashable[K], V any] struct {
 	storage     *rapid.Rapid[Pair[K, V]]
 }
 
+// vol = size*load_factor
 func New[K dao.Hashable[K], V any](size ...uint32) *HashMap[K, V] {
 	if len(size) == 0 {
 		size = []uint32{8}
@@ -129,7 +131,7 @@ func (c *HashMap[K, V]) ForEach(fn func(item *Pair[K, V]) (continued bool)) {
 	}
 }
 
-func (c *HashMap[K, V]) Keys() []K {
+func (c *HashMap[K, V]) Keys() slice.Slice[K] {
 	var keys = make([]K, 0)
 	c.ForEach(func(item *Pair[K, V]) bool {
 		keys = append(keys, item.Key)
@@ -138,7 +140,7 @@ func (c *HashMap[K, V]) Keys() []K {
 	return keys
 }
 
-func (c *HashMap[K, V]) Values() []V {
+func (c *HashMap[K, V]) Values() slice.Slice[V] {
 	var values = make([]V, 0)
 	c.ForEach(func(item *Pair[K, V]) bool {
 		values = append(values, item.Val)
