@@ -32,6 +32,10 @@ func (c *Dict[T]) begin(iter *iterator, initialize bool) *iterator {
 }
 
 func (c *Dict[T]) next(iter *iterator, initialize bool) *iterator {
+	if iter.Cursor >= iter.End {
+		return nil
+	}
+
 	var idx = iter.Bytes[iter.Cursor]
 	iter.Cursor++
 	if initialize && iter.Node.Children[idx] == nil && iter.Cursor < 16 {

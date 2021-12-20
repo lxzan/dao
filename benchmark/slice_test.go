@@ -7,9 +7,9 @@ import (
 
 func BenchmarkSlice_Push(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		var a = slice.New[int](0, 1000)
-		for i := 0; i < 1000; i++ {
-			a.Push(i)
+		var a = slice.New[int](0, bench_count)
+		for j := 0; j < bench_count; j++ {
+			a.Push(j)
 		}
 	}
 }

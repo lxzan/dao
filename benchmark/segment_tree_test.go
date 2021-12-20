@@ -6,25 +6,21 @@ import (
 	"testing"
 )
 
-const stree_count = 1000
-
-var stree *segment_tree.SegmentTree[int, segment_tree.Schema[int]]
-
-func init() {
-	var arr = make([]int, 0)
-	for i := 0; i < stree_count; i++ {
-		arr = append(arr, i)
-	}
-	stree = segment_tree.New[int, segment_tree.Schema[int]](arr, segment_tree.Init[int], segment_tree.Merge[int])
-}
-
 func BenchmarkSegmentTree_Query(b *testing.B) {
+	var arr = make([]int, 0)
+	for i := 0; i < bench_count; i++ {
+		arr = append(arr, testvals[i])
+	}
+	var tree = segment_tree.New[int, segment_tree.Schema[int]](arr, segment_tree.Init[int], segment_tree.Merge[int])
+
 	for i := 0; i < b.N; i++ {
-		var j = rand.Intn(stree_count)
-		var k = rand.Intn(stree_count)
-		if j > k {
-			j, k = k, j
+		for j := 0; j < bench_count; j++ {
+			var j = rand.Intn(bench_count)
+			var k = rand.Intn(bench_count)
+			if j > k {
+				j, k = k, j
+			}
+			tree.Query(j, k)
 		}
-		stree.Query(j, k)
 	}
 }

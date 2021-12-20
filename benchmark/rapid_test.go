@@ -6,8 +6,6 @@ import (
 	"testing"
 )
 
-const bench_count = 1000
-
 type entry struct {
 	Key string
 	Val int

@@ -3,43 +3,26 @@ package benchmark
 import (
 	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/algorithm"
-	"github.com/lxzan/dao/internal/utils"
 	"sort"
 	"testing"
 )
 
-var testdata = []int{}
-
-var asc = func(a, b int) dao.Ordering {
-	if a > b {
-		return dao.Greater
-	} else if a == b {
-		return dao.Equal
-	} else {
-		return dao.Less
-	}
-}
-
-func init() {
-	for i := 0; i < 1024; i++ {
-		testdata = append(testdata, utils.Rand.Intn(100000))
-	}
-}
-
 func BenchmarkSort_Quick(b *testing.B) {
-	var n = len(testdata)
 	for i := 0; i < b.N; i++ {
-		var arr = make([]int, n)
-		copy(arr, testdata)
-		algorithm.Sort(arr, asc)
+		for j := 0; j < bench_count; j++ {
+			var arr = make([]int, 0, bench_count)
+			copy(arr, testvals[:bench_count])
+			algorithm.Sort(arr, dao.ASC[int])
+		}
 	}
 }
 
 func BenchmarkSort_Golang(b *testing.B) {
-	var n = len(testdata)
 	for i := 0; i < b.N; i++ {
-		var arr = make([]int, n)
-		copy(arr, testdata)
-		sort.Ints(arr)
+		for j := 0; j < bench_count; j++ {
+			var arr = make([]int, 0, bench_count)
+			copy(arr, testvals[:bench_count])
+			sort.Ints(arr)
+		}
 	}
 }
