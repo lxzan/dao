@@ -48,8 +48,7 @@ func (c *List[T]) Back() *Iterator[T] {
 
 func (c *List[T]) RPush(values ...T) {
 	for _, v := range values {
-		var ele = new(Iterator[T])
-		ele.Data = v
+		var ele = &Iterator[T]{Data: v}
 		if c.length > 0 {
 			c.tail.next = ele
 			ele.prev = c.tail
@@ -64,8 +63,7 @@ func (c *List[T]) RPush(values ...T) {
 
 func (c *List[T]) LPush(values ...T) {
 	for _, v := range values {
-		var ele = new(Iterator[T])
-		ele.Data = v
+		var ele = &Iterator[T]{Data: v}
 		if c.length > 0 {
 			ele.next = c.head
 			c.head.prev = ele
@@ -135,10 +133,7 @@ func (c *List[T]) Delete(iter *Iterator[T]) {
 
 func (c *List[T]) InsertAfter(iter *Iterator[T], v T) {
 	var next = iter.next
-	var cur = new(Iterator[T])
-	cur.prev = iter
-	cur.next = next
-	cur.Data = v
+	var cur = &Iterator[T]{Data: v, prev: iter, next: next}
 	iter.next = cur
 	if next != nil {
 		next.prev = cur
@@ -148,10 +143,7 @@ func (c *List[T]) InsertAfter(iter *Iterator[T], v T) {
 
 func (c *List[T]) InsertBefore(iter *Iterator[T], v T) {
 	var prev = iter.prev
-	var cur = new(Iterator[T])
-	cur.prev = prev
-	cur.next = iter
-	cur.Data = v
+	var cur = &Iterator[T]{Data: v, prev: prev, next: iter}
 	iter.prev = cur
 	if prev != nil {
 		prev.next = cur

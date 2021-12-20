@@ -39,8 +39,7 @@ func (c *Queue[T]) Len() int {
 
 func (c *Queue[T]) Push(values ...T) {
 	for _, v := range values {
-		var ele = new(Iterator[T])
-		ele.Data = v
+		var ele = &Iterator[T]{Data: v}
 		if c.length > 0 {
 			c.tail.next = ele
 			c.tail = ele

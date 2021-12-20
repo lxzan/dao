@@ -32,8 +32,7 @@ func (c *Stack[T]) Clear() {
 
 func (c *Stack[T]) Push(values ...T) {
 	for _, v := range values {
-		var ele = new(Iterator[T])
-		ele.Data = v
+		var ele = &Iterator[T]{Data: v}
 		if c.length > 0 {
 			ele.next = c.head
 			c.head = ele
