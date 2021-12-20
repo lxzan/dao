@@ -1,6 +1,7 @@
 package benchmark
 
 import (
+	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/rapid"
 	"testing"
 )
@@ -18,36 +19,30 @@ func (c entry) Equal(x *entry) bool {
 
 func BenchmarkRapid_New(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		rapid.New[entry](bench_count, func(a, b *entry) bool {
-			return a.Key == b.Key
-		})
+		rapid.New[string, int](bench_count)
 	}
 }
 
 func BenchmarkRapid_Append(b *testing.B) {
-	var arr = make([]*entry, 0, bench_count)
+	var arr = make([]string, 0, bench_count)
+	var val = 1
 	for i := 0; i < bench_count; i++ {
-		arr = append(arr, &entry{
-			Key: "hello",
-			Val: 1,
-		})
+		arr = append(arr, utils.Alphabet.Generate(8))
 	}
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		var r = rapid.New[entry](1000, func(a, b *entry) bool {
-			return a.Key == b.Key
-		})
+		var r = rapid.New[string, int](bench_count)
 		var id1 = r.NextID()
 		var q1 = rapid.EntryPoint{Head: id1, Tail: id1}
 		var id2 = r.NextID()
 		var q2 = rapid.EntryPoint{Head: id2, Tail: id2}
 
 		for i := 0; i < bench_count/2; i++ {
-			r.Append(&q1, arr[i])
+			r.Append(&q1, &arr[i], &val)
 		}
 		for i := 0; i < bench_count/2; i++ {
-			r.Append(&q2, arr[bench_count/2+i])
+			r.Append(&q2, &arr[bench_count/2+i], &val)
 		}
 	}
 	b.StopTimer()

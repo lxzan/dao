@@ -14,7 +14,7 @@ func (c *HashMap[K, V]) increase() {
 					entrypoint.Head = ptr
 					entrypoint.Tail = ptr
 				}
-				m.storage.Push(entrypoint, &dst.Data)
+				m.storage.Push(entrypoint, &dst.Key, &dst.Data)
 			}
 		}
 		*c = *m

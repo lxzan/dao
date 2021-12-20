@@ -1,5 +1,7 @@
 package rapid
 
+import "github.com/lxzan/dao"
+
 type (
 	Pointer uint32
 
@@ -8,58 +10,60 @@ type (
 		Tail Pointer
 	}
 
-	Iterator[T any] struct {
+	Iterator[K dao.Hashable[K], V any] struct {
 		Ptr     Pointer
 		PrevPtr Pointer
 		NextPtr Pointer
-		Data    T
+		Key     K
+		Data    V
 	}
 )
 
-func (c *Iterator[T]) Reset() {
+func (c *Iterator[K, V]) Reset() {
 	c.Ptr = 0
 	c.NextPtr = 0
 }
 
-type Rapid[T any] struct {
+type Rapid[K dao.Hashable[K], V any] struct {
 	Length     int
 	Serial     uint32
 	Recyclable array_stack // do not recycle head
-	Buckets    []Iterator[T]
-	Equal      func(a, b *T) bool
+	Buckets    []Iterator[K, V]
 }
 
-func New[T any](size uint32, eq func(a, b *T) bool) *Rapid[T] {
-	return &Rapid[T]{
+func New[K dao.Hashable[K], V any](size ...uint32) *Rapid[K, V] {
+	if len(size) == 0 {
+		size = []uint32{8}
+	}
+	return &Rapid[K, V]{
 		Serial:     1,
 		Recyclable: []Pointer{},
-		Buckets:    make([]Iterator[T], size+1),
+		Buckets:    make([]Iterator[K, V], size[0]+1),
 		Length:     0,
-		Equal:      eq,
 	}
 }
 
-func (c Rapid[T]) Begin(entrypoint EntryPoint) *Iterator[T] {
+func (c Rapid[K, V]) Begin(entrypoint EntryPoint) *Iterator[K, V] {
 	return &c.Buckets[entrypoint.Head]
 }
 
-func (c Rapid[T]) Next(iter *Iterator[T]) *Iterator[T] {
+func (c Rapid[K, V]) Next(iter *Iterator[K, V]) *Iterator[K, V] {
 	return &c.Buckets[iter.NextPtr]
 }
 
-func (c Rapid[T]) End(iter *Iterator[T]) bool {
+func (c Rapid[K, V]) End(iter *Iterator[K, V]) bool {
 	return iter.Ptr == 0
 }
 
 // NextID apply a pointer
-func (c *Rapid[T]) NextID() Pointer {
+func (c *Rapid[K, V]) NextID() Pointer {
 	if c.Recyclable.Len() > 0 {
 		return c.Recyclable.Pop()
 	}
 
 	var result = c.Serial
 	if result >= uint32(len(c.Buckets)) {
-		var ele Iterator[T]
+		var ele Iterator[K, V]
 		c.Buckets = append(c.Buckets, ele)
 	}
 	c.Serial++
@@ -67,17 +71,18 @@ func (c *Rapid[T]) NextID() Pointer {
 }
 
 // Push append an element with unique check
-func (c *Rapid[T]) Push(entrypoint *EntryPoint, data *T) (replaced bool) {
+func (c *Rapid[K, V]) Push(entrypoint *EntryPoint, key *K, val *V) (replaced bool) {
 	var head = &c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 {
 		head.Ptr = entrypoint.Head
-		head.Data = *data
+		head.Key = *key
+		head.Data = *val
 		c.Length++
 		return false
 	}
 	for i := head; !c.End(i); i = c.Next(i) {
-		if c.Equal(&i.Data, data) {
-			i.Data = *data
+		if *key == i.Key {
+			i.Data = *val
 			return true
 		}
 	}
@@ -88,18 +93,20 @@ func (c *Rapid[T]) Push(entrypoint *EntryPoint, data *T) (replaced bool) {
 	entrypoint.Tail = cursor
 	var target = &c.Buckets[cursor]
 	target.Ptr = cursor
-	target.Data = *data
+	target.Key = *key
+	target.Data = *val
 	target.PrevPtr = tail.Ptr
 	c.Length++
 	return false
 }
 
 // Append append an element without unique check
-func (c *Rapid[T]) Append(entrypoint *EntryPoint, data *T) {
+func (c *Rapid[K, V]) Append(entrypoint *EntryPoint, key *K, val *V) {
 	var head = &c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 {
 		head.Ptr = entrypoint.Head
-		head.Data = *data
+		head.Key = *key
+		head.Data = *val
 		c.Length++
 		return
 	}
@@ -110,13 +117,14 @@ func (c *Rapid[T]) Append(entrypoint *EntryPoint, data *T) {
 	entrypoint.Tail = cursor
 	var target = &c.Buckets[cursor]
 	target.Ptr = cursor
-	target.Data = *data
+	target.Key = *key
+	target.Data = *val
 	target.PrevPtr = tail.Ptr
 	c.Length++
 }
 
 // Delete do not delete in loop if no break
-func (c *Rapid[T]) Delete(entrypoint *EntryPoint, target *Iterator[T]) (deleted bool) {
+func (c *Rapid[K, V]) Delete(entrypoint *EntryPoint, target *Iterator[K, V]) (deleted bool) {
 	var head = c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 || target == nil || target.Ptr == 0 {
 		return false
@@ -146,12 +154,12 @@ func (c *Rapid[T]) Delete(entrypoint *EntryPoint, target *Iterator[T]) (deleted 
 	return true
 }
 
-func (c *Rapid[T]) Find(entrypoint EntryPoint, data *T) (result *Iterator[T], exist bool) {
+func (c *Rapid[K, V]) Find(entrypoint EntryPoint, key *K) (result *Iterator[K, V], exist bool) {
 	if entrypoint.Head == 0 {
 		return nil, false
 	}
 	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
-		if c.Equal(&i.Data, data) {
+		if *key == i.Key {
 			return i, true
 		}
 	}

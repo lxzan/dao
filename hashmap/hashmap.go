@@ -8,9 +8,14 @@ import (
 	"unsafe"
 )
 
-type Pair[K dao.Hashable[K], V any] struct {
+//type Pair[K dao.Hashable[K], V any] struct {
+//	hashCode uint32
+//	Key      K
+//	Val      V
+//}
+
+type entry[V any] struct {
 	hashCode uint32
-	Key      K
 	Val      V
 }
 
@@ -18,7 +23,7 @@ type HashMap[K dao.Hashable[K], V any] struct {
 	load_factor float64 // load_factor=1.0
 	size        uint32  // cap=2^n
 	indexes     []rapid.EntryPoint
-	storage     *rapid.Rapid[Pair[K, V]]
+	storage     *rapid.Rapid[K, entry[V]]
 }
 
 // vol = size*load_factor
@@ -36,9 +41,7 @@ func New[K dao.Hashable[K], V any](size ...uint32) *HashMap[K, V] {
 		load_factor: 1.0,
 		size:        size[0],
 		indexes:     make([]rapid.EntryPoint, size[0], size[0]),
-		storage: rapid.New[Pair[K, V]](size[0], func(a, b *Pair[K, V]) bool {
-			return a.Key == b.Key
-		}),
+		storage:     rapid.New[K, entry[V]](size[0]),
 	}
 }
 
@@ -81,22 +84,20 @@ func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
 		entrypoint.Head = ptr
 		entrypoint.Tail = ptr
 	}
-	var data = Pair[K, V]{
+	replaced = c.storage.Push(entrypoint, &key, &entry[V]{
 		hashCode: hashCode,
-		Key:      key,
 		Val:      val,
-	}
-	replaced = c.storage.Push(entrypoint, &data)
+	})
 	return replaced
 }
 
 // find one
-func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
+func (c *HashMap[K, V]) Get(key K) (val *V, exist bool) {
 	var hashCode = c.Hash(&key)
 	var idx = hashCode & (c.size - 1)
 	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Data.Key == key {
-			return i.Data.Val, true
+		if i.Key == key {
+			return &i.Data.Val, true
 		}
 	}
 	return val, exist
@@ -111,7 +112,7 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 		return false
 	}
 	for i := c.storage.Begin(entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Data.Key == key {
+		if i.Key == key {
 			return c.storage.Delete(&entrypoint, i)
 		}
 	}
@@ -119,12 +120,12 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 }
 
 // update directly
-func (c *HashMap[K, V]) ForEach(fn func(item *Pair[K, V]) (continued bool)) {
+func (c *HashMap[K, V]) ForEach(fn func(key K, val *V) (continued bool)) {
 	var n = len(c.storage.Buckets)
 	for i := 1; i < n; i++ {
 		var item = &c.storage.Buckets[i]
 		if item.Ptr != 0 {
-			if !fn(&item.Data) {
+			if !fn(item.Key, &item.Data.Val) {
 				break
 			}
 		}
@@ -133,8 +134,8 @@ func (c *HashMap[K, V]) ForEach(fn func(item *Pair[K, V]) (continued bool)) {
 
 func (c *HashMap[K, V]) Keys() slice.Slice[K] {
 	var keys = make([]K, 0)
-	c.ForEach(func(item *Pair[K, V]) bool {
-		keys = append(keys, item.Key)
+	c.ForEach(func(key K, val *V) bool {
+		keys = append(keys, key)
 		return true
 	})
 	return keys
@@ -142,8 +143,8 @@ func (c *HashMap[K, V]) Keys() slice.Slice[K] {
 
 func (c *HashMap[K, V]) Values() slice.Slice[V] {
 	var values = make([]V, 0)
-	c.ForEach(func(item *Pair[K, V]) bool {
-		values = append(values, item.Val)
+	c.ForEach(func(key K, val *V) bool {
+		values = append(values, *val)
 		return true
 	})
 	return values

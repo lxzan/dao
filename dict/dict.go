@@ -18,7 +18,7 @@ type Element struct {
 type Dict[T any] struct {
 	index_length int // 8 Byte
 	root         *Element
-	storage      *rapid.Rapid[Pair[T]]
+	storage      *rapid.Rapid[string, T]
 }
 
 type iterator struct {
@@ -32,9 +32,7 @@ func New[T any]() *Dict[T] {
 	return &Dict[T]{
 		index_length: 8,
 		root:         &Element{Children: make([]*Element, sizes[0], sizes[0])},
-		storage: rapid.New[Pair[T]](8, func(a, b *Pair[T]) bool {
-			return a.Key == b.Key
-		}),
+		storage:      rapid.New[string, T](),
 	}
 }
 
@@ -52,10 +50,6 @@ func (c *Dict[T]) SetIndexLength(length int) {
 
 // insert with unique check
 func (c *Dict[T]) Insert(key string, val T) {
-	var data = Pair[T]{
-		Key: key,
-		Val: val,
-	}
 	for i := c.begin(c.new_iterator(key), true); true; i = c.next(i, true) {
 		if i.Cursor == i.End {
 			var entrypoint = &i.Node.EntryPoint
@@ -64,7 +58,7 @@ func (c *Dict[T]) Insert(key string, val T) {
 				entrypoint.Head = ptr
 				entrypoint.Tail = ptr
 			}
-			c.storage.Push(entrypoint, &data)
+			c.storage.Push(entrypoint, &key, &val)
 			break
 		}
 	}
@@ -107,8 +101,11 @@ func (c *Dict[T]) doMatch(node *Element, params *match_params[T]) {
 		return
 	}
 	for i := c.storage.Begin(node.EntryPoint); !c.storage.End(i); i = c.storage.Next(i) {
-		if len(i.Data.Key) >= params.length && i.Data.Key[:params.length] == params.prefix {
-			params.results = append(params.results, i.Data)
+		if len(i.Key) >= params.length && i.Key[:params.length] == params.prefix {
+			params.results = append(params.results, Pair[T]{
+				Key: i.Key,
+				Val: i.Data,
+			})
 		}
 	}
 	for _, item := range node.Children {
@@ -123,7 +120,7 @@ func (c *Dict[T]) Delete(key string) bool {
 		}
 		if i.Cursor == i.End {
 			for j := c.storage.Begin(i.Node.EntryPoint); !c.storage.End(j); j = c.storage.Next(j) {
-				if j.Data.Key == key {
+				if j.Key == key {
 					return c.storage.Delete(&i.Node.EntryPoint, j)
 				}
 			}
@@ -132,11 +129,12 @@ func (c *Dict[T]) Delete(key string) bool {
 	return false
 }
 
-func (c *Dict[T]) ForEach(fn func(item *Pair[T]) (continued bool)) {
+func (c *Dict[T]) ForEach(fn func(key string, val *T) (continued bool)) {
 	var n = len(c.storage.Buckets)
 	for i := 0; i < n; i++ {
 		if c.storage.Buckets[i].Ptr != 0 {
-			if !fn(&c.storage.Buckets[i].Data) {
+			var item = &c.storage.Buckets[i]
+			if !fn(item.Key, &item.Data) {
 				break
 			}
 		}
