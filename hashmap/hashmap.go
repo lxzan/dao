@@ -2,6 +2,7 @@ package hashmap
 
 import (
 	"github.com/lxzan/dao"
+	"github.com/lxzan/dao/internal/hash"
 	"github.com/lxzan/dao/rapid"
 	"unsafe"
 )
@@ -11,11 +12,21 @@ const (
 	prime32  = 16777619
 )
 
+type Pair[K dao.Hashable[K], V any] struct {
+	hashCode uint32
+	Key      K
+	Val      V
+}
+
+func (c Pair[K, V]) Equal(x *Pair[K, V]) bool {
+	return c.Key == x.Key
+}
+
 type HashMap[K dao.Hashable[K], V any] struct {
 	load_factor float64 // load_factor=1.0
 	size        uint32  // cap=2^n
 	indexes     []rapid.EntryPoint
-	storage     *rapid.Rapid[K, V]
+	storage     *rapid.Rapid[Pair[K, V]]
 }
 
 func New[K dao.Hashable[K], V any](size ...uint32) *HashMap[K, V] {
@@ -28,12 +39,12 @@ func New[K dao.Hashable[K], V any](size ...uint32) *HashMap[K, V] {
 		}
 		size[0] = vol
 	}
-	var m = new(HashMap[K, V])
-	m.load_factor = 1.0
-	m.size = size[0]
-	m.indexes = make([]rapid.EntryPoint, size[0], size[0])
-	m.storage = rapid.New[K, V](size[0])
-	return m
+	return &HashMap[K, V]{
+		load_factor: 1.0,
+		size:        size[0],
+		indexes:     make([]rapid.EntryPoint, size[0], size[0]),
+		storage:     rapid.New[Pair[K, V]](size[0]),
+	}
 }
 
 func (c *HashMap[K, V]) Len() int {
@@ -46,24 +57,10 @@ func (c *HashMap[K, V]) SetLoadFactor(x float64) *HashMap[K, V] {
 }
 
 func (c *HashMap[K, V]) Hash(key *K) uint32 {
-	if unsafe.Sizeof(*key) == 16 {
-		return c.HashString(key)
-	}
-	return c.HashInt(key)
-}
-
-func (c *HashMap[K, V]) HashString(key *K) uint32 {
-	data := *(*[]byte)(unsafe.Pointer(key))
-	var hashCode uint32 = offset32
-	for _, c := range data {
-		hashCode *= prime32
-		hashCode ^= uint32(c)
-	}
-	return hashCode
-}
-
-func (c *HashMap[K, V]) HashInt(key *K) uint32 {
 	switch unsafe.Sizeof(*key) {
+	case 16:
+		data := *(*[]byte)(unsafe.Pointer(key))
+		return hash.NewFnv32(data)
 	case 8:
 		var x = *(*uint64)(unsafe.Pointer(key))
 		return uint32(x & (2<<32 - 1))
@@ -89,11 +86,12 @@ func (c *HashMap[K, V]) Insert(key K, val V) (replaced bool) {
 		entrypoint.Head = ptr
 		entrypoint.Tail = ptr
 	}
-	var data = new(rapid.Entry[K, V])
-	data.Key = key
-	data.Val = val
-	data.HashCode = hashCode
-	replaced = c.storage.Push(entrypoint, data)
+	var data = Pair[K, V]{
+		hashCode: hashCode,
+		Key:      key,
+		Val:      val,
+	}
+	replaced = c.storage.Push(entrypoint, &data)
 	return replaced
 }
 
@@ -126,7 +124,7 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 }
 
 // update directly
-func (c *HashMap[K, V]) ForEach(fn func(item *rapid.Entry[K, V]) (continued bool)) {
+func (c *HashMap[K, V]) ForEach(fn func(item *Pair[K, V]) (continued bool)) {
 	var n = len(c.storage.Buckets)
 	for i := 1; i < n; i++ {
 		var item = &c.storage.Buckets[i]
@@ -140,7 +138,7 @@ func (c *HashMap[K, V]) ForEach(fn func(item *rapid.Entry[K, V]) (continued bool
 
 func (c *HashMap[K, V]) Keys() []K {
 	var keys = make([]K, 0)
-	c.ForEach(func(item *rapid.Entry[K, V]) bool {
+	c.ForEach(func(item *Pair[K, V]) bool {
 		keys = append(keys, item.Key)
 		return true
 	})
@@ -149,7 +147,7 @@ func (c *HashMap[K, V]) Keys() []K {
 
 func (c *HashMap[K, V]) Values() []V {
 	var values = make([]V, 0)
-	c.ForEach(func(item *rapid.Entry[K, V]) bool {
+	c.ForEach(func(item *Pair[K, V]) bool {
 		values = append(values, item.Val)
 		return true
 	})

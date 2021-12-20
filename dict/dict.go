@@ -5,9 +5,13 @@ import (
 	"math"
 )
 
-type Pair struct {
+type Pair[T any] struct {
 	Key string
-	Val int
+	Val T
+}
+
+func (c Pair[T]) Equal(x *Pair[T]) bool {
+	return c.Key == x.Key
 }
 
 type Element struct {
@@ -18,7 +22,7 @@ type Element struct {
 type Dict[T any] struct {
 	index_length int // 8 Byte
 	root         *Element
-	storage      *rapid.Rapid[string, T]
+	storage      *rapid.Rapid[Pair[T]]
 }
 
 type iterator struct {
@@ -32,7 +36,7 @@ func New[T any]() *Dict[T] {
 	return &Dict[T]{
 		index_length: 8,
 		root:         &Element{Children: make([]*Element, sizes[0], sizes[0])},
-		storage:      rapid.New[string, T](8),
+		storage:      rapid.New[Pair[T]](8),
 	}
 }
 
@@ -50,7 +54,7 @@ func (c *Dict[T]) SetIndexLength(length int) {
 
 // insert with unique check
 func (c *Dict[T]) Insert(key string, val T) {
-	var data = rapid.Entry[string, T]{
+	var data = Pair[T]{
 		Key: key,
 		Val: val,
 	}
@@ -70,14 +74,14 @@ func (c *Dict[T]) Insert(key string, val T) {
 
 type match_params[T any] struct {
 	node    *Element
-	results []rapid.Entry[string, T]
+	results []Pair[T]
 	limit   int
 	prefix  string
 	length  int
 }
 
 // limit: -1 as unlimited
-func (c *Dict[T]) Match(prefix string, limit ...int) []rapid.Entry[string, T] {
+func (c *Dict[T]) Match(prefix string, limit ...int) []Pair[T] {
 	if len(limit) == 0 {
 		limit = []int{math.MaxInt}
 	}
@@ -88,7 +92,7 @@ func (c *Dict[T]) Match(prefix string, limit ...int) []rapid.Entry[string, T] {
 		if i.Cursor == i.End {
 			var params = match_params[T]{
 				node:    i.Node,
-				results: make([]rapid.Entry[string, T], 0),
+				results: make([]Pair[T], 0),
 				limit:   limit[0],
 				prefix:  prefix,
 				length:  len(prefix),
@@ -130,7 +134,7 @@ func (c *Dict[T]) Delete(key string) bool {
 	return false
 }
 
-func (c *Dict[T]) ForEach(fn func(item *rapid.Entry[string, T]) (continued bool)) {
+func (c *Dict[T]) ForEach(fn func(item *Pair[T]) (continued bool)) {
 	var n = len(c.storage.Buckets)
 	for i := 0; i < n; i++ {
 		if c.storage.Buckets[i].Ptr != 0 {

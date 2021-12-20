@@ -1,5 +1,7 @@
 package rapid
 
+import "github.com/lxzan/dao"
+
 type (
 	Pointer uint32
 
@@ -7,12 +9,6 @@ type (
 		Head Pointer
 		Tail Pointer
 	}
-
-	//Entry[K dao.Hashable[K], V any] struct {
-	//	HashCode uint32 // do not edit
-	//	Key      K
-	//	Val      V
-	//}
 
 	Iterator[T any] struct {
 		Ptr     Pointer
@@ -27,20 +23,21 @@ func (c *Iterator[T]) Reset() {
 	c.NextPtr = 0
 }
 
-type Rapid[T any] struct {
-	Equal      func(a, b *T) bool
+type Rapid[T dao.Equaler[T]] struct {
 	Serial     uint32
 	Recyclable array_stack // do not recycle head
 	Buckets    []Iterator[T]
 	Length     int
 }
 
-func New[T any](size uint32, equal func(a, b *T) bool) *Rapid[T] {
+func New[T dao.Equaler[T]](size ...uint32) *Rapid[T] {
+	if len(size) == 0 {
+		size = []uint32{8}
+	}
 	return &Rapid[T]{
-		Equal:      equal,
 		Serial:     1,
 		Recyclable: []Pointer{},
-		Buckets:    make([]Iterator[T], size+1),
+		Buckets:    make([]Iterator[T], size[0]+1),
 		Length:     0,
 	}
 }
@@ -83,7 +80,7 @@ func (c *Rapid[T]) Push(entrypoint *EntryPoint, data *T) (replaced bool) {
 	}
 
 	for i := head; !c.End(i); i = c.Next(i) {
-		if c.Equal(&i.Data, data) {
+		if i.Data.Equal(data) {
 			i.Data = *data
 			return true
 		}
@@ -158,7 +155,7 @@ func (c *Rapid[T]) Find(entrypoint EntryPoint, data *T) (result *Iterator[T], ex
 		return nil, false
 	}
 	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
-		if c.Equal(&i.Data, data) {
+		if i.Data.Equal(data) {
 			return i, true
 		}
 	}

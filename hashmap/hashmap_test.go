@@ -2,7 +2,6 @@ package hashmap
 
 import (
 	"github.com/lxzan/dao/internal/utils"
-	"github.com/lxzan/dao/rapid"
 	"testing"
 )
 
@@ -23,19 +22,19 @@ func TestHashMap(t *testing.T) {
 
 	for _, item := range testdata {
 		var val = utils.Rand.Int()
-		m1.Insert(string(item), val)
+		m1.Insert(item, val)
 		m2[item] = val
 	}
 
 	for i := 0; i < test_count/2; i++ {
-		m1.Delete(string(testdata[i]))
+		m1.Delete(testdata[i])
 		delete(m2, testdata[i])
 	}
 
 	for i := 0; i < test_count*2; i++ {
 		var key = utils.Alphabet.Generate(8)
 		var val = utils.Rand.Int()
-		m1.Insert(string(key), val)
+		m1.Insert(key, val)
 		m2[key] = val
 	}
 
@@ -48,7 +47,7 @@ func TestHashMap(t *testing.T) {
 	}
 
 	for k, v := range m2 {
-		v1, ok := m1.Find(string(k))
+		v1, ok := m1.Find(k)
 		if !ok || v1 != v {
 			t.Error("error!")
 		}
@@ -66,7 +65,7 @@ func TestHashMap_ForEach(t *testing.T) {
 	}
 
 	var sum = 0
-	m1.ForEach(func(item *rapid.Entry[string, int]) bool {
+	m1.ForEach(func(item *Pair[string, int]) bool {
 		sum++
 		if m2[item.Key] != item.Val {
 			t.Error("error!")
@@ -78,4 +77,14 @@ func TestHashMap_ForEach(t *testing.T) {
 		println(m1.Len(), len(m2))
 		t.Error("m1.length != m2.length")
 	}
+}
+
+func TestHashMap_Find(t *testing.T) {
+	var m = New[float64, int64]()
+	m.Insert(1.1, 1)
+	m.Insert(1.2, 1)
+	m.ForEach(func(item *Pair[float64, int64]) bool {
+		println(item.Key, item.Val)
+		return true
+	})
 }
