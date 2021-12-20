@@ -11,12 +11,10 @@ type entry struct {
 	Val int
 }
 
-func (c entry) Equal(data *entry) bool {
-	return c.Key == data.Key
-}
-
 func TestRapid_Push(t *testing.T) {
-	var queens1 = New[entry]()
+	var queens1 = New[entry](8, func(a, b *entry) bool {
+		return a.Key == b.Key
+	})
 	var queens2 = make([]*double_linkedlist.List[int], 0)
 	var entrypoints = make([]EntryPoint, 0)
 	for i := 0; i < 10; i++ {
@@ -53,7 +51,9 @@ func TestRapid_Push(t *testing.T) {
 }
 
 func TestRapid_Delete(t *testing.T) {
-	var queens1 = New[entry]()
+	var queens1 = New[entry](8, func(a, b *entry) bool {
+		return a.Key == b.Key
+	})
 	var queens2 = make([]*double_linkedlist.List[int], 0)
 	var entrypoints = make([]EntryPoint, 0)
 	for i := 0; i < 10; i++ {

@@ -8,14 +8,14 @@ import (
 
 const stree_count = 1000
 
-var stree *segment_tree.SegmentTree
+var stree *segment_tree.SegmentTree[int, segment_tree.Schema[int]]
 
 func init() {
 	var arr = make([]int, 0)
 	for i := 0; i < stree_count; i++ {
 		arr = append(arr, i)
 	}
-	stree = segment_tree.New(arr)
+	stree = segment_tree.New[int, segment_tree.Schema[int]](arr)
 }
 
 func BenchmarkSegmentTree_Query(b *testing.B) {

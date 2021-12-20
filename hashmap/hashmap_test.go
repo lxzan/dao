@@ -78,13 +78,3 @@ func TestHashMap_ForEach(t *testing.T) {
 		t.Error("m1.length != m2.length")
 	}
 }
-
-func TestHashMap_Find(t *testing.T) {
-	var m = New[float64, int64]()
-	m.Insert(1.1, 1)
-	m.Insert(1.2, 1)
-	m.ForEach(func(item *Pair[float64, int64]) bool {
-		println(item.Key, item.Val)
-		return true
-	})
-}

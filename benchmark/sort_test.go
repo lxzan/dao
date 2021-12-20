@@ -31,7 +31,7 @@ func BenchmarkSort_Quick(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		var arr = make([]int, n)
 		copy(arr, testdata)
-		algorithm.QuickSort(arr, asc)
+		algorithm.Sort(arr, asc)
 	}
 }
 

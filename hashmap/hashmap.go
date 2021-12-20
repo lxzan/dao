@@ -18,10 +18,6 @@ type Pair[K dao.Hashable[K], V any] struct {
 	Val      V
 }
 
-func (c Pair[K, V]) Equal(x *Pair[K, V]) bool {
-	return c.Key == x.Key
-}
-
 type HashMap[K dao.Hashable[K], V any] struct {
 	load_factor float64 // load_factor=1.0
 	size        uint32  // cap=2^n
@@ -43,7 +39,9 @@ func New[K dao.Hashable[K], V any](size ...uint32) *HashMap[K, V] {
 		load_factor: 1.0,
 		size:        size[0],
 		indexes:     make([]rapid.EntryPoint, size[0], size[0]),
-		storage:     rapid.New[Pair[K, V]](size[0]),
+		storage: rapid.New[Pair[K, V]](size[0], func(a, b *Pair[K, V]) bool {
+			return a.Key == b.Key
+		}),
 	}
 }
 
