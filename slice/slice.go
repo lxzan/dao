@@ -106,7 +106,7 @@ func (c *Slice[T]) Clear() {
 }
 
 func (c *Slice[T]) Sort(cmp func(a, b T) dao.Ordering) *Slice[T] {
-	algorithm.QuickSort(*c, cmp)
+	algorithm.Sort(*c, cmp)
 	return c
 }
 

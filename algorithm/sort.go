@@ -20,8 +20,8 @@ func IsSorted[T any](arr []T, cmp func(a, b T) dao.Ordering) bool {
 	return !(flag1 && flag2)
 }
 
-func QuickSort[T any](arr []T, cmp func(a, b T) dao.Ordering) {
-	quickSort[T](arr, 0, len(arr)-1, cmp)
+func Sort[T any](arr []T, cmp func(a, b T) dao.Ordering) {
+	QuickSort[T](arr, 0, len(arr)-1, cmp)
 }
 
 func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering) int {
@@ -43,7 +43,7 @@ func insertionSort[T any](arr []T, a, b int, cmp func(a, b T) dao.Ordering) {
 	}
 }
 
-func quickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering) {
+func QuickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering) {
 	if begin >= end {
 		return
 	}
@@ -64,6 +64,6 @@ func quickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering
 	}
 	arr[index], arr[begin] = arr[begin], arr[index]
 
-	quickSort(arr, begin, index-1, cmp)
-	quickSort(arr, index+1, end, cmp)
+	QuickSort(arr, begin, index-1, cmp)
+	QuickSort(arr, index+1, end, cmp)
 }

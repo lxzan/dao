@@ -1,7 +1,5 @@
 package rapid
 
-import "github.com/lxzan/dao"
-
 type (
 	Pointer uint32
 
@@ -10,65 +8,64 @@ type (
 		Tail Pointer
 	}
 
-	Entry[K dao.Hashable[K], V any] struct {
-		HashCode uint32 // do not edit
-		Key      K
-		Val      V
-	}
+	//Entry[K dao.Hashable[K], V any] struct {
+	//	HashCode uint32 // do not edit
+	//	Key      K
+	//	Val      V
+	//}
 
-	Iterator[K dao.Hashable[K], V any] struct {
+	Iterator[T any] struct {
 		Ptr     Pointer
 		PrevPtr Pointer
 		NextPtr Pointer
-		Data    Entry[K, V]
+		Data    T
 	}
 )
 
-func (c *Iterator[K, V]) Reset() {
+func (c *Iterator[T]) Reset() {
 	c.Ptr = 0
 	c.NextPtr = 0
 }
 
-type Rapid[K dao.Hashable[K], V any] struct {
+type Rapid[T any] struct {
+	Equal      func(a, b *T) bool
 	Serial     uint32
 	Recyclable array_stack // do not recycle head
-	Buckets    []Iterator[K, V]
+	Buckets    []Iterator[T]
 	Length     int
 }
 
-func New[K dao.Hashable[K], V any](size ...uint32) *Rapid[K, V] {
-	if len(size) == 0 {
-		size = []uint32{8}
+func New[T any](size uint32, equal func(a, b *T) bool) *Rapid[T] {
+	return &Rapid[T]{
+		Equal:      equal,
+		Serial:     1,
+		Recyclable: []Pointer{},
+		Buckets:    make([]Iterator[T], size+1),
+		Length:     0,
 	}
-	var object = new(Rapid[K, V])
-	object.Length = 0
-	object.Serial = 1
-	object.Buckets = make([]Iterator[K, V], size[0]+1)
-	object.Recyclable = []Pointer{}
-	return object
 }
 
-func (c Rapid[K, V]) Begin(entrypoint EntryPoint) *Iterator[K, V] {
+func (c Rapid[T]) Begin(entrypoint EntryPoint) *Iterator[T] {
 	return &c.Buckets[entrypoint.Head]
 }
 
-func (c Rapid[K, V]) Next(iter *Iterator[K, V]) *Iterator[K, V] {
+func (c Rapid[T]) Next(iter *Iterator[T]) *Iterator[T] {
 	return &c.Buckets[iter.NextPtr]
 }
 
-func (c Rapid[K, V]) End(iter *Iterator[K, V]) bool {
+func (c Rapid[T]) End(iter *Iterator[T]) bool {
 	return iter.Ptr == 0
 }
 
 // NextID apply a pointer
-func (c *Rapid[K, V]) NextID() Pointer {
+func (c *Rapid[T]) NextID() Pointer {
 	if c.Recyclable.Len() > 0 {
 		return c.Recyclable.Pop()
 	}
 
 	var result = c.Serial
 	if result >= uint32(len(c.Buckets)) {
-		var ele Iterator[K, V]
+		var ele Iterator[T]
 		c.Buckets = append(c.Buckets, ele)
 	}
 	c.Serial++
@@ -76,7 +73,7 @@ func (c *Rapid[K, V]) NextID() Pointer {
 }
 
 // Push append an element with unique check
-func (c *Rapid[K, V]) Push(entrypoint *EntryPoint, data *Entry[K, V]) (replaced bool) {
+func (c *Rapid[T]) Push(entrypoint *EntryPoint, data *T) (replaced bool) {
 	var head = &c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 {
 		head.Ptr = entrypoint.Head
@@ -86,7 +83,7 @@ func (c *Rapid[K, V]) Push(entrypoint *EntryPoint, data *Entry[K, V]) (replaced 
 	}
 
 	for i := head; !c.End(i); i = c.Next(i) {
-		if i.Data.Key == data.Key {
+		if c.Equal(&i.Data, data) {
 			i.Data = *data
 			return true
 		}
@@ -105,7 +102,7 @@ func (c *Rapid[K, V]) Push(entrypoint *EntryPoint, data *Entry[K, V]) (replaced 
 }
 
 // Append append an element without unique check
-func (c *Rapid[K, V]) Append(entrypoint *EntryPoint, data *Entry[K, V]) {
+func (c *Rapid[T]) Append(entrypoint *EntryPoint, data *T) {
 	var head = &c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 {
 		head.Ptr = entrypoint.Head
@@ -126,7 +123,7 @@ func (c *Rapid[K, V]) Append(entrypoint *EntryPoint, data *Entry[K, V]) {
 }
 
 // Delete do not delete in loop if no break
-func (c *Rapid[K, V]) Delete(entrypoint *EntryPoint, target *Iterator[K, V]) (deleted bool) {
+func (c *Rapid[T]) Delete(entrypoint *EntryPoint, target *Iterator[T]) (deleted bool) {
 	var head = c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 || target == nil || target.Ptr == 0 {
 		return false
@@ -156,12 +153,12 @@ func (c *Rapid[K, V]) Delete(entrypoint *EntryPoint, target *Iterator[K, V]) (de
 	return true
 }
 
-func (c *Rapid[K, V]) Find(entrypoint EntryPoint, key *K) (result *Iterator[K, V], exist bool) {
+func (c *Rapid[T]) Find(entrypoint EntryPoint, data *T) (result *Iterator[T], exist bool) {
 	if entrypoint.Head == 0 {
 		return nil, false
 	}
 	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
-		if i.Data.Key == *key {
+		if c.Equal(&i.Data, data) {
 			return i, true
 		}
 	}

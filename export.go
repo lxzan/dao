@@ -28,17 +28,19 @@ func DESC[T Comparable[T]](a, b T) Ordering {
 	}
 }
 
-type Comparable[T any] interface{ string | ~int | ~uint }
+type Comparable[T any] interface {
+	string | ~int | ~uint | float64 | float32 | byte
+}
 
 type Number[T any] interface {
-	~int | ~uint | float32 | float64
+	~int | ~uint | float32 | float64 | byte
 }
 
 type Integer[T any] interface {
 	~int | ~uint
 }
 
-type Hashable[T any] interface{ string | ~int | ~uint }
+type Hashable[T any] interface{ string | ~int | ~uint | byte }
 
 type Hasher32[T any] interface {
 	GetHashCode() uint32
