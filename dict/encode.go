@@ -22,6 +22,9 @@ func (c *Dict[T]) begin(key string, initialize bool) *iterator {
 		iter.Bytes[i] = key[i] & (sizes[i] - 1)
 	}
 	iter.End = len(iter.Bytes)
+	if key == "" {
+		return iter
+	}
 
 	var idx = iter.Bytes[iter.Cursor]
 	iter.Cursor++

@@ -2,25 +2,37 @@ package heap
 
 import "github.com/lxzan/dao"
 
-func MinHeap[T dao.Comparable[T]](a, b T) bool {
-	return a < b
-}
-
-func MaxHeap[T dao.Comparable[T]](a, b T) bool {
-	return a > b
-}
-
-func New[T any](cap int, less func(a, b T) bool) *Heap[T] {
-	return &Heap[T]{
-		Data: make([]T, 0, cap),
-		Less: less,
+func MinHeap[T dao.Comparable[T]](a, b T) dao.Ordering {
+	if a > b {
+		return dao.Greater
+	} else if a < b {
+		return dao.Less
+	} else {
+		return dao.Equal
 	}
 }
 
-func Init[T any](arr []T, less func(a, b T) bool) *Heap[T] {
+func MaxHeap[T dao.Comparable[T]](a, b T) dao.Ordering {
+	if a > b {
+		return dao.Less
+	} else if a < b {
+		return dao.Greater
+	} else {
+		return dao.Equal
+	}
+}
+
+func New[T any](cap int, cmp func(a, b T) dao.Ordering) *Heap[T] {
+	return &Heap[T]{
+		Data: make([]T, 0, cap),
+		Cmp:  cmp,
+	}
+}
+
+func Init[T any](arr []T, cmp func(a, b T) dao.Ordering) *Heap[T] {
 	var h = &Heap[T]{
 		Data: arr,
-		Less: less,
+		Cmp:  cmp,
 	}
 	var n = len(arr)
 	for i := 1; i < n; i++ {
@@ -31,7 +43,7 @@ func Init[T any](arr []T, less func(a, b T) bool) *Heap[T] {
 
 type Heap[T any] struct {
 	Data []T
-	Less func(a, b T) bool
+	Cmp  func(a, b T) dao.Ordering
 }
 
 func (c Heap[T]) Len() int {
@@ -51,7 +63,7 @@ func (c *Heap[T]) Push(eles ...T) {
 
 func (c *Heap[T]) Up(i int) {
 	var j = (i - 1) / 2
-	if j >= 0 && c.Less(c.Data[i], c.Data[j]) {
+	if j >= 0 && c.Cmp(c.Data[i], c.Data[j]) == dao.Less {
 		c.Swap(i, j)
 		c.Up(j)
 	}
@@ -68,12 +80,12 @@ func (c *Heap[T]) Pop() T {
 
 func (c *Heap[T]) Down(i, n int) {
 	var j = 2*i + 1
-	if j < n && c.Less(c.Data[j], c.Data[i]) {
+	if j < n && c.Cmp(c.Data[j], c.Data[i]) == dao.Less {
 		c.Swap(i, j)
 		c.Down(j, n)
 	}
 	var k = 2*i + 2
-	if k < n && c.Less(c.Data[k], c.Data[i]) {
+	if k < n && c.Cmp(c.Data[k], c.Data[i]) == dao.Less {
 		c.Swap(i, k)
 		c.Down(k, n)
 	}
@@ -89,4 +101,44 @@ func (c *Heap[T]) Sort() []T {
 		c.Swap(0, 1)
 	}
 	return c.Data
+}
+
+func (c *Heap[T]) Find(target T) (result T, exist bool) {
+	var q = find_param[T]{
+		Length: c.Len(),
+		Target: target,
+		Result: result,
+		Exist:  false,
+	}
+	c.do_find(0, &q)
+	return q.Result, q.Exist
+}
+
+type find_param[T any] struct {
+	Length int
+	Target T
+	Result T
+	Exist  bool
+}
+
+func (c Heap[T]) do_find(i int, q *find_param[T]) {
+	if q.Exist {
+		return
+	}
+
+	if c.Cmp(c.Data[i], q.Target) == dao.Equal {
+		q.Result = c.Data[i]
+		q.Exist = true
+		return
+	}
+
+	var j = 2*i + 1
+	if j < q.Length && c.Cmp(c.Data[j], q.Target) != dao.Greater {
+		c.do_find(j, q)
+	}
+
+	var k = 2*i + 2
+	if k < q.Length && c.Cmp(c.Data[k], q.Target) != dao.Greater {
+		c.do_find(k, q)
+	}
 }

@@ -11,9 +11,10 @@ func IsSorted[T any](arr []T, cmp func(a, b T) dao.Ordering) bool {
 	var flag1 = false
 	var flag2 = false
 	for i := 1; i < n; i++ {
-		if cmp(arr[i], arr[i-1]) == dao.Less {
+		var result = cmp(arr[i], arr[i-1])
+		if result == dao.Less {
 			flag1 = true
-		} else if cmp(arr[i], arr[i-1]) == dao.Greater {
+		} else if result == dao.Greater {
 			flag2 = true
 		}
 	}
@@ -56,8 +57,8 @@ func QuickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering
 	var mid = getMedium(arr, begin, end, cmp)
 	arr[mid], arr[begin] = arr[begin], arr[mid]
 	for i := begin + 1; i <= end; i++ {
-		var order = cmp(arr[i], arr[begin])
-		if order == dao.Less || (order == dao.Equal && i%2 == 0) {
+		var flag = cmp(arr[i], arr[begin])
+		if flag == dao.Less || (flag == dao.Equal && i%2 == 0) {
 			index++
 			arr[index], arr[i] = arr[i], arr[index]
 		}

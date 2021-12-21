@@ -2,6 +2,7 @@ package heap
 
 import (
 	"github.com/lxzan/dao/internal/utils"
+	"math/rand"
 	"sort"
 	"testing"
 )
@@ -61,5 +62,29 @@ func TestHeap_Sort(t *testing.T) {
 	sort.Strings(arr1)
 	if !utils.SameStrings(arr1, arr2) {
 		t.Fatal("error!")
+	}
+}
+
+func TestHeap_Find(t *testing.T) {
+	var count = 10000
+	var h = New[int](count, MaxHeap[int])
+	var m = make(map[int]int)
+	for i := 0; i < count; i++ {
+		var val = rand.Intn(count * 2)
+		m[val] = val
+	}
+	for k, _ := range m {
+		h.Push(k)
+	}
+
+	for i := 0; i < 2*count; i++ {
+		v1, ok1 := m[i]
+		v2, ok2 := h.Find(i)
+		if ok1 != ok2 {
+			t.Fatal("error!")
+		}
+		if ok1 && ok2 && v1 != v2 {
+			t.Fatal("error!")
+		}
 	}
 }

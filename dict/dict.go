@@ -101,8 +101,10 @@ func (c *Dict[T]) doMatch(node *Element, params *match_params[T]) {
 			params.results = append(params.results, i.Data)
 		}
 	}
-	for _, item := range node.Children {
-		c.doMatch(item, params)
+	if params.prefix != "" {
+		for _, item := range node.Children {
+			c.doMatch(item, params)
+		}
 	}
 }
 
