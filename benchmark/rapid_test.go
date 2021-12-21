@@ -36,11 +36,11 @@ func BenchmarkRapid_Append(b *testing.B) {
 		var id2 = r.NextID()
 		var q2 = rapid.EntryPoint{Head: id2, Tail: id2}
 
-		for i := 0; i < bench_count/2; i++ {
-			r.Append(&q1, &arr[i], &val)
+		for j := 0; j < bench_count/2; j++ {
+			r.Append(&q1, &arr[j], &val)
 		}
-		for i := 0; i < bench_count/2; i++ {
-			r.Append(&q2, &arr[bench_count/2+i], &val)
+		for j := 0; j < bench_count/2; j++ {
+			r.Append(&q2, &arr[bench_count/2+j], &val)
 		}
 	}
 	b.StopTimer()
