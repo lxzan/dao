@@ -13,11 +13,11 @@ cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 ```
 
 | Container        | Operate            | Elements | ns/op | allocs/op |
-| ---------------- | ------------------ | -------- | ----- | --------- |
+| ---------------- | ------------------ | -------- |-------| --------- |
 | DoubleLinkedList | RPush              | 1,000    | 29.7  | 1000      |
 | Dict             | Insert             | 1,000    | 651.6 | 11006     |
 | Dict             | Delete             | 1,000    | 59.3  | 1000      |
-| Dict             | Match (limit 10)   | 1,000    | 1532  | 5697      |
+| Dict             | Match (limit 10)   | 1,000    | 41.3  | 5697      |
 | HashMap          | Set                | 1,000    | 36.7  | 5         |
 | Go Map           | Set                | 1,000    | 38.1  | 2         |
 | HashMap          | Get                | 1,000    | 17.0  | 0         |
@@ -32,23 +32,23 @@ cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 
 
 
-| Container        | Operate            | Elements     | ns/op     | allocs/op |
-| ---------------- | ------------------ | --------     | --------- | --------- |
-| DoubleLinkedList | RPush              | 1,000,000    | 42.5 | 1,000,000 |
-| Dict             | Insert             | 1,000,000    | 1196.2 | 6,370,600 |
-| Dict             | Delete             | 1,000,000    | 1673.7 | 7,370,623 |
-| Dict             | Match (limit 10)   | 1,000,000    | 3667.6 | 14,849,896 |
-| HashMap          | Set                | 1,000,000    | 127.4 | 5 |
-| Go Map           | Set                | 1,000,000    | 112.3 | 2 |
-| HashMap          | Get                | 1,000,000    | 116.0 | 0 |
-| Go Map           | Get                | 1,000,000    | 99.2 | 0 |
-| RBTree           | Insert             | 1,000,000    | 449.2 | 2,000,001 |
-| RBTree           | Find               | 1,000,000    | 251.9 | 1,400,000 |
-| RBTree           | Delete             | 1,000,000    | 574.6 | 4,000,001 |
-| RBTree           | Between (limit 10) | 1,000,000    | 3813.4 | 5,000,001 |
-| SegmentTree      | Query              | 1,000,000    | 1834.9 | 2,000,038 |
-| SegmentTree      | Update             | 1,000,000    | 1051.6 | 2,000,038 |
-| Heap             | Push               | 1,000,000    | 37.8 | 33 |
+| Container        | Operate            | Elements     | ns/op   | allocs/op  |
+| ---------------- | ------------------ | --------     |---------|------------|
+| DoubleLinkedList | RPush              | 1,000,000    | 42.5    | 1,000,000  |
+| Dict             | Insert             | 1,000,000    | 1196.2  | 6,370,600  |
+| Dict             | Delete             | 1,000,000    | 1673.7  | 7,370,623  |
+| Dict             | Match (limit 10)   | 1,000,000    | 2247.6  | 14,849,896 |
+| HashMap          | Set                | 1,000,000    | 127.4   | 5          |
+| Go Map           | Set                | 1,000,000    | 112.3   | 2          |
+| HashMap          | Get                | 1,000,000    | 116.0   | 0          |
+| Go Map           | Get                | 1,000,000    | 99.2    | 0          |
+| RBTree           | Insert             | 1,000,000    | 449.2   | 2,000,001  |
+| RBTree           | Find               | 1,000,000    | 251.9   | 1,400,000  |
+| RBTree           | Delete             | 1,000,000    | 574.6   | 4,000,001  |
+| RBTree           | Between (limit 10) | 1,000,000    | 3813.4  | 5,000,001  |
+| SegmentTree      | Query              | 1,000,000    | 1834.9  | 2,000,038  |
+| SegmentTree      | Update             | 1,000,000    | 1051.6  | 2,000,038  |
+| Heap             | Push               | 1,000,000    | 37.8    | 33         |
 
 ### HashMap
 
@@ -64,8 +64,8 @@ func main() {
 	m.Set("hello", 1)
 	m.Set("world", 2)
 	m.Set("!", 3)
-	m.ForEach(func(item *hashmap.Pair[string, int]) (continued bool) {
-		println(item.Key)
+	m.ForEach(func(key string, val int) (continued bool) {
+		println(key)
 		return true
 	})
 }

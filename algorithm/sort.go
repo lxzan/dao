@@ -67,3 +67,33 @@ func QuickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering
 	QuickSort(arr, begin, index-1, cmp)
 	QuickSort(arr, index+1, end, cmp)
 }
+
+// not exist return -1
+func BinarySearch[T any](arr []T, target T, cmp func(a, b T) dao.Ordering) int {
+	var n = len(arr)
+	if n == 0 {
+		return -1
+	}
+
+	var left = 0
+	var right = n - 1
+	for right-left > 1 {
+		var mid = (left + right) / 2
+		var flag = cmp(arr[mid], target)
+		if flag == dao.Equal {
+			return mid
+		} else if flag == dao.Greater {
+			right = mid
+		} else {
+			left = mid
+		}
+	}
+
+	if cmp(arr[left], target) == dao.Equal {
+		return left
+	} else if cmp(arr[right], target) == dao.Equal {
+		return right
+	} else {
+		return -1
+	}
+}

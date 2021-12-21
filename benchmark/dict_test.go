@@ -18,12 +18,13 @@ func BenchmarkDict_Insert(b *testing.B) {
 func BenchmarkDict_Match(b *testing.B) {
 	var d = dict.New[int]()
 	for j := 0; j < bench_count; j++ {
-		d.Insert(utils.Numeric.Generate(8), testvals[j])
+		var length = utils.Rand.Intn(16) + 1
+		d.Insert(utils.Numeric.Generate(length), testvals[j])
 	}
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		var prefix = utils.Numeric.Generate(2)
+		var prefix = utils.Numeric.Generate(4)
 		for j := 0; j < bench_count; j++ {
 			d.Match(prefix, 10)
 		}

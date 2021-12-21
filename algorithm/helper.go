@@ -23,18 +23,20 @@ func Min[T dao.Comparable[T]](a, b T) T {
 	return b
 }
 
-func Unique[T any, K dao.Hashable[K]](arr []T, getKey func(x T) K) []T {
-	var n = len(arr)
-	var results = make([]T, 0, n)
+func Unique[T any, K dao.Hashable[K]](arr *[]T, getKey func(x T) K) {
+	var n = len(*arr)
 	var m = make(map[K]T, n)
-	for i, _ := range arr {
-		var key = getKey(arr[i])
-		m[key] = arr[i]
+	for i, _ := range *arr {
+		var key = getKey((*arr)[i])
+		m[key] = (*arr)[i]
 	}
+
+	var i = 0
 	for _, v := range m {
-		results = append(results, v)
+		(*arr)[i] = v
+		i++
 	}
-	return results
+	*arr = (*arr)[:i]
 }
 
 func Fill[T any](arr []T, v T) {
