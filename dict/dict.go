@@ -2,6 +2,7 @@ package dict
 
 import (
 	"github.com/lxzan/dao/rapid"
+	"github.com/lxzan/dao/slice"
 	"math"
 )
 
@@ -21,13 +22,6 @@ type Dict[T any] struct {
 	storage      *rapid.Rapid[Pair[T]]
 }
 
-type iterator struct {
-	Node   *Element
-	Bytes  []byte
-	Cursor int
-	End    int
-}
-
 func New[T any]() *Dict[T] {
 	return &Dict[T]{
 		index_length: 8,
@@ -42,7 +36,7 @@ func (c *Dict[T]) Len() int {
 	return c.storage.Length
 }
 
-// length<=16
+// length<=32
 func (c *Dict[T]) SetIndexLength(length int) {
 	if length <= 0 {
 		length = 8
@@ -52,7 +46,7 @@ func (c *Dict[T]) SetIndexLength(length int) {
 
 // insert with unique check
 func (c *Dict[T]) Insert(key string, val T) {
-	for i := c.begin(c.new_iterator(key), true); true; i = c.next(i, true) {
+	for i := c.begin(key, true); true; i = c.next(i, true) {
 		if i.Cursor == i.End {
 			var entrypoint = &i.Node.EntryPoint
 			if entrypoint.Head == 0 {
@@ -75,11 +69,11 @@ type match_params[T any] struct {
 }
 
 // limit: -1 as unlimited
-func (c *Dict[T]) Match(prefix string, limit ...int) []Pair[T] {
+func (c *Dict[T]) Match(prefix string, limit ...int) slice.Slice[Pair[T]] {
 	if len(limit) == 0 {
 		limit = []int{math.MaxInt}
 	}
-	for i := c.begin(c.new_iterator(prefix), false); !c.end(i); i = c.next(i, false) {
+	for i := c.begin(prefix, false); !c.end(i); i = c.next(i, false) {
 		if i.Node == nil {
 			return nil
 		}
@@ -113,7 +107,7 @@ func (c *Dict[T]) doMatch(node *Element, params *match_params[T]) {
 }
 
 func (c *Dict[T]) Delete(key string) bool {
-	for i := c.begin(c.new_iterator(key), false); !c.end(i); i = c.next(i, false) {
+	for i := c.begin(key, false); !c.end(i); i = c.next(i, false) {
 		if i.Node == nil {
 			return false
 		}

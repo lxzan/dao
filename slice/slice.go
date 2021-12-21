@@ -87,11 +87,12 @@ func (c *Slice[T]) Swap(i, j int) {
 	(*c)[i], (*c)[j] = (*c)[j], (*c)[i]
 }
 
-func (c *Slice[T]) Reverse() {
+func (c *Slice[T]) Reverse() *Slice[T] {
 	var n = c.Len()
 	for i := 0; i < n/2; i++ {
 		c.Swap(i, n-i-1)
 	}
+	return c
 }
 
 func (c *Slice[T]) Delete(i int) {
@@ -120,6 +121,24 @@ func (c Slice[T]) ForEach(fn func(index int, value T)) {
 
 func (c *Slice[T]) Range(i, j int) Slice[T] {
 	return (*c)[i:j]
+}
+
+func (c *Slice[T]) Unique(cmp func(a, b T) dao.Ordering) *Slice[T] {
+	var n = c.Len()
+	if n == 0 {
+		return c
+	}
+
+	c.Sort(cmp)
+	var results = New[T](0, n)
+	results.Push((*c)[0])
+	for i := 1; i < n; i++ {
+		if cmp((*c)[i], (*c)[i-1]) != dao.Equal {
+			results.Push((*c)[i])
+		}
+	}
+	*c = results
+	return c
 }
 
 func (c *Slice[T]) Filter(fn func(ele T) bool) *Slice[T] {

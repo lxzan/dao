@@ -8,6 +8,8 @@ import (
 	"unsafe"
 )
 
+const max_uint32 = 2<<32 - 1
+
 type Pair[K dao.Hashable[K], V any] struct {
 	hashCode uint32
 	Key      K
@@ -62,7 +64,7 @@ func (c *HashMap[K, V]) Hash(key *K) uint32 {
 		return hash.NewFnv32(data)
 	case 8:
 		var x = *(*uint64)(unsafe.Pointer(key))
-		return uint32(x & (2<<32 - 1))
+		return uint32(x & max_uint32)
 	case 4:
 		return *(*uint32)(unsafe.Pointer(key))
 	case 2:
