@@ -3,10 +3,6 @@ package rapid
 type (
 	Pointer uint32
 
-	//Equaler[T any] interface {
-	//	Equal(x *T) bool
-	//}
-
 	EntryPoint struct {
 		Head Pointer
 		Tail Pointer
@@ -34,9 +30,6 @@ type Rapid[T any] struct {
 }
 
 func New[T any](size uint32, eq func(a, b *T) bool) *Rapid[T] {
-	//if len(size) == 0 {
-	//	size = []uint32{8}
-	//}
 	return &Rapid[T]{
 		Serial:     1,
 		Recyclable: []Pointer{},

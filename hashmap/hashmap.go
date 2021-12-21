@@ -85,12 +85,36 @@ func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
 		entrypoint.Head = ptr
 		entrypoint.Tail = ptr
 	}
-	replaced = c.storage.Push(entrypoint, &Pair[K, V]{
-		hashCode: hashCode,
-		Key:      key,
-		Val:      val,
-	})
-	return replaced
+
+	//var pair = Pair[K, V]{hashCode: hashCode, Key: key, Val: val}
+	//replaced = c.storage.Push(entrypoint, &pair)
+	//return replaced
+
+	var head = &c.storage.Buckets[entrypoint.Head]
+	if head.Ptr == 0 {
+		head.Ptr = entrypoint.Head
+		head.Data = Pair[K, V]{hashCode: hashCode, Key: key, Val: val}
+		c.storage.Length++
+		return false
+	}
+
+	for i := head; !c.storage.End(i); i = c.storage.Next(i) {
+		if i.Data.Key == key {
+			i.Data.Val = val
+			return true
+		}
+	}
+
+	var cursor = c.storage.NextID()
+	var tail = &c.storage.Buckets[entrypoint.Tail]
+	tail.NextPtr = cursor
+	entrypoint.Tail = cursor
+	var target = &c.storage.Buckets[cursor]
+	target.Ptr = cursor
+	target.Data = Pair[K, V]{hashCode: hashCode, Key: key, Val: val}
+	target.PrevPtr = tail.Ptr
+	c.storage.Length++
+	return false
 }
 
 // find one

@@ -18,7 +18,7 @@ type Element struct {
 type Dict[T any] struct {
 	index_length int // 8 Byte
 	root         *Element
-	storage      *rapid.Rapid[string, T]
+	storage      *rapid.Rapid[Pair[T]]
 }
 
 type iterator struct {
@@ -32,7 +32,9 @@ func New[T any]() *Dict[T] {
 	return &Dict[T]{
 		index_length: 8,
 		root:         &Element{Children: make([]*Element, sizes[0], sizes[0])},
-		storage:      rapid.New[string, T](),
+		storage: rapid.New[Pair[T]](8, func(a, b *Pair[T]) bool {
+			return a.Key == b.Key
+		}),
 	}
 }
 
@@ -58,7 +60,7 @@ func (c *Dict[T]) Insert(key string, val T) {
 				entrypoint.Head = ptr
 				entrypoint.Tail = ptr
 			}
-			c.storage.Push(entrypoint, &key, &val)
+			c.storage.Push(entrypoint, &Pair[T]{Key: key, Val: val})
 			break
 		}
 	}
@@ -101,11 +103,8 @@ func (c *Dict[T]) doMatch(node *Element, params *match_params[T]) {
 		return
 	}
 	for i := c.storage.Begin(node.EntryPoint); !c.storage.End(i); i = c.storage.Next(i) {
-		if len(i.Key) >= params.length && i.Key[:params.length] == params.prefix {
-			params.results = append(params.results, Pair[T]{
-				Key: i.Key,
-				Val: i.Data,
-			})
+		if len(i.Data.Key) >= params.length && i.Data.Key[:params.length] == params.prefix {
+			params.results = append(params.results, i.Data)
 		}
 	}
 	for _, item := range node.Children {
@@ -120,7 +119,7 @@ func (c *Dict[T]) Delete(key string) bool {
 		}
 		if i.Cursor == i.End {
 			for j := c.storage.Begin(i.Node.EntryPoint); !c.storage.End(j); j = c.storage.Next(j) {
-				if j.Key == key {
+				if j.Data.Key == key {
 					return c.storage.Delete(&i.Node.EntryPoint, j)
 				}
 			}
@@ -129,12 +128,12 @@ func (c *Dict[T]) Delete(key string) bool {
 	return false
 }
 
-func (c *Dict[T]) ForEach(fn func(key string, val *T) (continued bool)) {
+func (c *Dict[T]) ForEach(fn func(key string, val T) (continued bool)) {
 	var n = len(c.storage.Buckets)
 	for i := 0; i < n; i++ {
 		if c.storage.Buckets[i].Ptr != 0 {
 			var item = &c.storage.Buckets[i]
-			if !fn(item.Key, &item.Data) {
+			if !fn(item.Data.Key, item.Data.Val) {
 				break
 			}
 		}

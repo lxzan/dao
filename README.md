@@ -14,41 +14,41 @@ cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 
 | Container        | Operate            | Elements | ns/op | allocs/op |
 | ---------------- | ------------------ | -------- | ----- | --------- |
-| DoubleLinkedList | RPush              | 1,000    | 29.7  |           |
-| Dict             | Insert             | 1,000    | 651.6 |           |
-| Dict             | Delete             | 1,000    | 59.3  |           |
-| Dict             | Match (limit 10)   | 1,000    | 1532  |           |
-| HashMap          | Set                | 1,000    | 36.7  |           |
-| Go Map           | Set                | 1,000    | 38.1  |           |
-| HashMap          | Get                | 1,000    | 17.0  |           |
-| Go Map           | Get                | 1,000    | 19.3  |           |
-| RBTree           | Insert             | 1,000    | 341.7 |           |
-| RBTree           | Find               | 1,000    | 138.4 |           |
-| RBTree           | Delete             | 1,000    | 377.4 |           |
-| RBTree           | Between (limit 10) | 1,000    | 777.7 |           |
-| SegmentTree      | Query              | 1,000    | 190.8 |           |
-| SegmentTree      | Update             | 1,000    | 144.3 |           |
-| Heap             | Push               | 1,000    | 63.8  |           |
+| DoubleLinkedList | RPush              | 1,000    | 29.7  | 1000      |
+| Dict             | Insert             | 1,000    | 651.6 | 11006     |
+| Dict             | Delete             | 1,000    | 59.3  | 1000      |
+| Dict             | Match (limit 10)   | 1,000    | 1532  | 5697      |
+| HashMap          | Set                | 1,000    | 36.7  | 5         |
+| Go Map           | Set                | 1,000    | 38.1  | 2         |
+| HashMap          | Get                | 1,000    | 17.0  | 0         |
+| Go Map           | Get                | 1,000    | 19.3  | 0         |
+| RBTree           | Insert             | 1,000    | 341.7 | 2001      |
+| RBTree           | Find               | 1,000    | 138.4 | 2000      |
+| RBTree           | Delete             | 1,000    | 377.4 | 1000      |
+| RBTree           | Between (limit 10) | 1,000    | 777.7 | 4001      |
+| SegmentTree      | Query              | 1,000    | 190.8 | 0         |
+| SegmentTree      | Update             | 1,000    | 144.3 | 0         |
+| Heap             | Push               | 1,000    | 63.8  | 1         |
 
 
 
 | Container        | Operate            | Elements     | ns/op     | allocs/op |
 | ---------------- | ------------------ | --------     | --------- | --------- |
-| DoubleLinkedList | RPush              | 1,000,000    | 42.5 |           |
-| Dict             | Insert             | 1,000,000    | 1196.2 |           |
-| Dict             | Delete             | 1,000,000    | 1673.7 |           |
-| Dict             | Match (limit 10)   | 1,000,000    | 3667.6 |           |
-| HashMap          | Set                | 1,000,000    | 141.9 |           |
-| Go Map           | Set                | 1,000,000    | 122.3 |           |
-| HashMap          | Get                | 1,000,000    | 116.0 |           |
-| Go Map           | Get                | 1,000,000    | 91.3 |           |
-| RBTree           | Insert             | 1,000,000    | 449.2 |           |
-| RBTree           | Find               | 1,000,000    | 251.9 |           |
-| RBTree           | Delete             | 1,000,000    | 574.6 |           |
-| RBTree           | Between (limit 10) | 1,000,000    | 3813.4 |           |
-| SegmentTree      | Query              | 1,000,000    | 1834.9 |           |
-| SegmentTree      | Update             | 1,000,000    | 1051.6 |           |
-| Heap             | Push               | 1,000,000    | 37.8 |           |
+| DoubleLinkedList | RPush              | 1,000,000    | 42.5 | 1,000,000 |
+| Dict             | Insert             | 1,000,000    | 1196.2 | 6,370,600 |
+| Dict             | Delete             | 1,000,000    | 1673.7 | 7,370,623 |
+| Dict             | Match (limit 10)   | 1,000,000    | 3667.6 | 14,849,896 |
+| HashMap          | Set                | 1,000,000    | 127.4 | 5 |
+| Go Map           | Set                | 1,000,000    | 112.3 | 2 |
+| HashMap          | Get                | 1,000,000    | 116.0 | 0 |
+| Go Map           | Get                | 1,000,000    | 99.2 | 0 |
+| RBTree           | Insert             | 1,000,000    | 449.2 | 2,000,001 |
+| RBTree           | Find               | 1,000,000    | 251.9 | 1,400,000 |
+| RBTree           | Delete             | 1,000,000    | 574.6 | 4,000,001 |
+| RBTree           | Between (limit 10) | 1,000,000    | 3813.4 | 5,000,001 |
+| SegmentTree      | Query              | 1,000,000    | 1834.9 | 2,000,038 |
+| SegmentTree      | Update             | 1,000,000    | 1051.6 | 2,000,038 |
+| Heap             | Push               | 1,000,000    | 37.8 | 33 |
 
 ### HashMap
 

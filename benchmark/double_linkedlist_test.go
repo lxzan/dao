@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func BenchmarkList_RPush(b *testing.B) {
+func BenchmarkDoubleLinkedList_RPush(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		list := double_linkedlist.New[int]()
 		for j := 0; j < bench_count; j++ {
@@ -14,7 +14,7 @@ func BenchmarkList_RPush(b *testing.B) {
 	}
 }
 
-func BenchmarkList_LPop(b *testing.B) {
+func BenchmarkDoubleLinkedList_LPop(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		list := double_linkedlist.New[int]()
 		for j := 0; j < bench_count; j++ {
