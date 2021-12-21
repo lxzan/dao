@@ -158,7 +158,7 @@ func TestRBTree_Between(t *testing.T) {
 			LeftFilter:  func(d *entry) bool { return d.Key >= left },
 			RightFilter: func(d *entry) bool { return d.Key <= right },
 			Limit:       limit,
-			Order:       ASC,
+			Order:       DESC,
 		})
 		var keys2 = make([]string, 0)
 		for k, _ := range m {
@@ -167,11 +167,12 @@ func TestRBTree_Between(t *testing.T) {
 			}
 		}
 		sort.Strings(keys2)
+		algorithm.Reverse(keys2)
 		if len(keys2) > limit {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetKeys(keys1, func(x *entry) string {
+		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *entry) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -203,6 +204,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 		var keys1 = tree.Query(&QueryBuilder[entry]{
 			LeftFilter: func(d *entry) bool { return d.Key >= left },
 			Limit:      limit,
+			Order:      ASC,
 		})
 		var keys2 = make([]string, 0)
 		for k, _ := range m {
@@ -215,7 +217,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetKeys(keys1, func(x *entry) string {
+		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *entry) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -261,7 +263,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetKeys(keys1, func(x *entry) string {
+		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *entry) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")

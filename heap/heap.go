@@ -13,13 +13,7 @@ func MinHeap[T dao.Comparable[T]](a, b T) dao.Ordering {
 }
 
 func MaxHeap[T dao.Comparable[T]](a, b T) dao.Ordering {
-	if a > b {
-		return dao.Less
-	} else if a < b {
-		return dao.Greater
-	} else {
-		return dao.Equal
-	}
+	return -1 * MinHeap(a, b)
 }
 
 func New[T any](cap int, cmp func(a, b T) dao.Ordering) *Heap[T] {

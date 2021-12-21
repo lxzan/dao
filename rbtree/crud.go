@@ -181,14 +181,13 @@ type QueryBuilder[T any] struct {
 }
 
 func (c *QueryBuilder[T]) init(cmp func(a, b *T) dao.Ordering) *QueryBuilder[T] {
-	var typ = func(a, b *T) bool {
-		return cmp(a, b) == dao.Greater
+	var typ = func(a, b *T) dao.Ordering {
+		return -1 * cmp(a, b)
 	}
 	if c.Order == DESC {
-		typ = func(a, b *T) bool {
-			return cmp(a, b) == dao.Less
-		}
+		typ = cmp
 	}
+
 	if c.LeftFilter == nil {
 		c.LeftFilter = AlwaysTrue[T]
 	}
@@ -216,7 +215,7 @@ func (c *RBTree[T]) do_query1(node *rbtree_node[T], q *QueryBuilder[T]) {
 		if q.results.Len() < q.Limit {
 			q.results.Push(node.data)
 			c.do_query2(node, q)
-		} else if q.results.Less(q.results.Data[0], node.data) {
+		} else if q.results.Cmp(q.results.Data[0], node.data) == dao.Less {
 			q.results.Data[0] = node.data
 			q.results.Down(0, q.Limit)
 			c.do_query2(node, q)

@@ -1,8 +1,8 @@
 package heap
 
 import (
+	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/utils"
-	"math/rand"
 	"sort"
 	"testing"
 )
@@ -67,23 +67,35 @@ func TestHeap_Sort(t *testing.T) {
 
 func TestHeap_Find(t *testing.T) {
 	var count = 10000
-	var h = New[int](count, MaxHeap[int])
-	var m = make(map[int]int)
-	for i := 0; i < count; i++ {
-		var val = rand.Intn(count * 2)
-		m[val] = val
-	}
-	for k, _ := range m {
-		h.Push(k)
+	type entry struct {
+		Key string
+		Val int
 	}
 
-	for i := 0; i < 2*count; i++ {
-		v1, ok1 := m[i]
-		v2, ok2 := h.Find(i)
-		if ok1 != ok2 {
-			t.Fatal("error!")
+	var max_heap = func(a, b *entry) dao.Ordering {
+		if a.Key > b.Key {
+			return dao.Less
+		} else if a.Key == b.Key {
+			return dao.Equal
+		} else {
+			return dao.Greater
 		}
-		if ok1 && ok2 && v1 != v2 {
+	}
+
+	m1 := New[*entry](count, max_heap)
+	m2 := make(map[string]int)
+	for i := 0; i < count; i++ {
+		var key = utils.Alphabet.Generate(8)
+		var val = utils.Rand.Int()
+		m2[key] = val
+	}
+	for k, v := range m2 {
+		m1.Push(&entry{Key: k, Val: v})
+	}
+
+	for k, v := range m2 {
+		result, ok := m1.Find(&entry{Key: k})
+		if !ok || result.Val != v {
 			t.Fatal("error!")
 		}
 	}

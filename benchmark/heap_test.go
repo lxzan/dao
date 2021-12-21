@@ -1,8 +1,6 @@
 package benchmark
 
 import (
-	"github.com/lxzan/dao"
-	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/heap"
 	"testing"
 )
@@ -17,20 +15,33 @@ func BenchmarkHeap_Push(b *testing.B) {
 	}
 }
 
-func BenchmarkHashHeap_Find(b *testing.B) {
-	type entry struct {
-		Key string
-		Val int
-	}
-
-	var max_heap = func(a, b entry) dao.Ordering {
-
-	}
-
-	for i := 0; i < b.N; i++ {
-		m := hashmap.New[string, int](bench_count)
-		for j := 0; j < bench_count; j++ {
-			m.Set(testkeys[j], testvals[j])
-		}
-	}
-}
+// a little slow
+//func BenchmarkHashHeap_Find(b *testing.B) {
+//	type entry struct {
+//		Key string
+//		Val int
+//	}
+//
+//	var max_heap = func(a, b *entry) dao.Ordering {
+//		if a.Key > b.Key {
+//			return dao.Less
+//		} else if a.Key == b.Key {
+//			return dao.Equal
+//		} else {
+//			return dao.Greater
+//		}
+//	}
+//
+//	m := heap.New[*entry](bench_count, max_heap)
+//	for i := 0; i < bench_count; i++ {
+//		m.Push(&entry{Key: testkeys[i], Val: testvals[i]})
+//	}
+//
+//	b.StartTimer()
+//	for i := 0; i < b.N; i++ {
+//		for j := 0; j < bench_count; j++ {
+//			m.Find(&entry{Key: testkeys[i]})
+//		}
+//	}
+//	b.StopTimer()
+//}
