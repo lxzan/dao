@@ -30,7 +30,7 @@ func Swap[T any](a, b *T) {
 func Unique[T any, K dao.Hashable[K]](arr *[]T, getKey func(x T) K) {
 	var n = len(*arr)
 	var m = make(map[K]T, n)
-	for i, _ := range *arr {
+	for i := range *arr {
 		var key = getKey((*arr)[i])
 		m[key] = (*arr)[i]
 	}
@@ -44,7 +44,7 @@ func Unique[T any, K dao.Hashable[K]](arr *[]T, getKey func(x T) K) {
 }
 
 func Fill[T any](arr []T, v T) {
-	for i, _ := range arr {
+	for i := range arr {
 		arr[i] = v
 	}
 }
@@ -65,14 +65,14 @@ func GetValue[T any](flag bool, a T, b T) T {
 
 func GetFields[T any, K any](arr []T, get_field func(x T) K) []K {
 	var results = make([]K, 0, len(arr))
-	for i, _ := range arr {
+	for i := range arr {
 		results = append(results, get_field(arr[i]))
 	}
 	return results
 }
 
 func Contains[T dao.Comparable[T]](arr []T, target T) bool {
-	for i, _ := range arr {
+	for i := range arr {
 		if arr[i] == target {
 			return true
 		}

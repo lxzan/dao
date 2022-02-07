@@ -45,7 +45,7 @@ func (c *RBTree[T]) validate(t *testing.T, node *rbtree_node[T]) {
 }
 
 func TestNew(t *testing.T) {
-	var tree = New[entry](func(a, b *entry) dao.Ordering {
+	var tree = New(func(a, b *entry) dao.Ordering {
 		if a.Key > b.Key {
 			return dao.Greater
 		} else if a.Key == b.Key {
@@ -64,7 +64,7 @@ func TestNew(t *testing.T) {
 	}
 
 	var idx = 0
-	for k, _ := range m {
+	for k := range m {
 		if idx >= 500 {
 			break
 		}
@@ -95,7 +95,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestRBTree_ForEach(t *testing.T) {
-	var tree = New[entry](func(a, b *entry) dao.Ordering {
+	var tree = New(func(a, b *entry) dao.Ordering {
 		if a.Key > b.Key {
 			return dao.Greater
 		} else if a.Key == b.Key {
@@ -129,7 +129,7 @@ func TestRBTree_ForEach(t *testing.T) {
 }
 
 func TestRBTree_Between(t *testing.T) {
-	var tree = New[entry](func(a, b *entry) dao.Ordering {
+	var tree = New(func(a, b *entry) dao.Ordering {
 		if a.Key > b.Key {
 			return dao.Greater
 		} else if a.Key == b.Key {
@@ -161,7 +161,7 @@ func TestRBTree_Between(t *testing.T) {
 			Order:       DESC,
 		})
 		var keys2 = make([]string, 0)
-		for k, _ := range m {
+		for k := range m {
 			if k >= left && k <= right {
 				keys2 = append(keys2, k)
 			}
@@ -181,7 +181,7 @@ func TestRBTree_Between(t *testing.T) {
 }
 
 func TestRBTree_GreaterEqual(t *testing.T) {
-	var tree = New[entry](func(a, b *entry) dao.Ordering {
+	var tree = New(func(a, b *entry) dao.Ordering {
 		if a.Key > b.Key {
 			return dao.Greater
 		} else if a.Key == b.Key {
@@ -207,7 +207,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 			Order:      ASC,
 		})
 		var keys2 = make([]string, 0)
-		for k, _ := range m {
+		for k := range m {
 			if k >= left {
 				keys2 = append(keys2, k)
 			}
@@ -226,7 +226,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 }
 
 func TestRBTree_LessEqual(t *testing.T) {
-	var tree = New[entry](func(a, b *entry) dao.Ordering {
+	var tree = New(func(a, b *entry) dao.Ordering {
 		if a.Key > b.Key {
 			return dao.Greater
 		} else if a.Key == b.Key {
@@ -252,7 +252,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 			Order:       DESC,
 		})
 		var keys2 = make([]string, 0)
-		for k, _ := range m {
+		for k := range m {
 			if k <= target {
 				keys2 = append(keys2, k)
 			}

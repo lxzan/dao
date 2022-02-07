@@ -42,7 +42,7 @@ func New[K dao.Hashable[K], V any](size ...uint32) *HashMap[K, V] {
 		load_factor: 1.0,
 		size:        size[0],
 		indexes:     make([]rapid.EntryPoint, size[0], size[0]),
-		storage: rapid.New[Pair[K, V]](size[0], func(a, b *Pair[K, V]) bool {
+		storage: rapid.New(size[0], func(a, b *Pair[K, V]) bool {
 			return a.Key == b.Key
 		}),
 	}

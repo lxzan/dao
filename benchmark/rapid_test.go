@@ -17,7 +17,7 @@ type entry struct {
 
 func BenchmarkRapid_New(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		rapid.New[entry](bench_count, func(a, b *entry) bool {
+		rapid.New(bench_count, func(a, b *entry) bool {
 			return a.Key == b.Key
 		})
 	}
@@ -32,7 +32,7 @@ func BenchmarkRapid_Append(b *testing.B) {
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		var r = rapid.New[entry](bench_count, func(a, b *entry) bool {
+		var r = rapid.New(bench_count, func(a, b *entry) bool {
 			return a.Key == b.Key
 		})
 		var id1 = r.NextID()

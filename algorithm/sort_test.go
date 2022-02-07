@@ -11,9 +11,9 @@ func TestSort(t *testing.T) {
 	for i := 0; i < 999; i++ {
 		arr = append(arr, rand.Intn(1000))
 	}
-	Sort[int](arr, dao.ASC[int])
+	Sort(arr, dao.ASC[int])
 
-	if !IsSorted[int](arr, dao.ASC[int]) {
+	if !IsSorted(arr, dao.ASC[int]) {
 		t.Error("not sorted!")
 	}
 }

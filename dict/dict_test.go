@@ -23,7 +23,7 @@ func TestNew(t *testing.T) {
 
 	for k, v := range m {
 		var arr1 = make([]string, 0, len(v))
-		for k1, _ := range v {
+		for k1 := range v {
 			arr1 = append(arr1, k1)
 		}
 		var arr2 = make([]string, 0)
@@ -56,7 +56,7 @@ func TestDict_Delete(t *testing.T) {
 	for _, v := range m {
 		var i = 0
 		var n = len(v)
-		for k1, _ := range v {
+		for k1 := range v {
 			if i >= n/2 {
 				break
 			}
@@ -78,7 +78,7 @@ func TestDict_Delete(t *testing.T) {
 
 	for k, v := range m {
 		var arr1 = make([]string, 0, len(v))
-		for k1, _ := range v {
+		for k1 := range v {
 			arr1 = append(arr1, k1)
 		}
 		var arr2 = make([]string, 0)

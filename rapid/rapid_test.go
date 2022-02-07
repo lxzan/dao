@@ -16,7 +16,7 @@ func (c entry) Equal(x *entry) bool {
 }
 
 func TestRapid_Push(t *testing.T) {
-	var queens1 = New[entry](8, func(a, b *entry) bool {
+	var queens1 = New(8, func(a, b *entry) bool {
 		return a.Key == b.Key
 	})
 	var queens2 = make([]*double_linkedlist.List[int], 0)
@@ -51,7 +51,7 @@ func TestRapid_Push(t *testing.T) {
 }
 
 func TestRapid_Delete(t *testing.T) {
-	var queens1 = New[entry](8, func(a, b *entry) bool {
+	var queens1 = New(8, func(a, b *entry) bool {
 		return a.Key == b.Key
 	})
 	var queens2 = make([]*double_linkedlist.List[int], 0)

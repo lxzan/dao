@@ -10,7 +10,7 @@ import (
 func TestNew(t *testing.T) {
 	const count = 1000
 	{
-		var h = New[string](8, MinHeap[string])
+		var h = New(8, MinHeap[string])
 		var arr1 = make([]string, 0)
 		var arr2 = make([]string, 0)
 		for i := 0; i < count; i++ {
@@ -28,7 +28,7 @@ func TestNew(t *testing.T) {
 	}
 
 	{
-		var h = New[string](8, MaxHeap[string])
+		var h = New(8, MaxHeap[string])
 		var arr1 = make([]string, 0)
 		var arr2 = make([]string, 0)
 		for i := 0; i < count; i++ {
@@ -82,7 +82,7 @@ func TestHeap_Find(t *testing.T) {
 		}
 	}
 
-	m1 := New[*entry](count, max_heap)
+	m1 := New(count, max_heap)
 	m2 := make(map[string]int)
 	for i := 0; i < count; i++ {
 		var key = utils.Alphabet.Generate(8)

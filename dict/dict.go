@@ -26,7 +26,7 @@ func New[T any]() *Dict[T] {
 	return &Dict[T]{
 		index_length: 8,
 		root:         &Element{Children: make([]*Element, sizes[0], sizes[0])},
-		storage: rapid.New[Pair[T]](8, func(a, b *Pair[T]) bool {
+		storage: rapid.New(8, func(a, b *Pair[T]) bool {
 			return a.Key == b.Key
 		}),
 	}

@@ -13,7 +13,7 @@ func TestSegmentTree_Query(t *testing.T) {
 		arr = append(arr, utils.Rand.Intn(n))
 	}
 
-	var tree = New[int, Schema[int]](arr, Init[int], Merge[int])
+	var tree = New(arr, Init[int], Merge[int])
 
 	for i := 0; i < 1000; i++ {
 		var left = utils.Rand.Intn(n)
@@ -30,8 +30,8 @@ func TestSegmentTree_Query(t *testing.T) {
 		}
 		for j := left; j <= right; j++ {
 			result2.Sum += arr[j]
-			result2.MaxValue = algorithm.Max[int](result2.MaxValue, arr[j])
-			result2.MinValue = algorithm.Min[int](result2.MinValue, arr[j])
+			result2.MaxValue = algorithm.Max(result2.MaxValue, arr[j])
+			result2.MinValue = algorithm.Min(result2.MinValue, arr[j])
 		}
 
 		if result1.Sum != result2.Sum || result1.MinValue != result2.MinValue || result1.MaxValue != result2.MaxValue {
@@ -60,8 +60,8 @@ func TestSegmentTree_Query(t *testing.T) {
 		}
 		for j := left; j <= right; j++ {
 			result2.Sum += arr[j]
-			result2.MaxValue = algorithm.Max[int](result2.MaxValue, arr[j])
-			result2.MinValue = algorithm.Min[int](result2.MinValue, arr[j])
+			result2.MaxValue = algorithm.Max(result2.MaxValue, arr[j])
+			result2.MinValue = algorithm.Min(result2.MinValue, arr[j])
 		}
 
 		if result1.Sum != result2.Sum || result1.MinValue != result2.MinValue || result1.MaxValue != result2.MaxValue {

@@ -25,8 +25,8 @@ func Init[T dao.Number[T]](op Operate, x T) Schema[T] {
 
 func Merge[T dao.Number[T]](a, b Schema[T]) Schema[T] {
 	return Schema[T]{
-		MaxValue: algorithm.Max[T](a.MaxValue, b.MaxValue),
-		MinValue: algorithm.Min[T](a.MinValue, b.MinValue),
+		MaxValue: algorithm.Max(a.MaxValue, b.MaxValue),
+		MinValue: algorithm.Min(a.MinValue, b.MinValue),
 		Sum:      a.Sum + b.Sum,
 	}
 }

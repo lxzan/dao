@@ -11,7 +11,7 @@ func BenchmarkSegmentTree_Query(b *testing.B) {
 	for i := 0; i < bench_count; i++ {
 		arr = append(arr, testvals[i])
 	}
-	var tree = segment_tree.New[int, segment_tree.Schema[int]](arr, segment_tree.Init[int], segment_tree.Merge[int])
+	var tree = segment_tree.New(arr, segment_tree.Init[int], segment_tree.Merge[int])
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
@@ -31,7 +31,7 @@ func BenchmarkSegmentTree_Update(b *testing.B) {
 	for i := 0; i < bench_count; i++ {
 		arr1 = append(arr1, testvals[i])
 	}
-	var tree = segment_tree.New[int, segment_tree.Schema[int]](arr1, segment_tree.Init[int], segment_tree.Merge[int])
+	var tree = segment_tree.New(arr1, segment_tree.Init[int], segment_tree.Merge[int])
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {

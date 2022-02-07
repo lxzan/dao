@@ -1,5 +1,5 @@
 test:
-	go test ./...
+	go1.18beta2 test ./...
 
 bench:
-	go test -benchmem -bench '^Benchmark' ./benchmark/
+	go1.18beta2 test -benchmem -bench '^Benchmark' ./benchmark/

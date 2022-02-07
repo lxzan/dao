@@ -2,7 +2,7 @@ package benchmark
 
 import "github.com/lxzan/dao/internal/utils"
 
-const bench_count = 1000000
+const bench_count = 1000
 
 var (
 	testkeys []string

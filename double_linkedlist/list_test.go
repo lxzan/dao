@@ -54,7 +54,7 @@ func TestList_Delete(t *testing.T) {
 		var x = utils.Rand.Int()
 		m[x] = 1
 	}
-	for k, _ := range m {
+	for k := range m {
 		dl.RPush(k)
 	}
 

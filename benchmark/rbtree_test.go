@@ -24,7 +24,7 @@ func rbtree_datanode_compare(a, b *rbtree_datanode) dao.Ordering {
 
 func BenchmarkRBTree_Insert(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		var tree = rbtree.New[rbtree_datanode](rbtree_datanode_compare)
+		var tree = rbtree.New(rbtree_datanode_compare)
 		for j := 0; j < bench_count; j++ {
 			tree.Insert(&rbtree_datanode{Key: j, Val: ""})
 		}
@@ -32,7 +32,7 @@ func BenchmarkRBTree_Insert(b *testing.B) {
 }
 
 func BenchmarkRBTree_Find(b *testing.B) {
-	var tree = rbtree.New[rbtree_datanode](rbtree_datanode_compare)
+	var tree = rbtree.New(rbtree_datanode_compare)
 	for j := 0; j < bench_count; j++ {
 		tree.Insert(&rbtree_datanode{Key: j, Val: ""})
 	}
@@ -47,7 +47,7 @@ func BenchmarkRBTree_Find(b *testing.B) {
 
 func BenchmarkRBTree_Delete(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		var tree = rbtree.New[rbtree_datanode](rbtree_datanode_compare)
+		var tree = rbtree.New(rbtree_datanode_compare)
 		for j := 0; j < bench_count; j++ {
 			tree.Insert(&rbtree_datanode{Key: j, Val: ""})
 		}
@@ -59,7 +59,7 @@ func BenchmarkRBTree_Delete(b *testing.B) {
 }
 
 func BenchmarkRBTree_Between(b *testing.B) {
-	var tree = rbtree.New[rbtree_datanode](rbtree_datanode_compare)
+	var tree = rbtree.New(rbtree_datanode_compare)
 	for j := 0; j < bench_count; j++ {
 		tree.Insert(&rbtree_datanode{Key: j, Val: ""})
 	}
@@ -81,7 +81,7 @@ func BenchmarkRBTree_Between(b *testing.B) {
 }
 
 func BenchmarkRBTree_GreaterEqual(b *testing.B) {
-	var tree = rbtree.New[rbtree_datanode](rbtree_datanode_compare)
+	var tree = rbtree.New(rbtree_datanode_compare)
 	for j := 0; j < bench_count; j++ {
 		tree.Insert(&rbtree_datanode{Key: j, Val: ""})
 	}
@@ -101,7 +101,7 @@ func BenchmarkRBTree_GreaterEqual(b *testing.B) {
 }
 
 func BenchmarkRBTree_LessEqual(b *testing.B) {
-	var tree = rbtree.New[rbtree_datanode](rbtree_datanode_compare)
+	var tree = rbtree.New(rbtree_datanode_compare)
 	for j := 0; j < bench_count; j++ {
 		tree.Insert(&rbtree_datanode{Key: j, Val: ""})
 	}
@@ -115,6 +115,23 @@ func BenchmarkRBTree_LessEqual(b *testing.B) {
 				Limit:       10,
 				Order:       rbtree.DESC,
 			})
+		}
+	}
+	b.StopTimer()
+}
+
+func BenchmarkRBTree_GetMinKey(b *testing.B) {
+	var tree = rbtree.New(rbtree_datanode_compare)
+	for j := 0; j < bench_count; j++ {
+		tree.Insert(&rbtree_datanode{Key: j, Val: ""})
+	}
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		for j := 0; j < bench_count; j++ {
+			tree.GetMinKey(&rbtree_datanode{Key: j, Val: ""})
+			// res := tree.GetMinKey(&rbtree_datanode{Key: j, Val: ""})
+			// println(res)
 		}
 	}
 	b.StopTimer()

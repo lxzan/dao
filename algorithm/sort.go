@@ -22,7 +22,7 @@ func IsSorted[T any](arr []T, cmp func(a, b T) dao.Ordering) bool {
 }
 
 func Sort[T any](arr []T, cmp func(a, b T) dao.Ordering) {
-	QuickSort[T](arr, 0, len(arr)-1, cmp)
+	QuickSort(arr, 0, len(arr)-1, cmp)
 }
 
 func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering) int {

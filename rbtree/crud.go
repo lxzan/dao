@@ -145,20 +145,29 @@ func (c *RBTree[T]) do_get_max_key(node *rbtree_node[T], maxKey *T) {
 	c.do_get_max_key(node.right, maxKey)
 }
 
-func (c *RBTree[T]) GetMinKey() *T {
-	var minKey = *(c.root.data)
-	c.do_get_min_key(c.root, &minKey)
+func (c *RBTree[T]) GetMinKey(base *T) *T {
+	if c.root.data == nil {
+		return nil
+	}
+
+	var minKey T
+	if c.cmp(c.root.data, base) == dao.Greater {
+		minKey = *(c.root.data)
+		c.do_get_min_key(c.root.left, base, &minKey)
+	} else {
+		c.do_get_min_key(c.root.right, base, &minKey)
+	}
 	return &minKey
 }
 
-func (c *RBTree[T]) do_get_min_key(node *rbtree_node[T], minKey *T) {
+func (c *RBTree[T]) do_get_min_key(node *rbtree_node[T], base *T, minKey *T) {
 	if c.end(node) {
 		return
 	}
-	if c.cmp(node.data, minKey) == dao.Less {
+	if c.cmp(node.data, minKey) == dao.Less && c.cmp(node.data, base) == dao.Greater {
 		*minKey = *(node.data)
 	}
-	c.do_get_min_key(node.right, minKey)
+	c.do_get_min_key(node.left, base, minKey)
 }
 
 type Order uint8
@@ -195,48 +204,75 @@ func (c *QueryBuilder[T]) init(cmp func(a, b *T) dao.Ordering) *QueryBuilder[T] 
 		c.RightFilter = AlwaysTrue[T]
 	}
 	if c.Limit <= 0 {
-		c.results = heap.New[*T](10, typ)
+		c.results = heap.New(10, typ)
 	} else {
-		c.results = heap.New[*T](c.Limit, typ)
+		c.results = heap.New(c.Limit, typ)
 	}
 	return c
 }
 
 func (c *RBTree[T]) Query(q *QueryBuilder[T]) []*T {
-	c.do_query1(c.root, q.init(c.cmp))
+	q.init(c.cmp)
+	if q.Order == ASC {
+		c.do_query_asc(c.root, q)
+	} else {
+		c.do_query_desc(c.root, q)
+	}
 	return q.results.Sort()
 }
 
-func (c *RBTree[T]) do_query1(node *rbtree_node[T], q *QueryBuilder[T]) {
+func (c *RBTree[T]) do_query_asc(node *rbtree_node[T], q *QueryBuilder[T]) {
 	if c.end(node) {
 		return
 	}
-	if q.LeftFilter(node.data) && q.RightFilter(node.data) {
+
+	var flag1 = q.LeftFilter(node.data)
+	var flag2 = q.RightFilter(node.data)
+	if flag1 && flag2 {
 		if q.results.Len() < q.Limit {
 			q.results.Push(node.data)
-			c.do_query2(node, q)
+			c.do_query_asc(node.left, q)
+			c.do_query_asc(node.right, q)
 		} else if q.results.Cmp(q.results.Data[0], node.data) == dao.Less {
 			q.results.Data[0] = node.data
 			q.results.Down(0, q.Limit)
-			c.do_query2(node, q)
+			c.do_query_asc(node.left, q)
+			c.do_query_asc(node.right, q)
 		} else {
-			c.do_query1(node.left, q)
+			c.do_query_asc(node.left, q)
 		}
 	} else {
-		if !q.LeftFilter(node.data) {
-			c.do_query1(node.right, q)
-		} else if !q.RightFilter(node.data) {
-			c.do_query1(node.left, q)
+		if !flag1 {
+			c.do_query_asc(node.right, q)
+		} else if !flag2 {
+			c.do_query_asc(node.left, q)
 		}
 	}
 }
 
-func (c *RBTree[T]) do_query2(node *rbtree_node[T], q *QueryBuilder[T]) {
-	if q.Order == ASC {
-		c.do_query1(node.left, q)
-		c.do_query1(node.right, q)
+func (c *RBTree[T]) do_query_desc(node *rbtree_node[T], q *QueryBuilder[T]) {
+	if c.end(node) {
+		return
+	}
+
+	if q.LeftFilter(node.data) && q.RightFilter(node.data) {
+		if q.results.Len() < q.Limit {
+			q.results.Push(node.data)
+			c.do_query_desc(node.right, q)
+			c.do_query_desc(node.left, q)
+		} else if q.results.Cmp(q.results.Data[0], node.data) == dao.Less {
+			q.results.Data[0] = node.data
+			q.results.Down(0, q.Limit)
+			c.do_query_desc(node.right, q)
+			c.do_query_desc(node.left, q)
+		} else {
+			c.do_query_desc(node.left, q)
+		}
 	} else {
-		c.do_query1(node.right, q)
-		c.do_query1(node.left, q)
+		if !q.LeftFilter(node.data) {
+			c.do_query_desc(node.right, q)
+		} else if !q.RightFilter(node.data) {
+			c.do_query_desc(node.left, q)
+		}
 	}
 }
