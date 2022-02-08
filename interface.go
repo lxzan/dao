@@ -38,10 +38,6 @@ type Integer[T any] interface {
 	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8
 }
 
-type Hashable[T any] interface {
-	~string | ~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float64 | ~float32
-}
-
 type Hasher32[T any] interface {
 	GetHashCode() uint32
 }

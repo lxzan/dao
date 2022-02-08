@@ -143,7 +143,7 @@ func (c *Slice[T]) Unique(cmp func(a, b T) dao.Ordering) *Slice[T] {
 
 func (c *Slice[T]) Filter(fn func(ele T) bool) *Slice[T] {
 	var results = New[T](0, c.Len())
-	for i, _ := range *c {
+	for i := range *c {
 		if fn((*c)[i]) {
 			results.Push((*c)[i])
 		}
@@ -152,7 +152,7 @@ func (c *Slice[T]) Filter(fn func(ele T) bool) *Slice[T] {
 }
 
 func (c *Slice[T]) Map(fn func(ele T) T) *Slice[T] {
-	for i, _ := range *c {
+	for i := range *c {
 		(*c)[i] = fn((*c)[i])
 	}
 	return c

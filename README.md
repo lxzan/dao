@@ -18,8 +18,8 @@ cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
 | Dict             | Insert             | 1,000    | 651.6 | 11006     |
 | Dict             | Delete             | 1,000    | 59.3  | 1000      |
 | Dict             | Match (limit 10)   | 1,000    | 41.3  | 5697      |
-| HashMap          | Set                | 1,000    | 36.7  | 5         |
-| Go Map           | Set                | 1,000    | 38.1  | 2         |
+| HashMap          | Set                | 1,000    | 33.5  | 5         |
+| Go Map           | Set                | 1,000    | 33.4  | 2         |
 | HashMap          | Get                | 1,000    | 17.0  | 0         |
 | Go Map           | Get                | 1,000    | 19.3  | 0         |
 | RBTree           | Insert             | 1,000    | 341.7 | 2001      |

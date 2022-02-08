@@ -27,7 +27,7 @@ func Swap[T any](a, b *T) {
 	*a, *b = *b, *a
 }
 
-func Unique[T any, K dao.Hashable[K]](arr *[]T, getKey func(x T) K) {
+func Unique[T any, K comparable](arr *[]T, getKey func(x T) K) {
 	var n = len(*arr)
 	var m = make(map[K]T, n)
 	for i := range *arr {
