@@ -5,33 +5,33 @@ import (
 	"github.com/lxzan/dao/heap"
 )
 
-func (c *RBTree[T]) Len() int {
-	return c.length
+func (this *RBTree[T]) Len() int {
+	return this.length
 }
 
-func (c *RBTree[T]) Clear() {
+func (this *RBTree[T]) Clear() {
 	var node rbtree_node[T]
-	c.root = &node
-	c.sentinel = &node
-	c.length = 0
+	this.root = &node
+	this.sentinel = &node
+	this.length = 0
 }
 
 // insert with unique check
-func (c *RBTree[T]) Insert(data *T) (success bool) {
-	for i := c.begin(); !c.end(i); i = c.next(i, data) {
-		if c.cmp(data, i.data) == dao.Equal {
+func (this *RBTree[T]) Insert(data *T) (success bool) {
+	for i := this.begin(); !this.end(i); i = this.next(i, data) {
+		if this.cmp(data, i.data) == dao.Equal {
 			return false
 		}
 	}
 
-	c.length++
+	this.length++
 	var node = &rbtree_node[T]{data: data}
-	var root = &c.root
+	var root = &this.root
 	var temp, sentinel *rbtree_node[T]
 
 	/* a binary tree insert */
 
-	sentinel = c.sentinel
+	sentinel = this.sentinel
 	if *root == sentinel {
 		node.parent = nil
 		node.left = sentinel
@@ -41,7 +41,7 @@ func (c *RBTree[T]) Insert(data *T) (success bool) {
 
 		return
 	}
-	c.do_insert(*root, node, sentinel)
+	this.do_insert(*root, node, sentinel)
 
 	/* re-balance tree */
 
@@ -56,11 +56,11 @@ func (c *RBTree[T]) Insert(data *T) (success bool) {
 			} else {
 				if node == node.parent.right {
 					node = node.parent
-					c.left_rotate(root, sentinel, node)
+					this.left_rotate(root, sentinel, node)
 				}
 				node.parent.set_black()
 				node.parent.parent.set_red()
-				c.right_rotate(root, sentinel, node.parent.parent)
+				this.right_rotate(root, sentinel, node.parent.parent)
 			}
 		} else {
 			temp = node.parent.parent.left
@@ -73,11 +73,11 @@ func (c *RBTree[T]) Insert(data *T) (success bool) {
 			} else {
 				if node == node.parent.left {
 					node = node.parent
-					c.right_rotate(root, sentinel, node)
+					this.right_rotate(root, sentinel, node)
 				}
 				node.parent.set_black()
 				node.parent.parent.set_red()
-				c.left_rotate(root, sentinel, node.parent.parent)
+				this.left_rotate(root, sentinel, node.parent.parent)
 			}
 		}
 	}
@@ -85,29 +85,29 @@ func (c *RBTree[T]) Insert(data *T) (success bool) {
 	return true
 }
 
-func (c *RBTree[T]) Delete(ele *T) (success bool) {
-	for i := c.begin(); !c.end(i); i = c.next(i, ele) {
-		if c.cmp(ele, i.data) == dao.Equal {
-			c.length--
-			c.do_delete(i)
+func (this *RBTree[T]) Delete(ele *T) (success bool) {
+	for i := this.begin(); !this.end(i); i = this.next(i, ele) {
+		if this.cmp(ele, i.data) == dao.Equal {
+			this.length--
+			this.do_delete(i)
 			return true
 		}
 	}
 	return false
 }
 
-func (c *RBTree[T]) Find(ele *T) (result *T, exist bool) {
-	for i := c.begin(); !c.end(i); i = c.next(i, ele) {
-		if c.cmp(ele, i.data) == dao.Equal {
+func (this *RBTree[T]) Find(ele *T) (result *T, exist bool) {
+	for i := this.begin(); !this.end(i); i = this.next(i, ele) {
+		if this.cmp(ele, i.data) == dao.Equal {
 			return i.data, true
 		}
 	}
 	return nil, false
 }
 
-func (c *RBTree[T]) Update(data *T) (success bool) {
-	for i := c.begin(); !c.end(i); i = c.next(i, data) {
-		if c.cmp(i.data, data) == dao.Equal {
+func (this *RBTree[T]) Update(data *T) (success bool) {
+	for i := this.begin(); !this.end(i); i = this.next(i, data) {
+		if this.cmp(i.data, data) == dao.Equal {
 			*(i.data) = *data
 			return true
 		}
@@ -115,59 +115,59 @@ func (c *RBTree[T]) Update(data *T) (success bool) {
 	return false
 }
 
-func (c *RBTree[T]) ForEach(fn func(item *T) (continued bool)) {
+func (this *RBTree[T]) ForEach(fn func(item *T) (continued bool)) {
 	var next = true
-	c.do_foreach(c.root, &next, fn)
+	this.do_foreach(this.root, &next, fn)
 }
 
-func (c *RBTree[T]) do_foreach(node *rbtree_node[T], next *bool, fn func(item *T) bool) {
-	if c.end(node) || !(*next) {
+func (this *RBTree[T]) do_foreach(node *rbtree_node[T], next *bool, fn func(item *T) bool) {
+	if this.end(node) || !(*next) {
 		return
 	}
 	*next = fn(node.data)
-	c.do_foreach(node.left, next, fn)
-	c.do_foreach(node.right, next, fn)
+	this.do_foreach(node.left, next, fn)
+	this.do_foreach(node.right, next, fn)
 }
 
-func (c *RBTree[T]) GetMaxKey() *T {
-	var maxKey = *(c.root.data)
-	c.do_get_max_key(c.root, &maxKey)
+func (this *RBTree[T]) GetMaxKey() *T {
+	var maxKey = *(this.root.data)
+	this.do_get_max_key(this.root, &maxKey)
 	return &maxKey
 }
 
-func (c *RBTree[T]) do_get_max_key(node *rbtree_node[T], maxKey *T) {
-	if c.end(node) {
+func (this *RBTree[T]) do_get_max_key(node *rbtree_node[T], maxKey *T) {
+	if this.end(node) {
 		return
 	}
-	if c.cmp(node.data, maxKey) == dao.Greater {
+	if this.cmp(node.data, maxKey) == dao.Greater {
 		*maxKey = *(node.data)
 	}
-	c.do_get_max_key(node.right, maxKey)
+	this.do_get_max_key(node.right, maxKey)
 }
 
-func (c *RBTree[T]) GetMinKey(base *T) *T {
-	if c.root.data == nil {
+func (this *RBTree[T]) GetMinKey(base *T) *T {
+	if this.root.data == nil {
 		return nil
 	}
 
 	var minKey T
-	if c.cmp(c.root.data, base) == dao.Greater {
-		minKey = *(c.root.data)
-		c.do_get_min_key(c.root.left, base, &minKey)
+	if this.cmp(this.root.data, base) == dao.Greater {
+		minKey = *(this.root.data)
+		this.do_get_min_key(this.root.left, base, &minKey)
 	} else {
-		c.do_get_min_key(c.root.right, base, &minKey)
+		this.do_get_min_key(this.root.right, base, &minKey)
 	}
 	return &minKey
 }
 
-func (c *RBTree[T]) do_get_min_key(node *rbtree_node[T], base *T, minKey *T) {
-	if c.end(node) {
+func (this *RBTree[T]) do_get_min_key(node *rbtree_node[T], base *T, minKey *T) {
+	if this.end(node) {
 		return
 	}
-	if c.cmp(node.data, minKey) == dao.Less && c.cmp(node.data, base) == dao.Greater {
+	if this.cmp(node.data, minKey) == dao.Less && this.cmp(node.data, base) == dao.Greater {
 		*minKey = *(node.data)
 	}
-	c.do_get_min_key(node.left, base, minKey)
+	this.do_get_min_key(node.left, base, minKey)
 }
 
 type Order uint8
@@ -189,40 +189,40 @@ type QueryBuilder[T any] struct {
 	results     *heap.Heap[*T]
 }
 
-func (c *QueryBuilder[T]) init(cmp func(a, b *T) dao.Ordering) *QueryBuilder[T] {
+func (this *QueryBuilder[T]) init(cmp func(a, b *T) dao.Ordering) *QueryBuilder[T] {
 	var typ = func(a, b *T) dao.Ordering {
 		return -1 * cmp(a, b)
 	}
-	if c.Order == DESC {
+	if this.Order == DESC {
 		typ = cmp
 	}
 
-	if c.LeftFilter == nil {
-		c.LeftFilter = AlwaysTrue[T]
+	if this.LeftFilter == nil {
+		this.LeftFilter = AlwaysTrue[T]
 	}
-	if c.RightFilter == nil {
-		c.RightFilter = AlwaysTrue[T]
+	if this.RightFilter == nil {
+		this.RightFilter = AlwaysTrue[T]
 	}
-	if c.Limit <= 0 {
-		c.results = heap.New(10, typ)
+	if this.Limit <= 0 {
+		this.results = heap.New(10, typ)
 	} else {
-		c.results = heap.New(c.Limit, typ)
+		this.results = heap.New(this.Limit, typ)
 	}
-	return c
+	return this
 }
 
-func (c *RBTree[T]) Query(q *QueryBuilder[T]) []*T {
-	q.init(c.cmp)
+func (this *RBTree[T]) Query(q *QueryBuilder[T]) []*T {
+	q.init(this.cmp)
 	if q.Order == ASC {
-		c.do_query_asc(c.root, q)
+		this.do_query_asc(this.root, q)
 	} else {
-		c.do_query_desc(c.root, q)
+		this.do_query_desc(this.root, q)
 	}
 	return q.results.Sort()
 }
 
-func (c *RBTree[T]) do_query_asc(node *rbtree_node[T], q *QueryBuilder[T]) {
-	if c.end(node) {
+func (this *RBTree[T]) do_query_asc(node *rbtree_node[T], q *QueryBuilder[T]) {
+	if this.end(node) {
 		return
 	}
 
@@ -231,48 +231,48 @@ func (c *RBTree[T]) do_query_asc(node *rbtree_node[T], q *QueryBuilder[T]) {
 	if flag1 && flag2 {
 		if q.results.Len() < q.Limit {
 			q.results.Push(node.data)
-			c.do_query_asc(node.left, q)
-			c.do_query_asc(node.right, q)
+			this.do_query_asc(node.left, q)
+			this.do_query_asc(node.right, q)
 		} else if q.results.Cmp(q.results.Data[0], node.data) == dao.Less {
 			q.results.Data[0] = node.data
 			q.results.Down(0, q.Limit)
-			c.do_query_asc(node.left, q)
-			c.do_query_asc(node.right, q)
+			this.do_query_asc(node.left, q)
+			this.do_query_asc(node.right, q)
 		} else {
-			c.do_query_asc(node.left, q)
+			this.do_query_asc(node.left, q)
 		}
 	} else {
 		if !flag1 {
-			c.do_query_asc(node.right, q)
+			this.do_query_asc(node.right, q)
 		} else if !flag2 {
-			c.do_query_asc(node.left, q)
+			this.do_query_asc(node.left, q)
 		}
 	}
 }
 
-func (c *RBTree[T]) do_query_desc(node *rbtree_node[T], q *QueryBuilder[T]) {
-	if c.end(node) {
+func (this *RBTree[T]) do_query_desc(node *rbtree_node[T], q *QueryBuilder[T]) {
+	if this.end(node) {
 		return
 	}
 
 	if q.LeftFilter(node.data) && q.RightFilter(node.data) {
 		if q.results.Len() < q.Limit {
 			q.results.Push(node.data)
-			c.do_query_desc(node.right, q)
-			c.do_query_desc(node.left, q)
+			this.do_query_desc(node.right, q)
+			this.do_query_desc(node.left, q)
 		} else if q.results.Cmp(q.results.Data[0], node.data) == dao.Less {
 			q.results.Data[0] = node.data
 			q.results.Down(0, q.Limit)
-			c.do_query_desc(node.right, q)
-			c.do_query_desc(node.left, q)
+			this.do_query_desc(node.right, q)
+			this.do_query_desc(node.left, q)
 		} else {
-			c.do_query_desc(node.left, q)
+			this.do_query_desc(node.left, q)
 		}
 	} else {
 		if !q.LeftFilter(node.data) {
-			c.do_query_desc(node.right, q)
+			this.do_query_desc(node.right, q)
 		} else if !q.RightFilter(node.data) {
-			c.do_query_desc(node.left, q)
+			this.do_query_desc(node.left, q)
 		}
 	}
 }

@@ -11,11 +11,11 @@ type iterator struct {
 	End    int
 }
 
-func (c *Dict[T]) begin(key string, initialize bool) *iterator {
-	var iter = &iterator{Node: c.root}
+func (this *Dict[T]) begin(key string, initialize bool) *iterator {
+	var iter = &iterator{Node: this.root}
 	var n = len(key)
-	if n > c.index_length {
-		n = c.index_length
+	if n > this.index_length {
+		n = this.index_length
 	}
 	iter.Bytes = make([]byte, n, n)
 	for i := 0; i < n; i++ {
@@ -37,7 +37,7 @@ func (c *Dict[T]) begin(key string, initialize bool) *iterator {
 	return iter
 }
 
-func (c *Dict[T]) next(iter *iterator, initialize bool) *iterator {
+func (this *Dict[T]) next(iter *iterator, initialize bool) *iterator {
 	if iter.Cursor >= iter.End {
 		return nil
 	}
@@ -53,6 +53,6 @@ func (c *Dict[T]) next(iter *iterator, initialize bool) *iterator {
 	return iter
 }
 
-func (c *Dict[T]) end(iter *iterator) bool {
+func (this *Dict[T]) end(iter *iterator) bool {
 	return iter == nil || iter.Cursor > iter.End
 }

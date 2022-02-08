@@ -15,7 +15,7 @@ type entry struct {
 	Val int
 }
 
-func (c entry) Compare(a, b entry) dao.Ordering {
+func (this entry) Compare(a, b entry) dao.Ordering {
 	if a.Key > b.Key {
 		return dao.Greater
 	} else if a.Key == b.Key {
@@ -25,22 +25,22 @@ func (c entry) Compare(a, b entry) dao.Ordering {
 	}
 }
 
-func (c *RBTree[T]) validate(t *testing.T, node *rbtree_node[T]) {
+func (this *RBTree[T]) validate(t *testing.T, node *rbtree_node[T]) {
 	if node == nil {
 		return
 	}
 	if node.left != nil {
-		if !c.is_key_empty(node.left.data) && c.cmp(node.data, node.left.data) != dao.Greater {
+		if !this.is_key_empty(node.left.data) && this.cmp(node.data, node.left.data) != dao.Greater {
 			t.Error("left node error!")
 		}
-		c.validate(t, node.left)
+		this.validate(t, node.left)
 	}
 
 	if node.right != nil {
-		if !c.is_key_empty(node.right.data) && c.cmp(node.data, node.right.data) != dao.Less {
+		if !this.is_key_empty(node.right.data) && this.cmp(node.data, node.right.data) != dao.Less {
 			t.Error("right node error!")
 		}
-		c.validate(t, node.right)
+		this.validate(t, node.right)
 	}
 }
 

@@ -40,71 +40,71 @@ type Heap[T any] struct {
 	Cmp  func(a, b T) dao.Ordering
 }
 
-func (c Heap[T]) Len() int {
-	return len(c.Data)
+func (this Heap[T]) Len() int {
+	return len(this.Data)
 }
 
-func (c *Heap[T]) Swap(i, j int) {
-	c.Data[i], c.Data[j] = c.Data[j], c.Data[i]
+func (this *Heap[T]) Swap(i, j int) {
+	this.Data[i], this.Data[j] = this.Data[j], this.Data[i]
 }
 
-func (c *Heap[T]) Push(eles ...T) {
+func (this *Heap[T]) Push(eles ...T) {
 	for _, item := range eles {
-		c.Data = append(c.Data, item)
-		c.Up(c.Len() - 1)
+		this.Data = append(this.Data, item)
+		this.Up(this.Len() - 1)
 	}
 }
 
-func (c *Heap[T]) Up(i int) {
+func (this *Heap[T]) Up(i int) {
 	var j = (i - 1) / 2
-	if j >= 0 && c.Cmp(c.Data[i], c.Data[j]) == dao.Less {
-		c.Swap(i, j)
-		c.Up(j)
+	if j >= 0 && this.Cmp(this.Data[i], this.Data[j]) == dao.Less {
+		this.Swap(i, j)
+		this.Up(j)
 	}
 }
 
-func (c *Heap[T]) Pop() T {
-	var n = c.Len()
-	var result = c.Data[0]
-	c.Data[0] = c.Data[n-1]
-	c.Data = c.Data[:n-1]
-	c.Down(0, n-1)
+func (this *Heap[T]) Pop() T {
+	var n = this.Len()
+	var result = this.Data[0]
+	this.Data[0] = this.Data[n-1]
+	this.Data = this.Data[:n-1]
+	this.Down(0, n-1)
 	return result
 }
 
-func (c *Heap[T]) Down(i, n int) {
+func (this *Heap[T]) Down(i, n int) {
 	var j = 2*i + 1
-	if j < n && c.Cmp(c.Data[j], c.Data[i]) == dao.Less {
-		c.Swap(i, j)
-		c.Down(j, n)
+	if j < n && this.Cmp(this.Data[j], this.Data[i]) == dao.Less {
+		this.Swap(i, j)
+		this.Down(j, n)
 	}
 	var k = 2*i + 2
-	if k < n && c.Cmp(c.Data[k], c.Data[i]) == dao.Less {
-		c.Swap(i, k)
-		c.Down(k, n)
+	if k < n && this.Cmp(this.Data[k], this.Data[i]) == dao.Less {
+		this.Swap(i, k)
+		this.Down(k, n)
 	}
 }
 
-func (c *Heap[T]) Sort() []T {
-	var n = c.Len()
+func (this *Heap[T]) Sort() []T {
+	var n = this.Len()
 	if n >= 2 {
 		for i := n - 1; i >= 2; i-- {
-			c.Swap(0, i)
-			c.Down(0, i)
+			this.Swap(0, i)
+			this.Down(0, i)
 		}
-		c.Swap(0, 1)
+		this.Swap(0, 1)
 	}
-	return c.Data
+	return this.Data
 }
 
-func (c *Heap[T]) Find(target T) (result T, exist bool) {
+func (this *Heap[T]) Find(target T) (result T, exist bool) {
 	var q = find_param[T]{
-		Length: c.Len(),
+		Length: this.Len(),
 		Target: target,
 		Result: result,
 		Exist:  false,
 	}
-	c.do_find(0, &q)
+	this.do_find(0, &q)
 	return q.Result, q.Exist
 }
 
@@ -115,24 +115,24 @@ type find_param[T any] struct {
 	Exist  bool
 }
 
-func (c Heap[T]) do_find(i int, q *find_param[T]) {
+func (this Heap[T]) do_find(i int, q *find_param[T]) {
 	if q.Exist {
 		return
 	}
 
-	if c.Cmp(c.Data[i], q.Target) == dao.Equal {
-		q.Result = c.Data[i]
+	if this.Cmp(this.Data[i], q.Target) == dao.Equal {
+		q.Result = this.Data[i]
 		q.Exist = true
 		return
 	}
 
 	var j = 2*i + 1
-	if j < q.Length && c.Cmp(c.Data[j], q.Target) != dao.Greater {
-		c.do_find(j, q)
+	if j < q.Length && this.Cmp(this.Data[j], q.Target) != dao.Greater {
+		this.do_find(j, q)
 	}
 
 	var k = 2*i + 2
-	if k < q.Length && c.Cmp(c.Data[k], q.Target) != dao.Greater {
-		c.do_find(k, q)
+	if k < q.Length && this.Cmp(this.Data[k], q.Target) != dao.Greater {
+		this.do_find(k, q)
 	}
 }

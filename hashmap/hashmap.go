@@ -53,16 +53,16 @@ func New[K comparable, V any](size ...uint32) *HashMap[K, V] {
 	}
 }
 
-func (c *HashMap[K, V]) Len() int {
-	return c.storage.Length
+func (this *HashMap[K, V]) Len() int {
+	return this.storage.Length
 }
 
-func (c *HashMap[K, V]) LoadFactor(x float64) *HashMap[K, V] {
-	c.load_factor = x
-	return c
+func (this *HashMap[K, V]) LoadFactor(x float64) *HashMap[K, V] {
+	this.load_factor = x
+	return this
 }
 
-func (c *HashMap[K, V]) Hash(key K) uint32 {
+func (this *HashMap[K, V]) Hash(key K) uint32 {
 	switch unsafe.Sizeof(key) {
 	case 16:
 		data := *(*[]byte)(unsafe.Pointer(&key))
@@ -82,48 +82,48 @@ func (c *HashMap[K, V]) Hash(key K) uint32 {
 }
 
 // insert with unique check
-func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
-	c.increase()
-	var hashCode = c.Hash(key)
-	var idx = hashCode & (c.size - 1)
-	var entrypoint = &c.indexes[idx]
+func (this *HashMap[K, V]) Set(key K, val V) (replaced bool) {
+	this.increase()
+	var hashCode = this.Hash(key)
+	var idx = hashCode & (this.size - 1)
+	var entrypoint = &this.indexes[idx]
 	if entrypoint.Head == 0 {
-		var ptr = c.storage.NextID()
+		var ptr = this.storage.NextID()
 		entrypoint.Head = ptr
 		entrypoint.Tail = ptr
-		c.storage.Buckets[entrypoint.Head] = rapid.Iterator[Pair[K, V]]{
+		this.storage.Buckets[entrypoint.Head] = rapid.Iterator[Pair[K, V]]{
 			Ptr:  ptr,
 			Data: Pair[K, V]{hashCode: hashCode, Key: key, Val: val},
 		}
-		c.storage.Length++
+		this.storage.Length++
 		return false
 	}
 
-	for i := &c.storage.Buckets[entrypoint.Head]; !c.storage.End(i); i = c.storage.Next(i) {
+	for i := &this.storage.Buckets[entrypoint.Head]; !this.storage.End(i); i = this.storage.Next(i) {
 		if i.Data.Key == key {
 			i.Data.Val = val
 			return true
 		}
 	}
 
-	var cursor = c.storage.NextID()
-	var tail = &c.storage.Buckets[entrypoint.Tail]
+	var cursor = this.storage.NextID()
+	var tail = &this.storage.Buckets[entrypoint.Tail]
 	tail.NextPtr = cursor
 	entrypoint.Tail = cursor
-	c.storage.Buckets[cursor] = rapid.Iterator[Pair[K, V]]{
+	this.storage.Buckets[cursor] = rapid.Iterator[Pair[K, V]]{
 		Ptr:     cursor,
 		PrevPtr: tail.Ptr,
 		Data:    Pair[K, V]{hashCode: hashCode, Key: key, Val: val},
 	}
-	c.storage.Length++
+	this.storage.Length++
 	return false
 }
 
 // find one
-func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
-	var hashCode = c.Hash(key)
-	var idx = hashCode & (c.size - 1)
-	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
+func (this *HashMap[K, V]) Get(key K) (val V, exist bool) {
+	var hashCode = this.Hash(key)
+	var idx = hashCode & (this.size - 1)
+	for i := this.storage.Begin(this.indexes[idx]); !this.storage.End(i); i = this.storage.Next(i) {
 		if i.Data.Key == key {
 			return i.Data.Val, true
 		}
@@ -132,25 +132,25 @@ func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 }
 
 // delete one
-func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
-	var hashCode = c.Hash(key)
-	var idx = hashCode & (c.size - 1)
-	var entrypoint = c.indexes[idx]
+func (this *HashMap[K, V]) Delete(key K) (deleted bool) {
+	var hashCode = this.Hash(key)
+	var idx = hashCode & (this.size - 1)
+	var entrypoint = this.indexes[idx]
 	if entrypoint.Head == 0 {
 		return false
 	}
 
-	for i := c.storage.Begin(entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
+	for i := this.storage.Begin(entrypoint); !this.storage.End(i); i = this.storage.Next(i) {
 		if i.Data.Key == key {
-			return c.storage.Delete(&entrypoint, i)
+			return this.storage.Delete(&entrypoint, i)
 		}
 	}
 	return false
 }
 
 // update directly
-func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
-	var n = len(c.storage.Buckets)
+func (this *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
+	var n = len(this.storage.Buckets)
 	var iter = &Iterator[K, V]{
 		next: true,
 	}
@@ -159,7 +159,7 @@ func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
 			break
 		}
 
-		var item = &c.storage.Buckets[i]
+		var item = &this.storage.Buckets[i]
 		if item.Ptr != 0 {
 			iter.Key = item.Data.Key
 			iter.Val = item.Data.Val
@@ -168,17 +168,17 @@ func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
 	}
 }
 
-func (c *HashMap[K, V]) Keys() slice.Slice[K] {
-	var keys = make([]K, 0, c.Len())
-	c.ForEach(func(iter *Iterator[K, V]) {
+func (this *HashMap[K, V]) Keys() slice.Slice[K] {
+	var keys = make([]K, 0, this.Len())
+	this.ForEach(func(iter *Iterator[K, V]) {
 		keys = append(keys, iter.Key)
 	})
 	return keys
 }
 
-func (c *HashMap[K, V]) Values() slice.Slice[V] {
-	var values = make([]V, 0, c.Len())
-	c.ForEach(func(iter *Iterator[K, V]) {
+func (this *HashMap[K, V]) Values() slice.Slice[V] {
+	var values = make([]V, 0, this.Len())
+	this.ForEach(func(iter *Iterator[K, V]) {
 		values = append(values, iter.Val)
 	})
 	return values

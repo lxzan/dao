@@ -15,12 +15,12 @@ const (
 	Numeric  RandomString = "0123456789"
 )
 
-func (c RandomString) Generate(n int) string {
+func (this RandomString) Generate(n int) string {
 	var b = make([]byte, n)
-	var length = len(c)
+	var length = len(this)
 	for i := 0; i < n; i++ {
 		var idx = Rand.Intn(length)
-		b[i] = c[idx]
+		b[i] = this[idx]
 	}
 	return string(b)
 }

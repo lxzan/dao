@@ -32,29 +32,29 @@ func New[T any]() *Dict[T] {
 	}
 }
 
-func (c *Dict[T]) Len() int {
-	return c.storage.Length
+func (this *Dict[T]) Len() int {
+	return this.storage.Length
 }
 
 // length<=32
-func (c *Dict[T]) SetIndexLength(length int) {
+func (this *Dict[T]) SetIndexLength(length int) {
 	if length <= 0 {
 		length = 8
 	}
-	c.index_length = length
+	this.index_length = length
 }
 
 // insert with unique check
-func (c *Dict[T]) Insert(key string, val T) {
-	for i := c.begin(key, true); true; i = c.next(i, true) {
+func (this *Dict[T]) Insert(key string, val T) {
+	for i := this.begin(key, true); true; i = this.next(i, true) {
 		if i.Cursor == i.End {
 			var entrypoint = &i.Node.EntryPoint
 			if entrypoint.Head == 0 {
-				var ptr = c.storage.NextID()
+				var ptr = this.storage.NextID()
 				entrypoint.Head = ptr
 				entrypoint.Tail = ptr
 			}
-			c.storage.Push(entrypoint, &Pair[T]{Key: key, Val: val})
+			this.storage.Push(entrypoint, &Pair[T]{Key: key, Val: val})
 			break
 		}
 	}
@@ -69,11 +69,11 @@ type match_params[T any] struct {
 }
 
 // limit: -1 as unlimited
-func (c *Dict[T]) Match(prefix string, limit ...int) slice.Slice[Pair[T]] {
+func (this *Dict[T]) Match(prefix string, limit ...int) slice.Slice[Pair[T]] {
 	if len(limit) == 0 {
 		limit = []int{math.MaxInt}
 	}
-	for i := c.begin(prefix, false); !c.end(i); i = c.next(i, false) {
+	for i := this.begin(prefix, false); !this.end(i); i = this.next(i, false) {
 		if i.Node == nil {
 			return nil
 		}
@@ -85,38 +85,38 @@ func (c *Dict[T]) Match(prefix string, limit ...int) slice.Slice[Pair[T]] {
 				prefix:  prefix,
 				length:  len(prefix),
 			}
-			c.doMatch(i.Node, &params)
+			this.doMatch(i.Node, &params)
 			return params.results
 		}
 	}
 	return nil
 }
 
-func (c *Dict[T]) doMatch(node *Element, params *match_params[T]) {
+func (this *Dict[T]) doMatch(node *Element, params *match_params[T]) {
 	if node == nil || len(params.results) >= params.limit {
 		return
 	}
-	for i := c.storage.Begin(node.EntryPoint); !c.storage.End(i); i = c.storage.Next(i) {
+	for i := this.storage.Begin(node.EntryPoint); !this.storage.End(i); i = this.storage.Next(i) {
 		if len(i.Data.Key) >= params.length && i.Data.Key[:params.length] == params.prefix {
 			params.results = append(params.results, i.Data)
 		}
 	}
 	if params.prefix != "" {
 		for _, item := range node.Children {
-			c.doMatch(item, params)
+			this.doMatch(item, params)
 		}
 	}
 }
 
-func (c *Dict[T]) Delete(key string) bool {
-	for i := c.begin(key, false); !c.end(i); i = c.next(i, false) {
+func (this *Dict[T]) Delete(key string) bool {
+	for i := this.begin(key, false); !this.end(i); i = this.next(i, false) {
 		if i.Node == nil {
 			return false
 		}
 		if i.Cursor == i.End {
-			for j := c.storage.Begin(i.Node.EntryPoint); !c.storage.End(j); j = c.storage.Next(j) {
+			for j := this.storage.Begin(i.Node.EntryPoint); !this.storage.End(j); j = this.storage.Next(j) {
 				if j.Data.Key == key {
-					return c.storage.Delete(&i.Node.EntryPoint, j)
+					return this.storage.Delete(&i.Node.EntryPoint, j)
 				}
 			}
 		}
@@ -124,11 +124,11 @@ func (c *Dict[T]) Delete(key string) bool {
 	return false
 }
 
-func (c *Dict[T]) ForEach(fn func(key string, val T) (continued bool)) {
-	var n = len(c.storage.Buckets)
+func (this *Dict[T]) ForEach(fn func(key string, val T) (continued bool)) {
+	var n = len(this.storage.Buckets)
 	for i := 0; i < n; i++ {
-		if c.storage.Buckets[i].Ptr != 0 {
-			var item = &c.storage.Buckets[i]
+		if this.storage.Buckets[i].Ptr != 0 {
+			var item = &this.storage.Buckets[i]
 			if !fn(item.Data.Key, item.Data.Val) {
 				break
 			}

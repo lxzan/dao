@@ -17,25 +17,25 @@ type rbtree_node[T any] struct {
 	data   *T // unique, not empty
 }
 
-func (c *rbtree_node[T]) resert_key() {
+func (this *rbtree_node[T]) resert_key() {
 	var data T
-	c.data = &data
+	this.data = &data
 }
 
-func (c *rbtree_node[T]) set_black() {
-	c.color = BLACK
+func (this *rbtree_node[T]) set_black() {
+	this.color = BLACK
 }
 
-func (c *rbtree_node[T]) set_red() {
-	c.color = RED
+func (this *rbtree_node[T]) set_red() {
+	this.color = RED
 }
 
-func (c *rbtree_node[T]) is_black() bool {
-	return c.color == BLACK
+func (this *rbtree_node[T]) is_black() bool {
+	return this.color == BLACK
 }
 
-func (c *rbtree_node[T]) is_red() bool {
-	return c.color == RED
+func (this *rbtree_node[T]) is_red() bool {
+	return this.color == RED
 }
 
 func rbt_copy_color[T any](n1, n2 *rbtree_node[T]) {
@@ -61,26 +61,26 @@ func New[T any](cmp func(a, b *T) dao.Ordering) *RBTree[T] {
 	return &RBTree[T]{root: &node, sentinel: &node, length: 0, cmp: cmp}
 }
 
-func (c *RBTree[T]) is_key_empty(d *T) bool {
+func (this *RBTree[T]) is_key_empty(d *T) bool {
 	return d == nil
 }
 
-func (c *RBTree[T]) begin() *rbtree_node[T] {
-	return c.root
+func (this *RBTree[T]) begin() *rbtree_node[T] {
+	return this.root
 }
 
-func (c *RBTree[T]) next(iter *rbtree_node[T], ele *T) *rbtree_node[T] {
-	if c.cmp(ele, iter.data) == dao.Greater {
+func (this *RBTree[T]) next(iter *rbtree_node[T], ele *T) *rbtree_node[T] {
+	if this.cmp(ele, iter.data) == dao.Greater {
 		return iter.right
 	}
 	return iter.left
 }
 
-func (c *RBTree[T]) end(iter *rbtree_node[T]) bool {
+func (this *RBTree[T]) end(iter *rbtree_node[T]) bool {
 	return iter.data == nil
 }
 
-func (c *RBTree[T]) left_rotate(root **rbtree_node[T], sentinel *rbtree_node[T], node *rbtree_node[T]) {
+func (this *RBTree[T]) left_rotate(root **rbtree_node[T], sentinel *rbtree_node[T], node *rbtree_node[T]) {
 	var temp *rbtree_node[T]
 	temp = node.right
 	node.right = temp.left
@@ -99,7 +99,7 @@ func (c *RBTree[T]) left_rotate(root **rbtree_node[T], sentinel *rbtree_node[T],
 	node.parent = temp
 }
 
-func (c *RBTree[T]) right_rotate(root **rbtree_node[T], sentinel *rbtree_node[T], node *rbtree_node[T]) {
+func (this *RBTree[T]) right_rotate(root **rbtree_node[T], sentinel *rbtree_node[T], node *rbtree_node[T]) {
 	var temp *rbtree_node[T]
 	temp = node.left
 	node.left = temp.right
@@ -118,10 +118,10 @@ func (c *RBTree[T]) right_rotate(root **rbtree_node[T], sentinel *rbtree_node[T]
 	node.parent = temp
 }
 
-func (c *RBTree[T]) do_insert(temp *rbtree_node[T], node *rbtree_node[T], sentinel *rbtree_node[T]) {
+func (this *RBTree[T]) do_insert(temp *rbtree_node[T], node *rbtree_node[T], sentinel *rbtree_node[T]) {
 	var p **rbtree_node[T]
 	for {
-		if c.cmp(node.data, temp.data) == dao.Less {
+		if this.cmp(node.data, temp.data) == dao.Less {
 			p = &temp.left
 		} else {
 			p = &temp.right
@@ -139,15 +139,15 @@ func (c *RBTree[T]) do_insert(temp *rbtree_node[T], node *rbtree_node[T], sentin
 	node.set_red()
 }
 
-func (c *RBTree[T]) do_delete(node *rbtree_node[T]) {
+func (this *RBTree[T]) do_delete(node *rbtree_node[T]) {
 	var red bool
 	var root **rbtree_node[T]
 	var sentinel, subst, temp, w *rbtree_node[T]
 
 	/* a binary tree delete */
 
-	root = &c.root
-	sentinel = c.sentinel
+	root = &this.root
+	sentinel = this.sentinel
 	if node.left == sentinel {
 		temp = node.right
 		subst = node
@@ -224,7 +224,7 @@ func (c *RBTree[T]) do_delete(node *rbtree_node[T]) {
 			if w.is_red() {
 				w.set_black()
 				temp.parent.set_red()
-				c.left_rotate(root, sentinel, temp.parent)
+				this.left_rotate(root, sentinel, temp.parent)
 				w = temp.parent.right
 			}
 			if w.left.is_black() && w.right.is_black() {
@@ -235,14 +235,14 @@ func (c *RBTree[T]) do_delete(node *rbtree_node[T]) {
 				if w.right.is_black() {
 					w.left.set_black()
 					w.set_red()
-					c.right_rotate(root, sentinel, w)
+					this.right_rotate(root, sentinel, w)
 					w = temp.parent.right
 				}
 
 				rbt_copy_color(w, temp.parent)
 				temp.parent.set_black()
 				w.right.set_black()
-				c.left_rotate(root, sentinel, temp.parent)
+				this.left_rotate(root, sentinel, temp.parent)
 				temp = *root
 			}
 		} else {
@@ -250,7 +250,7 @@ func (c *RBTree[T]) do_delete(node *rbtree_node[T]) {
 			if w.is_red() {
 				w.set_black()
 				temp.parent.set_red()
-				c.right_rotate(root, sentinel, temp.parent)
+				this.right_rotate(root, sentinel, temp.parent)
 				w = temp.parent.left
 			}
 			if w.left.is_black() && w.right.is_black() {
@@ -261,13 +261,13 @@ func (c *RBTree[T]) do_delete(node *rbtree_node[T]) {
 				if w.left.is_black() {
 					w.right.set_black()
 					w.set_red()
-					c.left_rotate(root, sentinel, w)
+					this.left_rotate(root, sentinel, w)
 					w = temp.parent.left
 				}
 				rbt_copy_color(w, temp.parent)
 				temp.parent.set_black()
 				w.left.set_black()
-				c.right_rotate(root, sentinel, temp.parent)
+				this.right_rotate(root, sentinel, temp.parent)
 				temp = *root
 			}
 		}
