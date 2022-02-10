@@ -140,7 +140,6 @@ func main() {
 package main
 
 import (
-	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/rbtree"
 	"strconv"
 )
@@ -151,28 +150,20 @@ type entry struct {
 }
 
 func main() {
-	var tree = rbtree.New(func(a, b *entry) dao.Ordering {
-		if a.Key > b.Key {
-			return dao.Greater
-		} else if a.Key == b.Key {
-			return dao.Equal
-		} else {
-			return dao.Less
-		}
-	})
+	var tree = rbtree.New[int, string]()
 
-	var rows = make([]*entry, 0)
+	var rows = make([]*rbtree.Iterator[int, string], 0)
 	for i := 0; i < 10; i++ {
-		rows = append(rows, &entry{Key: i, Val: strconv.Itoa(i)})
+		rows = append(rows, &rbtree.Iterator[int, string]{Key: i, Val: strconv.Itoa(i)})
 	}
 	for _, item := range rows {
 		tree.Insert(item)
 	}
 
-	results := tree.Query(&rbtree.QueryBuilder[entry]{
-		LeftFilter: func(d *entry) bool { return d.Key > 5 },
+	results := tree.Query(&rbtree.QueryBuilder[int]{
+		LeftFilter: func(d int) bool { return d > 5 },
 		Limit:      3,
-		Order:      rbtree.ASC,
+		Order:      rbtree.DESC,
 	})
 	for _, item := range results {
 		println(item.Key)
