@@ -26,6 +26,8 @@ func (this RandomString) Generate(n int) string {
 }
 
 func SameInts(arr1, arr2 []int) bool {
+	sort.Ints(arr1)
+	sort.Ints(arr2)
 	var n = len(arr1)
 	if n != len(arr2) {
 		return false
@@ -39,6 +41,8 @@ func SameInts(arr1, arr2 []int) bool {
 }
 
 func SameStrings(arr1, arr2 []string) bool {
+	sort.Strings(arr1)
+	sort.Strings(arr2)
 	var n = len(arr1)
 	if n != len(arr2) {
 		return false
