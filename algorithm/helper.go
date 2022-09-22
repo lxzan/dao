@@ -2,8 +2,15 @@ package algorithm
 
 import (
 	"github.com/lxzan/dao"
+	"github.com/lxzan/dao/types"
 	"strconv"
 )
+
+func ForEach[I any](c types.Iterable[I], fn func(iter I)) {
+	for i := c.Begin(); !c.End(i); i = c.Next(i) {
+		fn(i)
+	}
+}
 
 func ToString[T dao.Integer[T]](x T) string {
 	return strconv.Itoa(int(x))

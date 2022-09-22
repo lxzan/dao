@@ -5,17 +5,14 @@ import (
 	"github.com/lxzan/dao/algorithm"
 )
 
-type Iterator[T any] struct {
-	next  bool
-	Index int
-	Value T
-}
+type (
+	Slice[T any] []T
 
-func (this *Iterator[T]) Break() {
-	this.next = false
-}
-
-type Slice[T any] []T
+	Iterator[T any] struct {
+		i, n  int
+		Value T
+	}
+)
 
 // New param1: size, param2: cap
 func New[T any](sizes ...int) Slice[T] {
@@ -36,113 +33,132 @@ func NewFrom[T any](arr []T) Slice[T] {
 	return arr
 }
 
-func (this Slice[T]) Len() int {
-	return len(this)
+func (c *Slice[T]) Begin() *Iterator[T] {
+	var iter = &Iterator[T]{
+		i: 0,
+		n: len(*c),
+	}
+	if iter.n > 0 {
+		iter.Value = (*c)[0]
+	}
+	return iter
 }
 
-func (this *Slice[T]) Push(eles ...T) {
-	*this = append(*this, eles...)
+func (c *Slice[T]) Next(iter *Iterator[T]) *Iterator[T] {
+	iter.i++
+	if iter.i < iter.n {
+		iter.Value = (*c)[iter.i]
+	}
+	return iter
 }
 
-func (this *Slice[T]) RPop() T {
-	var n = this.Len()
-	var result = (*this)[n-1]
-	*this = (*this)[:n-1]
+func (c *Slice[T]) End(iter *Iterator[T]) bool {
+	return iter.i >= iter.n
+}
+
+func (c *Slice[T]) Len() int {
+	return len(*c)
+}
+
+func (c *Slice[T]) Push(eles ...T) {
+	*c = append(*c, eles...)
+}
+
+func (c *Slice[T]) RPop() T {
+	var n = c.Len()
+	var result = (*c)[n-1]
+	*c = (*c)[:n-1]
 	return result
 }
 
-func (this *Slice[T]) LPop() T {
-	var result = (*this)[0]
-	*this = (*this)[1:]
+func (c *Slice[T]) LPop() T {
+	var result = (*c)[0]
+	*c = (*c)[1:]
 	return result
 }
 
 // Head return first element
-func (this Slice[T]) Front() T {
-	return this[0]
+func (c Slice[T]) Front() T {
+	return c[0]
 }
 
 // Tail return first element
-func (this Slice[T]) Back() T {
-	return this[this.Len()-1]
+func (c Slice[T]) Back() T {
+	return c[c.Len()-1]
 }
 
-func (this *Slice[T]) Swap(i, j int) {
-	(*this)[i], (*this)[j] = (*this)[j], (*this)[i]
+func (c *Slice[T]) Swap(i, j int) {
+	(*c)[i], (*c)[j] = (*c)[j], (*c)[i]
 }
 
-func (this *Slice[T]) Reverse() *Slice[T] {
-	var n = this.Len()
+func (c *Slice[T]) Reverse() *Slice[T] {
+	var n = c.Len()
 	for i := 0; i < n/2; i++ {
-		this.Swap(i, n-i-1)
+		c.Swap(i, n-i-1)
 	}
-	return this
+	return c
 }
 
-func (this *Slice[T]) Delete(i int) {
-	var n = this.Len()
+func (c *Slice[T]) Delete(i int) {
+	var n = c.Len()
 	for j := i; j < n-1; j++ {
-		(*this)[j] = (*this)[j+1]
+		(*c)[j] = (*c)[j+1]
 	}
 	if i >= 0 && i < n {
-		*this = (*this)[:n-1]
+		*c = (*c)[:n-1]
 	}
 }
 
-func (this *Slice[T]) Clear() {
-	*this = (*this)[:0]
+func (c *Slice[T]) Clear() {
+	*c = (*c)[:0]
 }
 
-func (this *Slice[T]) Sort(cmp func(a, b T) dao.Ordering) *Slice[T] {
-	algorithm.Sort(*this, cmp)
-	return this
+func (c *Slice[T]) Sort(cmp func(a, b T) dao.Ordering) *Slice[T] {
+	algorithm.Sort(*c, cmp)
+	return c
 }
 
-func (this Slice[T]) ForEach(fn func(iter *Iterator[T])) {
-	var n = this.Len()
-	var iter = &Iterator[T]{next: true}
-	for i := 0; i < n && iter.next; i++ {
-		iter.Index = i
-		iter.Value = this[i]
-		fn(iter)
+func (c *Slice[T]) ForEach(fn func(iter *Iterator[T])) {
+	for i := c.Begin(); !c.End(i); i = c.Next(i) {
+		fn(i)
 	}
 }
 
-func (this *Slice[T]) Range(i, j int) Slice[T] {
-	return (*this)[i:j]
+func (c *Slice[T]) Range(i, j int) Slice[T] {
+	return (*c)[i:j]
 }
 
-func (this *Slice[T]) Unique(cmp func(a, b T) dao.Ordering) *Slice[T] {
-	var n = this.Len()
+func (c *Slice[T]) Unique(cmp func(a, b T) dao.Ordering) *Slice[T] {
+	var n = c.Len()
 	if n == 0 {
-		return this
+		return c
 	}
 
-	this.Sort(cmp)
+	c.Sort(cmp)
 	var results = New[T](0, n)
-	results.Push((*this)[0])
+	results.Push((*c)[0])
 	for i := 1; i < n; i++ {
-		if cmp((*this)[i], (*this)[i-1]) != dao.Equal {
-			results.Push((*this)[i])
+		if cmp((*c)[i], (*c)[i-1]) != dao.Equal {
+			results.Push((*c)[i])
 		}
 	}
-	*this = results
-	return this
+	*c = results
+	return c
 }
 
-func (this *Slice[T]) Filter(fn func(ele T) bool) *Slice[T] {
-	var results = New[T](0, this.Len())
-	for i := range *this {
-		if fn((*this)[i]) {
-			results.Push((*this)[i])
+func (c *Slice[T]) Filter(fn func(ele T) bool) *Slice[T] {
+	var results = New[T](0, c.Len())
+	for i := range *c {
+		if fn((*c)[i]) {
+			results.Push((*c)[i])
 		}
 	}
 	return &results
 }
 
-func (this *Slice[T]) Map(fn func(ele T) T) *Slice[T] {
-	for i := range *this {
-		(*this)[i] = fn((*this)[i])
+func (c *Slice[T]) Map(fn func(ele T) T) *Slice[T] {
+	for i := range *c {
+		(*c)[i] = fn((*c)[i])
 	}
-	return this
+	return c
 }

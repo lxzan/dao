@@ -22,6 +22,9 @@ func IsSorted[T any](arr []T, cmp func(a, b T) dao.Ordering) bool {
 }
 
 func Sort[T any](arr []T, cmp func(a, b T) dao.Ordering) {
+	if IsSorted(arr, cmp) {
+		return
+	}
 	QuickSort(arr, 0, len(arr)-1, cmp)
 }
 

@@ -38,9 +38,6 @@ func TestSlice_New(t *testing.T) {
 	var a = New[int]()
 	a.Push(1, 3, 5, 7)
 	a.ForEach(func(iter *Iterator[int]) {
-		println(iter.Index, iter.Value)
-		if iter.Value == 5 {
-			iter.Break()
-		}
+		println(iter.Value)
 	})
 }
