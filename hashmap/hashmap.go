@@ -76,43 +76,15 @@ func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
 	var hashCode = c.Hash(key)
 	var idx = hashCode & (c.size - 1)
 	var entrypoint = &c.indexes[idx]
-	if entrypoint.Head == 0 {
-		var ptr = c.storage.NextID()
-		entrypoint.Head = ptr
-		entrypoint.Tail = ptr
-		c.storage.Buckets[entrypoint.Head] = rapid.Iterator[Pair[K, V]]{
-			Ptr:  ptr,
-			Data: Pair[K, V]{hashCode: hashCode, Key: key, Val: val},
-		}
-		c.storage.Length++
-		return false
-	}
-
-	for i := &c.storage.Buckets[entrypoint.Head]; !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Data.Key == key {
-			i.Data.Val = val
-			return true
-		}
-	}
-
-	var cursor = c.storage.NextID()
-	var tail = &c.storage.Buckets[entrypoint.Tail]
-	tail.NextPtr = cursor
-	entrypoint.Tail = cursor
-	c.storage.Buckets[cursor] = rapid.Iterator[Pair[K, V]]{
-		Ptr:     cursor,
-		PrevPtr: tail.Ptr,
-		Data:    Pair[K, V]{hashCode: hashCode, Key: key, Val: val},
-	}
-	c.storage.Length++
-	return false
+	var data = &Pair[K, V]{hashCode: hashCode, Key: key, Val: val}
+	return c.storage.Push(entrypoint, data)
 }
 
 // find one
 func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 	var hashCode = c.Hash(key)
 	var idx = hashCode & (c.size - 1)
-	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
+	for i := c.storage.Begin(&c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Data.Key == key {
 			return i.Data.Val, true
 		}
@@ -124,14 +96,14 @@ func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 	var hashCode = c.Hash(key)
 	var idx = hashCode & (c.size - 1)
-	var entrypoint = c.indexes[idx]
+	var entrypoint = &c.indexes[idx]
 	if entrypoint.Head == 0 {
 		return false
 	}
 
 	for i := c.storage.Begin(entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Data.Key == key {
-			return c.storage.Delete(&entrypoint, i)
+			return c.storage.Delete(entrypoint, i)
 		}
 	}
 	return false

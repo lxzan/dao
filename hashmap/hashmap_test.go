@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-const test_count = 1000
+const test_count = 10000
 
 var testdata []string
 
@@ -31,15 +31,12 @@ func TestHashMap(t *testing.T) {
 		delete(m2, testdata[i])
 	}
 
-	for i := 0; i < test_count*2; i++ {
+	for i := 0; i < test_count/2; i++ {
 		var key = utils.Alphabet.Generate(8)
 		var val = utils.Rand.Int()
 		m1.Set(key, val)
 		m2[key] = val
 	}
-
-	//m1.Insert("", 123)
-	//m2[""] = 123
 
 	if m1.Len() != len(m2) {
 		println(m1.Len(), len(m2))
