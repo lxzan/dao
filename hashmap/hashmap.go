@@ -8,17 +8,17 @@ import (
 	"unsafe"
 )
 
-type Pair[K dao.Hashable, V any] struct {
-	hashCode uint32
-	Key      K
-	Val      V
-}
+//type Pair[K dao.Hashable, V any] struct {
+//	hashCode uint32
+//	Key      K
+//	Val      V
+//}
 
 type HashMap[K dao.Hashable, V any] struct {
 	load_factor float64 // load_factor=1.0
 	size        uint32  // cap=2^n
 	indexes     []rapid.EntryPoint
-	storage     *rapid.Rapid[Pair[K, V]]
+	storage     *rapid.Rapid[K, V]
 }
 
 // vol = size*load_factor
@@ -36,9 +36,7 @@ func New[K dao.Hashable, V any](size ...uint32) *HashMap[K, V] {
 		load_factor: 1.0,
 		size:        size[0],
 		indexes:     make([]rapid.EntryPoint, size[0], size[0]),
-		storage: rapid.New(size[0], func(a, b *Pair[K, V]) bool {
-			return a.Key == b.Key
-		}),
+		storage:     rapid.New[K, V](size[0]),
 	}
 }
 
@@ -82,21 +80,14 @@ func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
 	c.increase()
 	var hashCode = c.Hash(key)
 	var idx = hashCode & (c.size - 1)
-	var entrypoint = &c.indexes[idx]
-	var data = &Pair[K, V]{hashCode: hashCode, Key: key, Val: val}
-	return c.storage.Push(entrypoint, data)
+	return c.storage.Push(&c.indexes[idx], key, val)
 }
 
 // find one
 func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 	var hashCode = c.Hash(key)
 	var idx = hashCode & (c.size - 1)
-	for i := c.storage.Begin(&c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Data.Key == key {
-			return i.Data.Val, true
-		}
-	}
-	return val, exist
+	return c.storage.Find(c.indexes[idx].Head, key)
 }
 
 // delete one
@@ -104,8 +95,8 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 	var hashCode = c.Hash(key)
 	var idx = hashCode & (c.size - 1)
 	var entrypoint = &c.indexes[idx]
-	for i := c.storage.Begin(entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Data.Key == key {
+	for i := c.storage.Begin(entrypoint.Head); !c.storage.End(i); i = c.storage.Next(i) {
+		if i.Key == key {
 			return c.storage.Delete(entrypoint, i)
 		}
 	}
@@ -115,7 +106,7 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 func (c *HashMap[K, V]) ForEach(fn func(key K, val V)) {
 	for _, item := range c.storage.Buckets {
 		if item.Ptr != 0 {
-			fn(item.Data.Key, item.Data.Val)
+			fn(item.Key, item.Value)
 		}
 	}
 }

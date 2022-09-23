@@ -72,11 +72,14 @@ func BenchmarkGolang_Get(b *testing.B) {
 	for j := 0; j < bench_count; j++ {
 		m[testkeys[j]] = testvals[j]
 	}
+
+	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
 			_ = m[testkeys[j]]
 		}
 	}
+	b.StopTimer()
 }
 
 func BenchmarkHashMap_Delete(b *testing.B) {

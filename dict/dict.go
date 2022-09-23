@@ -19,16 +19,14 @@ type Element struct {
 type Dict[T any] struct {
 	index_length int // 8 Byte
 	root         *Element
-	storage      *rapid.Rapid[Pair[T]]
+	storage      *rapid.Rapid[string, T]
 }
 
 func New[T any]() *Dict[T] {
 	return &Dict[T]{
 		index_length: 8,
 		root:         &Element{Children: make([]*Element, sizes[0], sizes[0])},
-		storage: rapid.New(8, func(a, b *Pair[T]) bool {
-			return a.Key == b.Key
-		}),
+		storage:      rapid.New[string, T](8),
 	}
 }
 
@@ -49,7 +47,7 @@ func (this *Dict[T]) Insert(key string, val T) {
 	for i := this.begin(key, true); !this.end(i); i = this.next(i, true) {
 		if i.Cursor == i.End {
 			var entrypoint = &i.Node.EntryPoint
-			this.storage.Push(entrypoint, &Pair[T]{Key: key, Val: val})
+			this.storage.Push(entrypoint, key, val)
 			break
 		}
 	}
@@ -63,26 +61,26 @@ type match_params[T any] struct {
 	length  int
 }
 
-func (this *Dict[T]) Find(key string) (*Pair[T], bool) {
+func (this *Dict[T]) Find(key string) (value T, exist bool) {
 	var entrypoint rapid.EntryPoint
 	for i := this.begin(key, false); !this.end(i); i = this.next(i, false) {
 		if i.Node == nil {
-			return nil, false
+			return value, false
 		}
 		if i.Cursor == i.End {
 			if i.Node == nil || i.Node.EntryPoint.Head == 0 {
-				return nil, false
+				return value, false
 			}
 			entrypoint = i.Node.EntryPoint
 		}
 	}
 
-	for i := this.storage.Begin(&entrypoint); !this.storage.End(i); i = this.storage.Next(i) {
-		if i.Data.Key == key {
-			return &i.Data, true
+	for i := this.storage.Begin(entrypoint.Head); !this.storage.End(i); i = this.storage.Next(i) {
+		if i.Key == key {
+			return i.Value, true
 		}
 	}
-	return nil, false
+	return value, false
 }
 
 // limit: -1 as unlimited
@@ -114,9 +112,9 @@ func (this *Dict[T]) doMatch(node *Element, params *match_params[T]) {
 	if node == nil || len(params.results) >= params.limit {
 		return
 	}
-	for i := this.storage.Begin(&node.EntryPoint); !this.storage.End(i); i = this.storage.Next(i) {
-		if len(i.Data.Key) >= params.length && i.Data.Key[:params.length] == params.prefix {
-			params.results = append(params.results, i.Data)
+	for i := this.storage.Begin(node.EntryPoint.Head); !this.storage.End(i); i = this.storage.Next(i) {
+		if len(i.Key) >= params.length && i.Key[:params.length] == params.prefix {
+			params.results = append(params.results, Pair[T]{Key: i.Key, Val: i.Value})
 		}
 	}
 	for _, item := range node.Children {
@@ -130,8 +128,8 @@ func (this *Dict[T]) Delete(key string) bool {
 			return false
 		}
 		if i.Cursor == i.End {
-			for j := this.storage.Begin(&i.Node.EntryPoint); !this.storage.End(j); j = this.storage.Next(j) {
-				if j.Data.Key == key {
+			for j := this.storage.Begin(i.Node.EntryPoint.Head); !this.storage.End(j); j = this.storage.Next(j) {
+				if j.Key == key {
 					return this.storage.Delete(&i.Node.EntryPoint, j)
 				}
 			}
@@ -145,7 +143,7 @@ func (this *Dict[T]) ForEach(fn func(key string, val T) (continued bool)) {
 	for i := 0; i < n; i++ {
 		if this.storage.Buckets[i].Ptr != 0 {
 			var item = &this.storage.Buckets[i]
-			if !fn(item.Data.Key, item.Data.Val) {
+			if !fn(item.Key, item.Value) {
 				break
 			}
 		}

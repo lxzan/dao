@@ -7,9 +7,10 @@ func (c *HashMap[K, V]) increase() {
 		for i := 1; i < n; i++ {
 			var dst = &c.storage.Buckets[i]
 			if dst.Ptr != 0 {
-				var idx = dst.Data.hashCode & (m.size - 1)
+				var hashCode = c.Hash(dst.Key)
+				var idx = hashCode & (m.size - 1)
 				var entrypoint = &m.indexes[idx]
-				m.storage.Push(entrypoint, &dst.Data)
+				m.storage.Push(entrypoint, dst.Key, dst.Value)
 			}
 		}
 		*c = *m
