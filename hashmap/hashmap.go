@@ -1,20 +1,20 @@
 package hashmap
 
 import (
+	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/hash"
 	"github.com/lxzan/dao/rapid"
-	"github.com/lxzan/dao/slice"
-	"math"
+	"github.com/lxzan/dao/vector"
 	"unsafe"
 )
 
-type Pair[K comparable, V any] struct {
+type Pair[K dao.Hashable, V any] struct {
 	hashCode uint32
 	Key      K
 	Val      V
 }
 
-type HashMap[K comparable, V any] struct {
+type HashMap[K dao.Hashable, V any] struct {
 	load_factor float64 // load_factor=1.0
 	size        uint32  // cap=2^n
 	indexes     []rapid.EntryPoint
@@ -22,7 +22,7 @@ type HashMap[K comparable, V any] struct {
 }
 
 // vol = size*load_factor
-func New[K comparable, V any](size ...uint32) *HashMap[K, V] {
+func New[K dao.Hashable, V any](size ...uint32) *HashMap[K, V] {
 	if len(size) == 0 {
 		size = []uint32{8}
 	} else {
@@ -51,22 +51,29 @@ func (c *HashMap[K, V]) LoadFactor(x float64) *HashMap[K, V] {
 	return c
 }
 
-func (c *HashMap[K, V]) Hash(key K) uint32 {
-	switch unsafe.Sizeof(key) {
-	case 16:
-		data := *(*[]byte)(unsafe.Pointer(&key))
-		return hash.NewFnv32(data)
-	case 8:
-		var x = *(*uint64)(unsafe.Pointer(&key))
-		return uint32(x & math.MaxUint32)
-	case 4:
-		return *(*uint32)(unsafe.Pointer(&key))
-	case 2:
-		var x = *(*uint16)(unsafe.Pointer(&key))
-		return uint32(x)
+func (c *HashMap[K, V]) Hash(key interface{}) uint32 {
+	switch key.(type) {
+	case string:
+		var s = key.(string)
+		return hash.NewFnv32(*(*[]byte)(unsafe.Pointer(&s)))
+	case uint64:
+		return uint32(key.(uint64))
+	case uint32:
+		return key.(uint32)
+	case uint16:
+		return uint32(key.(uint16))
+	case uint8:
+		return uint32(key.(uint8))
+	case int64:
+		return uint32(uint64(key.(int64)) & uint64(c.size-1))
+	case int32:
+		return uint32(key.(int32))
+	case int16:
+		return uint32(key.(int16))
+	case int8:
+		return uint32(key.(int8))
 	default:
-		var x = *(*uint8)(unsafe.Pointer(&key))
-		return uint32(x)
+		panic("key type not supported")
 	}
 }
 
@@ -97,10 +104,6 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 	var hashCode = c.Hash(key)
 	var idx = hashCode & (c.size - 1)
 	var entrypoint = &c.indexes[idx]
-	if entrypoint.Head == 0 {
-		return false
-	}
-
 	for i := c.storage.Begin(entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Data.Key == key {
 			return c.storage.Delete(entrypoint, i)
@@ -109,27 +112,26 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 	return false
 }
 
-func (c *HashMap[K, V]) ForEach(fn func(p *Pair[K, V])) {
-	var arr = slice.Slice[rapid.Iterator[Pair[K, V]]](c.storage.Buckets)
-	for i := arr.Begin(); !arr.End(i); i = arr.Next(i) {
-		if i.Value.Ptr != 0 {
-			fn(&i.Value.Data)
+func (c *HashMap[K, V]) ForEach(fn func(key K, val V)) {
+	for _, item := range c.storage.Buckets {
+		if item.Ptr != 0 {
+			fn(item.Data.Key, item.Data.Val)
 		}
 	}
 }
 
-func (c *HashMap[K, V]) Keys() slice.Slice[K] {
+func (c *HashMap[K, V]) Keys() vector.Vector[K] {
 	var keys = make([]K, 0, c.Len())
-	c.ForEach(func(iter *Pair[K, V]) {
-		keys = append(keys, iter.Key)
+	c.ForEach(func(key K, val V) {
+		keys = append(keys, key)
 	})
 	return keys
 }
 
-func (c *HashMap[K, V]) Values() slice.Slice[V] {
+func (c *HashMap[K, V]) Values() vector.Vector[V] {
 	var values = make([]V, 0, c.Len())
-	c.ForEach(func(iter *Pair[K, V]) {
-		values = append(values, iter.Val)
+	c.ForEach(func(key K, val V) {
+		values = append(values, val)
 	})
 	return values
 }

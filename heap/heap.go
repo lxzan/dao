@@ -2,7 +2,7 @@ package heap
 
 import "github.com/lxzan/dao"
 
-func MinHeap[T dao.Comparable[T]](a, b T) dao.Ordering {
+func MinHeap[T dao.Comparable](a, b T) dao.Ordering {
 	if a > b {
 		return dao.Greater
 	} else if a < b {
@@ -12,7 +12,7 @@ func MinHeap[T dao.Comparable[T]](a, b T) dao.Ordering {
 	}
 }
 
-func MaxHeap[T dao.Comparable[T]](a, b T) dao.Ordering {
+func MaxHeap[T dao.Comparable](a, b T) dao.Ordering {
 	return -1 * MinHeap(a, b)
 }
 

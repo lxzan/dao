@@ -5,13 +5,13 @@ import (
 	"github.com/lxzan/dao/algorithm"
 )
 
-type Schema[T dao.Number[T]] struct {
+type Schema[T dao.Number] struct {
 	MaxValue T
 	MinValue T
 	Sum      T
 }
 
-func Init[T dao.Number[T]](op Operate, x T) Schema[T] {
+func Init[T dao.Number](op Operate, x T) Schema[T] {
 	var result = Schema[T]{
 		MaxValue: x,
 		MinValue: x,
@@ -23,7 +23,7 @@ func Init[T dao.Number[T]](op Operate, x T) Schema[T] {
 	return result
 }
 
-func Merge[T dao.Number[T]](a, b Schema[T]) Schema[T] {
+func Merge[T dao.Number](a, b Schema[T]) Schema[T] {
 	return Schema[T]{
 		MaxValue: algorithm.Max(a.MaxValue, b.MaxValue),
 		MinValue: algorithm.Min(a.MinValue, b.MinValue),

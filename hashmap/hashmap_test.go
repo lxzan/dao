@@ -57,14 +57,14 @@ func TestHashMap_ForEach(t *testing.T) {
 
 	for _, item := range testdata {
 		var val = utils.Rand.Int()
-		m1.Set(string(item), val)
+		m1.Set(item, val)
 		m2[item] = val
 	}
 
 	var sum = 0
-	m1.ForEach(func(iter *Pair[string, int]) {
+	m1.ForEach(func(key string, val int) {
 		sum++
-		if m2[iter.Key] != iter.Val {
+		if m2[key] != val {
 			t.Error("error!")
 		}
 	})

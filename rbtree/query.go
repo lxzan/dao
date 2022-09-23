@@ -2,7 +2,7 @@ package rbtree
 
 import (
 	"github.com/lxzan/dao"
-	"github.com/lxzan/dao/slice"
+	"github.com/lxzan/dao/vector"
 )
 
 func (this *RBTree[K, V]) Find(key K) (result V, exist bool) {
@@ -34,7 +34,7 @@ func (this *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, 
 
 func (this *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Iterator[K, V], exist bool) {
 	result = &Iterator[K, V]{}
-	var stack = slice.New[*rbtree_node[K, V]]()
+	var stack = vector.New[*rbtree_node[K, V]]()
 	stack.Push(this.root)
 	for stack.Len() > 0 {
 		var node = stack.RPop()
@@ -56,7 +56,7 @@ func (this *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Iterator[K
 
 func (this *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Iterator[K, V], exist bool) {
 	result = &Iterator[K, V]{}
-	var stack = slice.New[*rbtree_node[K, V]]()
+	var stack = vector.New[*rbtree_node[K, V]](0, 0)
 	stack.Push(this.root)
 	for stack.Len() > 0 {
 		var node = stack.RPop()
@@ -83,11 +83,11 @@ const (
 	DESC Order = 1
 )
 
-func AlwaysTrue[K dao.Comparable[K]](d K) bool {
+func AlwaysTrue[K dao.Comparable](d K) bool {
 	return true
 }
 
-type QueryBuilder[K dao.Comparable[K]] struct {
+type QueryBuilder[K dao.Comparable] struct {
 	LeftFilter  func(d K) bool
 	RightFilter func(d K) bool
 	Limit       int

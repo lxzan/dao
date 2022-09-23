@@ -2,7 +2,7 @@ package dict
 
 import (
 	"github.com/lxzan/dao/rapid"
-	"github.com/lxzan/dao/slice"
+	"github.com/lxzan/dao/vector"
 	"math"
 )
 
@@ -86,7 +86,7 @@ func (this *Dict[T]) Find(key string) (*Pair[T], bool) {
 }
 
 // limit: -1 as unlimited
-func (this *Dict[T]) Match(prefix string, limit ...int) slice.Slice[Pair[T]] {
+func (this *Dict[T]) Match(prefix string, limit ...int) vector.Vector[Pair[T]] {
 	if len(limit) == 0 {
 		limit = []int{math.MaxInt}
 	}

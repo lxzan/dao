@@ -24,7 +24,7 @@ func TestBinarySearch(t *testing.T) {
 	for i := 0; i < count; i++ {
 		arr = append(arr, rand.Intn(count))
 	}
-	Unique(&arr, func(x int) int { return x })
+	arr = Unique(arr, func(x int) int { return x })
 	Sort(arr, dao.DESC[int])
 
 	var m = make(map[int]int)

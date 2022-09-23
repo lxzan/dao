@@ -12,7 +12,7 @@ const (
 	RED   Color = 1
 )
 
-type Iterator[K dao.Comparable[K], V any] struct {
+type Iterator[K dao.Comparable, V any] struct {
 	Key  K // unique
 	Val  V
 	next bool
@@ -22,7 +22,7 @@ func (this *Iterator[K, V]) Break() {
 	this.next = false
 }
 
-type rbtree_node[K dao.Comparable[K], V any] struct {
+type rbtree_node[K dao.Comparable, V any] struct {
 	left   *rbtree_node[K, V]
 	right  *rbtree_node[K, V]
 	parent *rbtree_node[K, V]
@@ -51,24 +51,24 @@ func (this *rbtree_node[K, V]) is_red() bool {
 	return this.color == RED
 }
 
-func rbt_copy_color[K dao.Comparable[K], V any](n1, n2 *rbtree_node[K, V]) {
+func rbt_copy_color[K dao.Comparable, V any](n1, n2 *rbtree_node[K, V]) {
 	n1.color = n2.color
 }
 
-func rbtree_min[K dao.Comparable[K], V any](node *rbtree_node[K, V], sentinel *rbtree_node[K, V]) *rbtree_node[K, V] {
+func rbtree_min[K dao.Comparable, V any](node *rbtree_node[K, V], sentinel *rbtree_node[K, V]) *rbtree_node[K, V] {
 	for node.left != sentinel {
 		node = node.left
 	}
 	return node
 }
 
-type RBTree[K dao.Comparable[K], V any] struct {
+type RBTree[K dao.Comparable, V any] struct {
 	length   int
 	root     *rbtree_node[K, V]
 	sentinel *rbtree_node[K, V]
 }
 
-func New[K dao.Comparable[K], V any]() *RBTree[K, V] {
+func New[K dao.Comparable, V any]() *RBTree[K, V] {
 	var node rbtree_node[K, V]
 	return &RBTree[K, V]{root: &node, sentinel: &node, length: 0}
 }

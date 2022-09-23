@@ -12,7 +12,11 @@ type Comparer[T any] interface {
 	Compare(a, b *T) Ordering
 }
 
-func ASC[T Comparable[T]](a, b T) Ordering {
+type Comparable interface {
+	~string | ~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float64 | ~float32
+}
+
+func ASC[T Comparable](a, b T) Ordering {
 	if a > b {
 		return Greater
 	} else if a < b {
@@ -22,28 +26,24 @@ func ASC[T Comparable[T]](a, b T) Ordering {
 	}
 }
 
-func DESC[T Comparable[T]](a, b T) Ordering {
+func DESC[T Comparable](a, b T) Ordering {
 	return -1 * ASC(a, b)
 }
 
-type Comparable[T any] interface {
-	~string | ~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float64 | ~float32
-}
-
-type Number[T any] interface {
+type Number interface {
 	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float32 | ~float64
 }
 
-type Integer[T any] interface {
+type Integer interface {
 	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8
 }
 
-type Hasher32[T any] interface {
-	GetHashCode() uint32
+type Hashable interface {
+	Integer | ~string
 }
 
-type Container interface {
-	Begin() (iterator interface{})
-	Next(iterator interface{}) interface{}
-	End(iterator interface{}) bool
+type Iterable[I any] interface {
+	Begin() I
+	Next(I) I
+	End(I) bool
 }

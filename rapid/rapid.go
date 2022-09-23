@@ -16,12 +16,12 @@ type (
 	}
 )
 
-func (this *Rapid[T]) Collect(ptr Pointer) {
-	var node = &this.Buckets[ptr]
+func (c *Rapid[T]) Collect(ptr Pointer) {
+	var node = &c.Buckets[ptr]
 	node.Ptr = 0
 	node.NextPtr = 0
 	node.PrevPtr = 0
-	this.Recyclable.Push(ptr)
+	c.Recyclable.Push(ptr)
 }
 
 type Rapid[T any] struct {
@@ -42,45 +42,45 @@ func New[T any](size uint32, eq func(a, b *T) bool) *Rapid[T] {
 	}
 }
 
-func (this Rapid[T]) Begin(entrypoint *EntryPoint) *Iterator[T] {
-	return &this.Buckets[entrypoint.Head]
+func (c Rapid[T]) Begin(entrypoint *EntryPoint) *Iterator[T] {
+	return &c.Buckets[entrypoint.Head]
 }
 
-func (this Rapid[T]) Next(iter *Iterator[T]) *Iterator[T] {
-	return &this.Buckets[iter.NextPtr]
+func (c Rapid[T]) Next(iter *Iterator[T]) *Iterator[T] {
+	return &c.Buckets[iter.NextPtr]
 }
 
-func (this Rapid[T]) End(iter *Iterator[T]) bool {
+func (c Rapid[T]) End(iter *Iterator[T]) bool {
 	return iter.Ptr == 0
 }
 
 // NextID apply a pointer
-func (this *Rapid[T]) NextID() Pointer {
-	if this.Recyclable.Len() > 0 {
-		return this.Recyclable.Pop()
+func (c *Rapid[T]) NextID() Pointer {
+	if c.Recyclable.Len() > 0 {
+		return c.Recyclable.Pop()
 	}
 
-	var result = this.Serial
-	if result >= uint32(len(this.Buckets)) {
+	var result = c.Serial
+	if result >= uint32(len(c.Buckets)) {
 		var ele Iterator[T]
-		this.Buckets = append(this.Buckets, ele)
+		c.Buckets = append(c.Buckets, ele)
 	}
-	this.Serial++
+	c.Serial++
 	return Pointer(result)
 }
 
 // Push append an element with unique check
-func (this *Rapid[T]) Push(entrypoint *EntryPoint, data *T) (replaced bool) {
+func (c *Rapid[T]) Push(entrypoint *EntryPoint, data *T) (replaced bool) {
 	if entrypoint.Head == 0 {
-		var ptr = this.NextID()
+		var ptr = c.NextID()
 		entrypoint.Head = ptr
 		entrypoint.Tail = ptr
 	}
 
-	var head = &this.Buckets[entrypoint.Head]
+	var head = &c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 {
-		this.Length++
-		this.Buckets[entrypoint.Head] = Iterator[T]{
+		c.Length++
+		c.Buckets[entrypoint.Head] = Iterator[T]{
 			Ptr:     entrypoint.Head,
 			PrevPtr: 0,
 			NextPtr: 0,
@@ -89,97 +89,97 @@ func (this *Rapid[T]) Push(entrypoint *EntryPoint, data *T) (replaced bool) {
 		return false
 	}
 
-	for i := this.Begin(entrypoint); !this.End(i); i = this.Next(i) {
-		if this.Equal(&i.Data, data) {
+	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
+		if c.Equal(&i.Data, data) {
 			i.Data = *data
 			return true
 		}
 	}
 
-	var cursor = this.NextID()
-	var tail = &this.Buckets[entrypoint.Tail]
+	var cursor = c.NextID()
+	var tail = &c.Buckets[entrypoint.Tail]
 	tail.NextPtr = cursor
 	entrypoint.Tail = cursor
-	this.Buckets[cursor] = Iterator[T]{
+	c.Buckets[cursor] = Iterator[T]{
 		Ptr:     cursor,
 		PrevPtr: tail.Ptr,
 		NextPtr: 0,
 		Data:    *data,
 	}
-	this.Length++
+	c.Length++
 	return false
 }
 
 // Append append an element without unique check
-func (this *Rapid[T]) Append(entrypoint *EntryPoint, data *T) {
-	var head = &this.Buckets[entrypoint.Head]
+func (c *Rapid[T]) Append(entrypoint *EntryPoint, data *T) {
+	var head = &c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 {
 		head.Ptr = entrypoint.Head
 		head.Data = *data
-		this.Length++
+		c.Length++
 		return
 	}
 
-	var cursor = this.NextID()
-	var tail = &this.Buckets[entrypoint.Tail]
+	var cursor = c.NextID()
+	var tail = &c.Buckets[entrypoint.Tail]
 	tail.NextPtr = cursor
 	entrypoint.Tail = cursor
-	var target = &this.Buckets[cursor]
+	var target = &c.Buckets[cursor]
 	target.Ptr = cursor
 	target.Data = *data
 	target.PrevPtr = tail.Ptr
-	this.Length++
+	c.Length++
 }
 
 // Delete do not delete in loop if no break
-func (this *Rapid[T]) Delete(entrypoint *EntryPoint, target *Iterator[T]) (deleted bool) {
-	var head = this.Buckets[entrypoint.Head]
+func (c *Rapid[T]) Delete(entrypoint *EntryPoint, target *Iterator[T]) (deleted bool) {
+	var head = c.Buckets[entrypoint.Head]
 	if head.Ptr == 0 || target == nil || target.Ptr == 0 {
 		return false
 	}
 
-	this.Length--
+	c.Length--
 
 	// delete last node
 	if target.NextPtr == 0 && target.PrevPtr == 0 {
 		entrypoint.Head = 0
 		entrypoint.Tail = 0
-		this.Collect(target.Ptr)
+		c.Collect(target.Ptr)
 		return true
 	}
 
 	// delete head
 	if target.PrevPtr == 0 {
-		var next = &this.Buckets[target.NextPtr]
+		var next = &c.Buckets[target.NextPtr]
 		entrypoint.Head = next.Ptr
 		next.PrevPtr = 0
-		this.Collect(target.Ptr)
+		c.Collect(target.Ptr)
 		return true
 	}
 
 	// delete tail
 	if target.NextPtr == 0 {
-		var prev = &this.Buckets[target.PrevPtr]
+		var prev = &c.Buckets[target.PrevPtr]
 		entrypoint.Tail = prev.Ptr
 		prev.NextPtr = 0
-		this.Collect(target.Ptr)
+		c.Collect(target.Ptr)
 		return true
 	}
 
-	var prev = &this.Buckets[target.PrevPtr]
-	var next = &this.Buckets[target.NextPtr]
+	var prev = &c.Buckets[target.PrevPtr]
+	var next = &c.Buckets[target.NextPtr]
 	next.PrevPtr = prev.Ptr
 	prev.NextPtr = next.Ptr
-	this.Collect(target.Ptr)
+	c.Collect(target.Ptr)
 	return true
 }
 
-func (this *Rapid[T]) Find(entrypoint *EntryPoint, data *T) (result *Iterator[T], exist bool) {
+func (c *Rapid[T]) Find(entrypoint *EntryPoint, data *T) (result *Iterator[T], exist bool) {
 	if entrypoint.Head == 0 {
 		return nil, false
 	}
-	for i := this.Begin(entrypoint); !this.End(i); i = this.Next(i) {
-		if this.Equal(&i.Data, data) {
+	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
+		if c.Equal(&i.Data, data) {
 			return i, true
 		}
 	}
