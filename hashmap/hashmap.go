@@ -1,8 +1,8 @@
 package hashmap
 
 import (
-	"github.com/cespare/xxhash"
 	"github.com/lxzan/dao"
+	"github.com/lxzan/dao/internal/hash"
 	"github.com/lxzan/dao/internal/mlist"
 	"github.com/lxzan/dao/vector"
 	"unsafe"
@@ -19,7 +19,7 @@ func (c *Iterator[K, V]) Break() {
 }
 
 type HashMap[K dao.Hashable, V any] struct {
-	loadFactor float64 // loadFactor=0.75
+	loadFactor float64 // loadFactor=2.0
 	cap        uint32  // cap=2^n
 	b          uint64  // b=size-1
 	length     int     // length of indexes
@@ -42,11 +42,11 @@ func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
 
 	var capacity = caps[0]
 	return &HashMap[K, V]{
-		loadFactor: 0.75,
+		loadFactor: 2.0,
 		cap:        capacity,
 		b:          uint64(capacity) - 1,
 		indexes:    make([]mlist.Iterator[K, V], capacity, capacity),
-		storage:    mlist.New[K, V](capacity / 3),
+		storage:    mlist.New[K, V](capacity),
 	}
 }
 
@@ -58,7 +58,18 @@ func (c *HashMap[K, V]) Len() int {
 func (c *HashMap[K, V]) getIndex(key any) uint64 {
 	switch val := key.(type) {
 	case *string:
-		return (xxhash.Sum64(*(*[]byte)(unsafe.Pointer(val)))) & c.b
+		var h = hash.HashBytes64(*(*[]byte)(unsafe.Pointer(val)))
+		if c.cap < 256 {
+			h = (h >> 32) ^ (h << 32 >> 32)
+			h = (h >> 16) ^ (h << 16 >> 16)
+			h = (h >> 8) ^ (h << 8 >> 8)
+		} else if c.cap < 65536 {
+			h = (h >> 32) ^ (h << 32 >> 32)
+			h = (h >> 16) ^ (h << 16 >> 16)
+		} else {
+			h = (h >> 32) ^ (h << 32 >> 32)
+		}
+		return h & c.b
 	case *uint64:
 		return *val & c.b
 	case *uint:
@@ -85,7 +96,7 @@ func (c *HashMap[K, V]) getIndex(key any) uint64 {
 }
 
 func (c *HashMap[K, V]) grow() {
-	if float64(c.length)/float64(cap(c.indexes)) > c.loadFactor {
+	if float64(c.length+c.storage.Length)/float64(cap(c.indexes)) > c.loadFactor {
 		var m = New[K, V](c.cap * 2)
 		c.ForEach(func(iter *Iterator[K, V]) {
 			m.Set(iter.Key, iter.Value)
