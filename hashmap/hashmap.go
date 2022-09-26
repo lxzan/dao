@@ -3,17 +3,28 @@ package hashmap
 import (
 	"github.com/cespare/xxhash"
 	"github.com/lxzan/dao"
-	"github.com/lxzan/dao/rapid"
+	"github.com/lxzan/dao/internal/mlist"
 	"github.com/lxzan/dao/vector"
 	"unsafe"
 )
 
+type Iterator[K dao.Hashable, V any] struct {
+	broken bool
+	Key    K
+	Value  V
+}
+
+func (c *Iterator[K, V]) Break() {
+	c.broken = true
+}
+
 type HashMap[K dao.Hashable, V any] struct {
-	caps        uint32  // caps=2^n
-	b           uint64  // b=size-1
-	load_factor float64 // load_factor=1.0
-	indexes     []rapid.EntryPoint
-	storage     *rapid.Rapid[K, V]
+	loadFactor float64 // load_factor=1.0
+	cap        uint32  // cap=2^n
+	b          uint64  // b=size-1
+	length     int
+	indexes    []mlist.Iterator[K, V]
+	storage    *mlist.Rapid[K, V]
 }
 
 // New instantiates a hashmap
@@ -29,24 +40,31 @@ func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
 		caps[0] = vol
 	}
 	return &HashMap[K, V]{
-		load_factor: 1.0,
-		caps:        caps[0],
-		b:           uint64(caps[0]) - 1,
-		indexes:     make([]rapid.EntryPoint, caps[0], caps[0]),
-		storage:     rapid.New[K, V](caps[0]),
+		loadFactor: 1.0,
+		cap:        caps[0],
+		b:          uint64(caps[0]) - 1,
+		indexes:    make([]mlist.Iterator[K, V], caps[0], caps[0]),
+		storage:    mlist.New[K, V](caps[0]),
 	}
 }
 
+// Reset reset the hashmap
+//func (c *HashMap[K, V]) Reset() {
+//	var temp = rapid.EntryPoint{}
+//	for i, _ := range c.indexes {
+//		c.indexes[i] = temp
+//	}
+//	c.storage.Reset()
+//}
+
 // Len get the length of hashmap
 func (c *HashMap[K, V]) Len() int {
-	return c.storage.Length
+	return c.length + c.storage.Length
 }
 
-// LoadFactor set the load_factor of hashmap
-// if length/capacity>x, it will grow
-func (c *HashMap[K, V]) LoadFactor(x float64) *HashMap[K, V] {
-	c.load_factor = x
-	return c
+// Cap get the capacity of hashmap
+func (c *HashMap[K, V]) Cap() int {
+	return cap(c.storage.Buckets) - 1
 }
 
 func (c *HashMap[K, V]) getIndex(key any) uint64 {
@@ -78,18 +96,45 @@ func (c *HashMap[K, V]) getIndex(key any) uint64 {
 	}
 }
 
+func (c *HashMap[K, V]) grow() {
+	if float64(c.storage.Length)/float64(c.cap) > c.loadFactor {
+		var m = New[K, V](c.cap * 2)
+		c.ForEach(func(iter *Iterator[K, V]) {
+			m.Set(iter.Key, iter.Value)
+		})
+		*c = *m
+	}
+}
+
 // Set insert a element into the hashmap
 // if key exists, value will be replaced
 func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
-	c.increase()
+	c.grow()
 	var idx = c.getIndex(&key)
-	return c.storage.Push(&c.indexes[idx], key, val)
+	var header = &c.indexes[idx]
+	if header.Ptr == 0 {
+		c.length++
+		header.Ptr = 1
+		header.Key = key
+		header.Value = val
+		return false
+	}
+	if header.Key == key {
+		header.Value = val
+		return true
+	}
+	return c.storage.Push(header, key, val)
 }
 
 // Get search if hashmap contains the key
 func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 	var idx = c.getIndex(&key)
-	for i := c.storage.Begin(c.indexes[idx].Head); !c.storage.End(i); i = c.storage.Next(i) {
+	var header = &c.indexes[idx]
+	if header.Key == key {
+		return header.Value, true
+	}
+
+	for i := c.storage.Begin(header.NextPtr); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Key == key {
 			return i.Value, true
 		}
@@ -100,19 +145,53 @@ func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 // Delete delete a element if the key exists
 func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 	var idx = c.getIndex(&key)
-	var entrypoint = &c.indexes[idx]
-	for i := c.storage.Begin(entrypoint.Head); !c.storage.End(i); i = c.storage.Next(i) {
+	var header = &c.indexes[idx]
+	if header.Key == key {
+		if header.NextPtr == 0 {
+			header.Ptr = 0
+			c.length--
+		} else {
+			var dst = &c.storage.Buckets[header.NextPtr]
+			header.NextPtr = dst.NextPtr
+			header.Key = dst.Key
+			header.Value = dst.Value
+			c.storage.Collect(dst.Ptr)
+			c.storage.Length--
+		}
+		return true
+	}
+
+	for i := c.storage.Begin(header.NextPtr); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Key == key {
-			return c.storage.Delete(entrypoint, i)
+			return c.storage.Delete(header, i)
 		}
 	}
 	return false
 }
 
-func (c *HashMap[K, V]) ForEach(fn func(key K, val V)) {
-	for _, item := range c.storage.Buckets {
-		if item.Ptr != 0 {
-			fn(item.Key, item.Value)
+func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
+	var iter = &Iterator[K, V]{}
+	for _, item := range c.indexes {
+		if iter.broken {
+			return
+		}
+		if item.Ptr > 0 {
+			iter.Key = item.Key
+			iter.Value = item.Value
+			fn(iter)
+		}
+	}
+
+	for i := 1; i < int(c.storage.Serial); i++ {
+		if iter.broken {
+			return
+		}
+
+		var item = &c.storage.Buckets[i]
+		if item.Ptr > 0 {
+			iter.Key = item.Key
+			iter.Value = item.Value
+			fn(iter)
 		}
 	}
 }
@@ -120,8 +199,8 @@ func (c *HashMap[K, V]) ForEach(fn func(key K, val V)) {
 // Keys get all the keys of the hashmap, construct it as a dynamic array and return it
 func (c *HashMap[K, V]) Keys() *vector.Vector[K] {
 	var keys = vector.New[K](0, c.Len())
-	c.ForEach(func(key K, val V) {
-		keys.Push(key)
+	c.ForEach(func(iter *Iterator[K, V]) {
+		keys.Push(iter.Key)
 	})
 	return keys
 }
@@ -129,8 +208,8 @@ func (c *HashMap[K, V]) Keys() *vector.Vector[K] {
 // Values get all the values of the hashmap, construct it as a dynamic array and return it
 func (c *HashMap[K, V]) Values() *vector.Vector[V] {
 	var values = vector.New[V](0, c.Len())
-	c.ForEach(func(key K, val V) {
-		values.Push(val)
+	c.ForEach(func(iter *Iterator[K, V]) {
+		values.Push(iter.Value)
 	})
 	return values
 }
