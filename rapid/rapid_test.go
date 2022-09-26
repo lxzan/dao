@@ -27,7 +27,7 @@ func TestRapid_Push(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		var arr1 = make([]int, 0)
 		var arr2 = make([]int, 0)
-		for j := queens1.Begin(&entrypoints[i]); !queens1.End(j); j = queens1.Next(j) {
+		for j := queens1.Begin(entrypoints[i].Head); !queens1.End(j); j = queens1.Next(j) {
 			arr1 = append(arr1, j.Value)
 		}
 		for j := queens2[i].Begin(); !queens2[i].End(j); j = queens2[i].Next(j) {
@@ -73,7 +73,7 @@ func TestRapid_Delete(t *testing.T) {
 	for k, _ := range m {
 		arr1 = append(arr1, k)
 	}
-	for i := q.Begin(entrypoint); !q.End(i); i = q.Next(i) {
+	for i := q.Begin(entrypoint.Head); !q.End(i); i = q.Next(i) {
 		arr2 = append(arr2, i.Key)
 	}
 	if !utils.SameStrings(arr1, arr2) {

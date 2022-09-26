@@ -41,8 +41,8 @@ func (c *Rapid[K, V]) Collect(ptr Pointer) {
 	c.Recyclable.Push(ptr)
 }
 
-func (c *Rapid[K, V]) Begin(entrypoint *EntryPoint) *Iterator[K, V] {
-	return &c.Buckets[entrypoint.Head]
+func (c *Rapid[K, V]) Begin(ptr Pointer) *Iterator[K, V] {
+	return &c.Buckets[ptr]
 }
 
 func (c *Rapid[K, V]) Next(iter *Iterator[K, V]) *Iterator[K, V] {
@@ -123,7 +123,7 @@ func (c *Rapid[K, V]) Push(entrypoint *EntryPoint, key K, value V) (replaced boo
 		return false
 	}
 
-	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
+	for i := c.Begin(entrypoint.Head); !c.End(i); i = c.Next(i) {
 		if i.Key == key {
 			i.Value = value
 			return true
@@ -187,8 +187,8 @@ func (c *Rapid[K, V]) Delete(entrypoint *EntryPoint, target *Iterator[K, V]) (de
 	return true
 }
 
-func (c *Rapid[K, V]) Find(entrypoint *EntryPoint, key K) (value V, exist bool) {
-	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
+func (c *Rapid[K, V]) Find(entrypoint EntryPoint, key K) (value V, exist bool) {
+	for i := c.Begin(entrypoint.Head); !c.End(i); i = c.Next(i) {
 		if i.Key == key {
 			return i.Value, true
 		}

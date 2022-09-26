@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-const test_count = 10000
+const test_count = 1000
 
 var testdata []string
 
