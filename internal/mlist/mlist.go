@@ -75,7 +75,6 @@ func (c *Rapid[K, V]) Push(entrypoint *Iterator[K, V], key K, value V) (replaced
 	if entrypoint.NextPtr == 0 {
 		var ptr = c.NextID()
 		entrypoint.NextPtr = ptr
-		entrypoint.PrevPtr = ptr
 	}
 
 	var head = &c.Buckets[entrypoint.NextPtr]
@@ -94,20 +93,21 @@ func (c *Rapid[K, V]) Push(entrypoint *Iterator[K, V], key K, value V) (replaced
 			i.Value = value
 			return true
 		}
+		if i.NextPtr == 0 {
+			var cursor = c.NextID() // may cause slice grow
+			var dst = &c.Buckets[cursor]
+			dst.Ptr = cursor
+			dst.PrevPtr = i.Ptr
+			dst.NextPtr = 0
+			dst.Key = key
+			dst.Value = value
+			c.Buckets[i.Ptr].NextPtr = cursor
+			c.Length++
+			return false
+		}
 	}
 
-	var cursor = c.NextID()
-	var tail = &c.Buckets[entrypoint.PrevPtr]
-	tail.NextPtr = cursor
-	entrypoint.PrevPtr = cursor
-	var dst = &c.Buckets[cursor]
-	dst.Ptr = cursor
-	dst.PrevPtr = tail.Ptr
-	dst.NextPtr = 0
-	dst.Key = key
-	dst.Value = value
-	c.Length++
-	return false
+	panic("Rapid.Push")
 }
 
 // Delete do not delete in loop if no break

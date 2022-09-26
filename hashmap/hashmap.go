@@ -19,10 +19,10 @@ func (c *Iterator[K, V]) Break() {
 }
 
 type HashMap[K dao.Hashable, V any] struct {
-	loadFactor float64 // load_factor=1.0
+	loadFactor float64 // loadFactor=0.75
 	cap        uint32  // cap=2^n
 	b          uint64  // b=size-1
-	length     int
+	length     int     // length of indexes
 	indexes    []mlist.Iterator[K, V]
 	storage    *mlist.Rapid[K, V]
 }
@@ -39,32 +39,20 @@ func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
 		}
 		caps[0] = vol
 	}
+
+	var capacity = caps[0]
 	return &HashMap[K, V]{
-		loadFactor: 1.0,
-		cap:        caps[0],
-		b:          uint64(caps[0]) - 1,
-		indexes:    make([]mlist.Iterator[K, V], caps[0], caps[0]),
-		storage:    mlist.New[K, V](caps[0]),
+		loadFactor: 0.75,
+		cap:        capacity,
+		b:          uint64(capacity) - 1,
+		indexes:    make([]mlist.Iterator[K, V], capacity, capacity),
+		storage:    mlist.New[K, V](capacity / 3),
 	}
 }
-
-// Reset reset the hashmap
-//func (c *HashMap[K, V]) Reset() {
-//	var temp = rapid.EntryPoint{}
-//	for i, _ := range c.indexes {
-//		c.indexes[i] = temp
-//	}
-//	c.storage.Reset()
-//}
 
 // Len get the length of hashmap
 func (c *HashMap[K, V]) Len() int {
 	return c.length + c.storage.Length
-}
-
-// Cap get the capacity of hashmap
-func (c *HashMap[K, V]) Cap() int {
-	return cap(c.storage.Buckets) - 1
 }
 
 func (c *HashMap[K, V]) getIndex(key any) uint64 {
@@ -97,7 +85,7 @@ func (c *HashMap[K, V]) getIndex(key any) uint64 {
 }
 
 func (c *HashMap[K, V]) grow() {
-	if float64(c.storage.Length)/float64(c.cap) > c.loadFactor {
+	if float64(c.length)/float64(cap(c.indexes)) > c.loadFactor {
 		var m = New[K, V](c.cap * 2)
 		c.ForEach(func(iter *Iterator[K, V]) {
 			m.Set(iter.Key, iter.Value)
@@ -130,7 +118,7 @@ func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
 func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 	var idx = c.getIndex(&key)
 	var header = &c.indexes[idx]
-	if header.Key == key {
+	if header.Ptr > 0 && header.Key == key {
 		return header.Value, true
 	}
 
@@ -146,12 +134,13 @@ func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 	var idx = c.getIndex(&key)
 	var header = &c.indexes[idx]
-	if header.Key == key {
+	if header.Ptr > 0 && header.Key == key {
 		if header.NextPtr == 0 {
 			header.Ptr = 0
 			c.length--
 		} else {
 			var dst = &c.storage.Buckets[header.NextPtr]
+			c.storage.Buckets[dst.NextPtr].PrevPtr = 0
 			header.NextPtr = dst.NextPtr
 			header.Key = dst.Key
 			header.Value = dst.Value
@@ -186,7 +175,6 @@ func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
 		if iter.broken {
 			return
 		}
-
 		var item = &c.storage.Buckets[i]
 		if item.Ptr > 0 {
 			iter.Key = item.Key
