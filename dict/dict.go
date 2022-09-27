@@ -12,7 +12,7 @@ type Pair[T any] struct {
 }
 
 type Element struct {
-	EntryPoint rapid.EntryPoint
+	EntryPoint rapid.Pointer
 	Children   []*Element
 }
 
@@ -62,20 +62,20 @@ type match_params[T any] struct {
 }
 
 func (this *Dict[T]) Find(key string) (value T, exist bool) {
-	var entrypoint rapid.EntryPoint
+	var entrypoint rapid.Pointer
 	for i := this.begin(key, false); !this.end(i); i = this.next(i, false) {
 		if i.Node == nil {
 			return value, false
 		}
 		if i.Cursor == i.End {
-			if i.Node == nil || i.Node.EntryPoint.Head == 0 {
+			if i.Node == nil || i.Node.EntryPoint == 0 {
 				return value, false
 			}
 			entrypoint = i.Node.EntryPoint
 		}
 	}
 
-	for i := this.storage.Begin(entrypoint.Head); !this.storage.End(i); i = this.storage.Next(i) {
+	for i := this.storage.Begin(entrypoint); !this.storage.End(i); i = this.storage.Next(i) {
 		if i.Key == key {
 			return i.Value, true
 		}
@@ -112,7 +112,7 @@ func (this *Dict[T]) doMatch(node *Element, params *match_params[T]) {
 	if node == nil || len(params.results) >= params.limit {
 		return
 	}
-	for i := this.storage.Begin(node.EntryPoint.Head); !this.storage.End(i); i = this.storage.Next(i) {
+	for i := this.storage.Begin(node.EntryPoint); !this.storage.End(i); i = this.storage.Next(i) {
 		if len(i.Key) >= params.length && i.Key[:params.length] == params.prefix {
 			params.results = append(params.results, Pair[T]{Key: i.Key, Val: i.Value})
 		}
@@ -128,7 +128,7 @@ func (this *Dict[T]) Delete(key string) bool {
 			return false
 		}
 		if i.Cursor == i.End {
-			for j := this.storage.Begin(i.Node.EntryPoint.Head); !this.storage.End(j); j = this.storage.Next(j) {
+			for j := this.storage.Begin(i.Node.EntryPoint); !this.storage.End(j); j = this.storage.Next(j) {
 				if j.Key == key {
 					return this.storage.Delete(&i.Node.EntryPoint, j)
 				}

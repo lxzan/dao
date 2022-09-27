@@ -3,16 +3,15 @@ package hashmap
 import (
 	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/hash"
+	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/vector"
-	"unsafe"
 )
 
 type HashMap[K dao.Hashable, V any] struct {
-	loadFactor float64      // loadFactor=1.0
-	cap        uint32       // cap=2^n
-	b          uint64       // b=size-1
-	indexes    []Pointer    // list header pointer
-	storage    *mList[K, V] // list data
+	cap     uint32       // cap=2^n
+	b       uint64       // b=cap-1
+	indexes []Pointer    // list header pointer
+	storage *mList[K, V] // list data
 }
 
 // New instantiates a hashmap
@@ -30,11 +29,10 @@ func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
 
 	var capacity = caps[0]
 	return &HashMap[K, V]{
-		loadFactor: 1.0,
-		cap:        capacity,
-		b:          uint64(capacity) - 1,
-		indexes:    make([]Pointer, capacity, capacity),
-		storage:    newMList[K, V](capacity),
+		cap:     capacity,
+		b:       uint64(capacity) - 1,
+		indexes: make([]Pointer, capacity, capacity),
+		storage: newMList[K, V](capacity),
 	}
 }
 
@@ -46,28 +44,28 @@ func (c *HashMap[K, V]) Len() int {
 func (c *HashMap[K, V]) getIndex(key any) uint64 {
 	var hashcode uint64
 	switch val := key.(type) {
-	case *string:
-		hashcode = hash.HashBytes64(*(*[]byte)(unsafe.Pointer(val)))
-	case *uint64:
-		hashcode = *val
-	case *uint:
-		hashcode = uint64(*val)
-	case *uint32:
-		hashcode = uint64(*val)
-	case *uint16:
-		hashcode = uint64(*val)
-	case *uint8:
-		hashcode = uint64(*val)
-	case *int64:
-		hashcode = uint64(*val)
-	case *int:
-		hashcode = uint64(*val)
-	case *int32:
-		hashcode = uint64(*val)
-	case *int16:
-		hashcode = uint64(*val)
-	case *int8:
-		hashcode = uint64(*val)
+	case string:
+		hashcode = hash.HashBytes64(utils.S2B(val))
+	case uint64:
+		hashcode = val
+	case uint:
+		hashcode = uint64(val)
+	case uint32:
+		hashcode = uint64(val)
+	case uint16:
+		hashcode = uint64(val)
+	case uint8:
+		hashcode = uint64(val)
+	case int64:
+		hashcode = uint64(val)
+	case int:
+		hashcode = uint64(val)
+	case int32:
+		hashcode = uint64(val)
+	case int16:
+		hashcode = uint64(val)
+	case int8:
+		hashcode = uint64(val)
 	default:
 		panic("key type not supported")
 	}
@@ -75,7 +73,7 @@ func (c *HashMap[K, V]) getIndex(key any) uint64 {
 }
 
 func (c *HashMap[K, V]) grow() {
-	if float64(c.storage.Length)/float64(c.cap) > c.loadFactor {
+	if c.storage.Length >= int(c.cap) {
 		var m = New[K, V](c.cap * 2)
 		for i := 1; i < int(c.storage.Serial); i++ {
 			var item = &c.storage.Buckets[i]
@@ -91,13 +89,13 @@ func (c *HashMap[K, V]) grow() {
 // if key exists, value will be replaced
 func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
 	c.grow()
-	var idx = c.getIndex(&key)
+	var idx = c.getIndex(key)
 	return c.storage.Push(&c.indexes[idx], key, val)
 }
 
 // Get search if hashmap contains the key
 func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
-	var idx = c.getIndex(&key)
+	var idx = c.getIndex(key)
 	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Key == key {
 			return i.Value, true
@@ -108,7 +106,7 @@ func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 
 // Delete delete a element if the key exists
 func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
-	var idx = c.getIndex(&key)
+	var idx = c.getIndex(key)
 	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Key == key {
 			return c.storage.Delete(&c.indexes[idx], i)

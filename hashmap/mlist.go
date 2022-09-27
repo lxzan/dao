@@ -56,13 +56,13 @@ func (c *mList[K, V]) NextID() Pointer {
 		return c.Recyclable.Pop()
 	}
 
-	var result = c.Serial
-	if result >= uint32(len(c.Buckets)) {
+	var ptr = c.Serial
+	if ptr >= uint32(len(c.Buckets)) {
 		var ele Iterator[K, V]
 		c.Buckets = append(c.Buckets, ele)
 	}
 	c.Serial++
-	return Pointer(result)
+	return Pointer(ptr)
 }
 
 // Push append an Iterator[] with unique check

@@ -2,8 +2,10 @@ package utils
 
 import (
 	"math/rand"
+	"reflect"
 	"sort"
 	"time"
+	"unsafe"
 )
 
 type RandomString string
@@ -75,4 +77,13 @@ func ReverseStrings(arr []string) {
 	for i := 0; i < n/2; i++ {
 		arr[i], arr[n-i-1] = arr[n-i-1], arr[i]
 	}
+}
+
+func S2B(s string) (b []byte) {
+	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	bh.Data = sh.Data
+	bh.Cap = sh.Len
+	bh.Len = sh.Len
+	return b
 }
