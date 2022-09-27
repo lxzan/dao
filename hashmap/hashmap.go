@@ -3,28 +3,16 @@ package hashmap
 import (
 	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/hash"
-	"github.com/lxzan/dao/rapid"
 	"github.com/lxzan/dao/vector"
 	"unsafe"
 )
 
-type Iterator[K dao.Hashable, V any] struct {
-	broken bool
-	Key    K
-	Value  V
-}
-
-func (c *Iterator[K, V]) Break() {
-	c.broken = true
-}
-
 type HashMap[K dao.Hashable, V any] struct {
-	loadFactor float64 // loadFactor=1.0
-	cap        uint32  // cap=2^n
-	b          uint64  // b=size-1
-	length     int     // length of indexes
-	indexes    []rapid.Pointer
-	storage    *rapid.Rapid[K, V]
+	loadFactor float64      // loadFactor=1.0
+	cap        uint32       // cap=2^n
+	b          uint64       // b=size-1
+	indexes    []Pointer    // list header pointer
+	storage    *mList[K, V] // list data
 }
 
 // New instantiates a hashmap
@@ -35,7 +23,7 @@ func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
 	} else {
 		var vol uint32 = 8
 		for vol < caps[0] {
-			vol <<= 1
+			vol *= 2
 		}
 		caps[0] = vol
 	}
@@ -45,14 +33,14 @@ func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
 		loadFactor: 1.0,
 		cap:        capacity,
 		b:          uint64(capacity) - 1,
-		indexes:    make([]rapid.Pointer, capacity, capacity),
-		storage:    rapid.New[K, V](capacity),
+		indexes:    make([]Pointer, capacity, capacity),
+		storage:    newMList[K, V](capacity),
 	}
 }
 
 // Len get the length of hashmap
 func (c *HashMap[K, V]) Len() int {
-	return c.length + c.storage.Length
+	return c.storage.Length
 }
 
 func (c *HashMap[K, V]) getIndex(key any) uint64 {
@@ -89,9 +77,12 @@ func (c *HashMap[K, V]) getIndex(key any) uint64 {
 func (c *HashMap[K, V]) grow() {
 	if float64(c.storage.Length)/float64(c.cap) > c.loadFactor {
 		var m = New[K, V](c.cap * 2)
-		c.ForEach(func(iter *Iterator[K, V]) {
-			m.Set(iter.Key, iter.Value)
-		})
+		for i := 1; i < int(c.storage.Serial); i++ {
+			var item = &c.storage.Buckets[i]
+			if item.ptr > 0 {
+				m.Set(item.Key, item.Value)
+			}
+		}
 		*c = *m
 	}
 }
@@ -118,10 +109,9 @@ func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 // Delete delete a element if the key exists
 func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 	var idx = c.getIndex(&key)
-	var entrypoint = &c.indexes[idx]
-	for i := c.storage.Begin(*entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
+	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Key == key {
-			return c.storage.Delete(entrypoint, i)
+			return c.storage.Delete(&c.indexes[idx], i)
 		}
 	}
 	return false
@@ -129,13 +119,13 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 
 func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
 	var iter = &Iterator[K, V]{}
-
 	for i := 1; i < int(c.storage.Serial); i++ {
 		if iter.broken {
 			return
 		}
+
 		var item = &c.storage.Buckets[i]
-		if item.Ptr > 0 {
+		if item.ptr > 0 {
 			iter.Key = item.Key
 			iter.Value = item.Value
 			fn(iter)
