@@ -13,16 +13,11 @@ const (
 
 // HashBytes64 returns the hash of u.
 func HashBytes64(b []byte) uint64 {
-	return AddBytes64(Init64, b)
+	return addBytes64(Init64, b)
 }
 
-// HashUint64 returns the hash of u.
-func HashUint64(u uint64) uint64 {
-	return AddUint64(Init64, u)
-}
-
-// AddBytes64 adds the hash of b to the precomputed hash value h.
-func AddBytes64(h uint64, b []byte) uint64 {
+// addBytes64 adds the hash of b to the precomputed hash value h.
+func addBytes64(h uint64, b []byte) uint64 {
 	for len(b) >= 8 {
 		h = (h * prime64) ^ binary.LittleEndian.Uint64(b[:8])
 		b = b[8:]
@@ -37,18 +32,5 @@ func AddBytes64(h uint64, b []byte) uint64 {
 		h = (h * prime64) ^ uint64(code)
 	}
 
-	return h
-}
-
-// AddUint64 adds the hash value of the 8 bytes of u to h.
-func AddUint64(h uint64, u uint64) uint64 {
-	h = (h * prime64) ^ ((u >> 56) & 0xFF)
-	h = (h * prime64) ^ ((u >> 48) & 0xFF)
-	h = (h * prime64) ^ ((u >> 40) & 0xFF)
-	h = (h * prime64) ^ ((u >> 32) & 0xFF)
-	h = (h * prime64) ^ ((u >> 24) & 0xFF)
-	h = (h * prime64) ^ ((u >> 16) & 0xFF)
-	h = (h * prime64) ^ ((u >> 8) & 0xFF)
-	h = (h * prime64) ^ ((u >> 0) & 0xFF)
 	return h
 }

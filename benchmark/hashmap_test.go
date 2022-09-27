@@ -30,7 +30,7 @@ func BenchmarkHashMap_Hash(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
 			var b = *(*[]byte)(unsafe.Pointer(&testkeys[j]))
-			hash.NewFnv32(b)
+			hash.HashBytes64(b)
 		}
 	}
 }

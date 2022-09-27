@@ -9,10 +9,10 @@ import (
 func TestRapid_Push(t *testing.T) {
 	var queens1 = New[string, int](8)
 	var queens2 = make([]*double_linkedlist.List[int], 0)
-	var entrypoints = make([]EntryPoint, 0)
+	var entrypoints = make([]Pointer, 0)
 	for i := 0; i < 10; i++ {
 		var ptr = queens1.NextID()
-		entrypoints = append(entrypoints, EntryPoint{Head: ptr, Tail: ptr})
+		entrypoints = append(entrypoints, ptr)
 		queens2 = append(queens2, double_linkedlist.New[int]())
 	}
 
@@ -27,7 +27,7 @@ func TestRapid_Push(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		var arr1 = make([]int, 0)
 		var arr2 = make([]int, 0)
-		for j := queens1.Begin(entrypoints[i].Head); !queens1.End(j); j = queens1.Next(j) {
+		for j := queens1.Begin(entrypoints[i]); !queens1.End(j); j = queens1.Next(j) {
 			arr1 = append(arr1, j.Value)
 		}
 		for j := queens2[i].Begin(); !queens2[i].End(j); j = queens2[i].Next(j) {
@@ -43,29 +43,29 @@ func TestRapid_Delete(t *testing.T) {
 	const test_count = 10000
 	var q = New[string, int](0)
 	var ptr = q.NextID()
-	var entrypoint = &EntryPoint{Head: ptr, Tail: ptr}
+	var entrypoint = ptr
 	var m = make(map[string]int)
 	var keys = make([]string, 0)
 
 	for i := 0; i < test_count; i++ {
 		var key = utils.Alphabet.Generate(16)
 		m[key] = 1
-		q.Push(entrypoint, key, 1)
+		q.Push(&entrypoint, key, 1)
 		keys = append(keys, key)
 	}
 
 	for i := 0; i < test_count/2; i++ {
-		var ptr = entrypoint.Tail
+		var ptr = entrypoint
 		var iter = &q.Buckets[ptr]
 		var key = iter.Key
-		q.Delete(entrypoint, iter)
+		q.Delete(&entrypoint, iter)
 		delete(m, key)
 	}
 
 	for i := 0; i < test_count; i++ {
 		var key = utils.Alphabet.Generate(16)
 		m[key] = 1
-		q.Push(entrypoint, key, 1)
+		q.Push(&entrypoint, key, 1)
 	}
 
 	var arr1 = make([]string, 0)
@@ -73,7 +73,7 @@ func TestRapid_Delete(t *testing.T) {
 	for k, _ := range m {
 		arr1 = append(arr1, k)
 	}
-	for i := q.Begin(entrypoint.Head); !q.End(i); i = q.Next(i) {
+	for i := q.Begin(entrypoint); !q.End(i); i = q.Next(i) {
 		arr2 = append(arr2, i.Key)
 	}
 	if !utils.SameStrings(arr1, arr2) {
