@@ -47,3 +47,8 @@ type Iterable[I any] interface {
 	Next(I) I
 	End(I) bool
 }
+
+const (
+	Break    = false
+	Continue = true
+)

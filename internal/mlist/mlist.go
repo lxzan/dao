@@ -12,15 +12,15 @@ type (
 	}
 )
 
-type Rapid[K comparable, V any] struct {
+type MList[K comparable, V any] struct {
 	Length     int
 	Serial     uint32
-	Recyclable Stack
+	Recyclable arrayStack // do not recycle head
 	Buckets    []Iterator[K, V]
 }
 
-func New[K comparable, V any](size uint32) *Rapid[K, V] {
-	return &Rapid[K, V]{
+func NewMList[K comparable, V any](size uint32) *MList[K, V] {
+	return &MList[K, V]{
 		Serial:     1,
 		Recyclable: []Pointer{},
 		Buckets:    make([]Iterator[K, V], size+1),
@@ -28,59 +28,47 @@ func New[K comparable, V any](size uint32) *Rapid[K, V] {
 	}
 }
 
-func (c *Rapid[K, V]) Reset() {
-	c.Length = 0
-	c.Serial = 1
-	c.Recyclable = c.Recyclable[:0]
-	c.Buckets = c.Buckets[:1]
-}
-
-func (c *Rapid[K, V]) Collect(ptr Pointer) {
-	var node = &c.Buckets[ptr]
-	node.Ptr = 0
-	node.NextPtr = 0
-	node.PrevPtr = 0
+func (c *MList[K, V]) Collect(ptr Pointer) {
+	c.Buckets[ptr] = Iterator[K, V]{}
 	c.Recyclable.Push(ptr)
 }
 
-func (c *Rapid[K, V]) Begin(ptr Pointer) *Iterator[K, V] {
+func (c *MList[K, V]) Begin(ptr Pointer) *Iterator[K, V] {
 	return &c.Buckets[ptr]
 }
 
-func (c *Rapid[K, V]) Next(iter *Iterator[K, V]) *Iterator[K, V] {
+func (c *MList[K, V]) Next(iter *Iterator[K, V]) *Iterator[K, V] {
 	return &c.Buckets[iter.NextPtr]
 }
 
-func (c *Rapid[K, V]) End(iter *Iterator[K, V]) bool {
+func (c *MList[K, V]) End(iter *Iterator[K, V]) bool {
 	return iter.Ptr == 0
 }
 
 // NextID apply a pointer
-func (c *Rapid[K, V]) NextID() Pointer {
+func (c *MList[K, V]) NextID() Pointer {
 	if c.Recyclable.Len() > 0 {
 		return c.Recyclable.Pop()
 	}
 
-	var result = c.Serial
-	if result >= uint32(len(c.Buckets)) {
+	var ptr = c.Serial
+	if ptr >= uint32(len(c.Buckets)) {
 		var ele Iterator[K, V]
 		c.Buckets = append(c.Buckets, ele)
 	}
 	c.Serial++
-	return Pointer(result)
+	return Pointer(ptr)
 }
 
-// Push append an element with unique check
-func (c *Rapid[K, V]) Push(entrypoint *Iterator[K, V], key K, value V) (replaced bool) {
-	if entrypoint.NextPtr == 0 {
-		var ptr = c.NextID()
-		entrypoint.NextPtr = ptr
+// Push append an Iterator[] with unique check
+func (c *MList[K, V]) Push(entrypoint *Pointer, key K, value V) (replaced bool) {
+	if *entrypoint == 0 {
+		*entrypoint = c.NextID()
 	}
-
-	var head = &c.Buckets[entrypoint.NextPtr]
+	var head = &c.Buckets[*entrypoint]
 	if head.Ptr == 0 {
 		c.Length++
-		head.Ptr = entrypoint.NextPtr
+		head.Ptr = *entrypoint
 		head.PrevPtr = 0
 		head.NextPtr = 0
 		head.Key = key
@@ -88,31 +76,31 @@ func (c *Rapid[K, V]) Push(entrypoint *Iterator[K, V], key K, value V) (replaced
 		return false
 	}
 
-	for i := c.Begin(entrypoint.NextPtr); !c.End(i); i = c.Next(i) {
+	for i := c.Begin(*entrypoint); !c.End(i); i = c.Next(i) {
 		if i.Key == key {
 			i.Value = value
 			return true
 		}
 		if i.NextPtr == 0 {
-			var cursor = c.NextID() // may cause slice grow
+			var cursor = c.NextID()
+			c.Buckets[i.Ptr].NextPtr = cursor
 			var dst = &c.Buckets[cursor]
 			dst.Ptr = cursor
 			dst.PrevPtr = i.Ptr
 			dst.NextPtr = 0
 			dst.Key = key
 			dst.Value = value
-			c.Buckets[i.Ptr].NextPtr = cursor
 			c.Length++
-			return false
+			break
 		}
 	}
-
-	panic("Rapid.Push")
+	return false
 }
 
 // Delete do not delete in loop if no break
-func (c *Rapid[K, V]) Delete(entrypoint *Iterator[K, V], target *Iterator[K, V]) (deleted bool) {
-	if entrypoint.NextPtr == 0 {
+func (c *MList[K, V]) Delete(entrypoint *Pointer, target *Iterator[K, V]) (deleted bool) {
+	var head = c.Buckets[*entrypoint]
+	if head.Ptr == 0 || target.Ptr == 0 {
 		return false
 	}
 
@@ -120,7 +108,7 @@ func (c *Rapid[K, V]) Delete(entrypoint *Iterator[K, V], target *Iterator[K, V])
 
 	// delete last node
 	if target.NextPtr == 0 && target.PrevPtr == 0 {
-		entrypoint.NextPtr = 0
+		*entrypoint = 0
 		c.Collect(target.Ptr)
 		return true
 	}
@@ -128,7 +116,7 @@ func (c *Rapid[K, V]) Delete(entrypoint *Iterator[K, V], target *Iterator[K, V])
 	// delete head
 	if target.PrevPtr == 0 {
 		var next = &c.Buckets[target.NextPtr]
-		entrypoint.NextPtr = next.Ptr
+		*entrypoint = next.Ptr
 		next.PrevPtr = 0
 		c.Collect(target.Ptr)
 		return true
@@ -150,17 +138,26 @@ func (c *Rapid[K, V]) Delete(entrypoint *Iterator[K, V], target *Iterator[K, V])
 	return true
 }
 
-type Stack []Pointer
+func (c *MList[K, V]) Find(entrypoint Pointer, key K) (value V, exist bool) {
+	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
+		if i.Key == key {
+			return i.Value, true
+		}
+	}
+	return value, false
+}
 
-func (c *Stack) Len() int {
+type arrayStack []Pointer
+
+func (c *arrayStack) Len() int {
 	return len(*c)
 }
 
-func (c *Stack) Push(v Pointer) {
+func (c *arrayStack) Push(v Pointer) {
 	*c = append(*c, v)
 }
 
-func (c *Stack) Pop() Pointer {
+func (c *arrayStack) Pop() Pointer {
 	var n = c.Len()
 	if n >= 1 {
 		var result = (*c)[n-1]
