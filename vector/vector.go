@@ -116,9 +116,11 @@ func (c *Vector[T]) Sort(cmp func(a, b T) dao.Ordering) *Vector[T] {
 	return c
 }
 
-func (c *Vector[T]) ForEach(fn func(index int, value T)) {
+func (c *Vector[T]) ForEach(fn func(index int, value T) bool) {
 	for i, v := range *c {
-		fn(i, v)
+		if !fn(i, v) {
+			return
+		}
 	}
 }
 

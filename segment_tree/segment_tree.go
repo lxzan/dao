@@ -3,9 +3,9 @@ package segment_tree
 type Operate uint8
 
 const (
-	Operate_Create Operate = 0
-	Operate_Query  Operate = 1
-	Operate_Update Operate = 2
+	OperateCreate Operate = 0
+	OperateQuery  Operate = 1
+	OperateUpdate Operate = 2
 )
 
 type Element[T any, S any] struct {
@@ -37,9 +37,9 @@ func New[T any, S any](arr []T, init func(op Operate, x T) S, merge func(a, b S)
 	return obj
 }
 
-func (this *SegmentTree[T, S]) build(cur *Element[T, S]) {
+func (c *SegmentTree[T, S]) build(cur *Element[T, S]) {
 	if cur.left == cur.right {
-		cur.data = this.init(Operate_Create, this.arr[cur.left])
+		cur.data = c.init(OperateCreate, c.arr[cur.left])
 		return
 	}
 
@@ -52,43 +52,43 @@ func (this *SegmentTree[T, S]) build(cur *Element[T, S]) {
 		left:  mid + 1,
 		right: cur.right,
 	}
-	this.build(cur.son)
-	this.build(cur.daughter)
-	cur.data = this.merge(cur.son.data, cur.daughter.data)
+	c.build(cur.son)
+	c.build(cur.daughter)
+	cur.data = c.merge(cur.son.data, cur.daughter.data)
 }
 
-func (this *SegmentTree[T, S]) Query(left int, right int) S {
+func (c *SegmentTree[T, S]) Query(left int, right int) S {
 	var result S
-	result = this.init(Operate_Query, this.arr[left])
-	this.doQuery(this.root, left, right, &result)
+	result = c.init(OperateQuery, c.arr[left])
+	c.doQuery(c.root, left, right, &result)
 	return result
 }
 
-func (this *SegmentTree[T, S]) doQuery(cur *Element[T, S], left int, right int, result *S) {
+func (c *SegmentTree[T, S]) doQuery(cur *Element[T, S], left int, right int, result *S) {
 	if cur.left >= left && cur.right <= right {
-		*result = this.merge(*result, cur.data)
+		*result = c.merge(*result, cur.data)
 	} else if !(cur.left > right || cur.right < left) {
-		this.doQuery(cur.son, left, right, result)
-		this.doQuery(cur.daughter, left, right, result)
+		c.doQuery(cur.son, left, right, result)
+		c.doQuery(cur.daughter, left, right, result)
 	}
 }
 
-func (this *SegmentTree[T, S]) Update(i int, v T) {
-	this.arr[i] = v
-	this.rebuild(this.root, i)
+func (c *SegmentTree[T, S]) Update(i int, v T) {
+	c.arr[i] = v
+	c.rebuild(c.root, i)
 }
 
-func (this *SegmentTree[T, S]) rebuild(cur *Element[T, S], i int) {
+func (c *SegmentTree[T, S]) rebuild(cur *Element[T, S], i int) {
 	if !(i >= cur.left && i <= cur.right) {
 		return
 	}
 
 	if cur.left == cur.right && cur.left == i {
-		cur.data = this.init(Operate_Update, this.arr[cur.left])
+		cur.data = c.init(OperateUpdate, c.arr[cur.left])
 		return
 	}
 
-	this.rebuild(cur.son, i)
-	this.rebuild(cur.daughter, i)
-	cur.data = this.merge(cur.son.data, cur.daughter.data)
+	c.rebuild(cur.son, i)
+	c.rebuild(cur.daughter, i)
+	cur.data = c.merge(cur.son.data, cur.daughter.data)
 }

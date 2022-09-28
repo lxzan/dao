@@ -33,11 +33,3 @@ func TestSlice_Unique(t *testing.T) {
 		}
 	}
 }
-
-func TestSlice_New(t *testing.T) {
-	var a = New[int](0, 0)
-	a.Push(1, 3, 5, 7)
-	a.ForEach(func(i, v int) {
-
-	})
-}

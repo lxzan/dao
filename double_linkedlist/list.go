@@ -4,7 +4,6 @@ func New[T any]() *List[T] {
 	return new(List[T])
 }
 
-// safe delete in loop
 type Iterator[T any] struct {
 	prev, next *Iterator[T]
 	Data       T
@@ -16,103 +15,103 @@ type List[T any] struct {
 	tail   *Iterator[T]
 }
 
-func (this List[T]) Begin() *Iterator[T] {
-	return this.head
+func (c *List[T]) Begin() *Iterator[T] {
+	return c.head
 }
 
-func (this *List[T]) Next(iter *Iterator[T]) *Iterator[T] {
+func (c *List[T]) Next(iter *Iterator[T]) *Iterator[T] {
 	return iter.next
 }
 
-func (this List[T]) End(iter *Iterator[T]) bool {
+func (c *List[T]) End(iter *Iterator[T]) bool {
 	return iter == nil
 }
 
-func (this List[T]) Len() int {
-	return this.length
+func (c *List[T]) Len() int {
+	return c.length
 }
 
-func (this List[T]) Clear() {
-	this.head = nil
-	this.tail = nil
-	this.length = 0
+func (c *List[T]) Reset() {
+	c.head = nil
+	c.tail = nil
+	c.length = 0
 }
 
-func (this *List[T]) Front() *Iterator[T] {
-	return this.head
+func (c *List[T]) Front() *Iterator[T] {
+	return c.head
 }
 
-func (this *List[T]) Back() *Iterator[T] {
-	return this.tail
+func (c *List[T]) Back() *Iterator[T] {
+	return c.tail
 }
 
-func (this *List[T]) RPush(values ...T) {
+func (c *List[T]) RPush(values ...T) {
 	for _, v := range values {
 		var ele = &Iterator[T]{Data: v}
-		if this.length > 0 {
-			this.tail.next = ele
-			ele.prev = this.tail
-			this.tail = ele
+		if c.length > 0 {
+			c.tail.next = ele
+			ele.prev = c.tail
+			c.tail = ele
 		} else {
-			this.head = ele
-			this.tail = ele
+			c.head = ele
+			c.tail = ele
 		}
-		this.length++
+		c.length++
 	}
 }
 
-func (this *List[T]) LPush(values ...T) {
+func (c *List[T]) LPush(values ...T) {
 	for _, v := range values {
 		var ele = &Iterator[T]{Data: v}
-		if this.length > 0 {
-			ele.next = this.head
-			this.head.prev = ele
-			this.head = ele
+		if c.length > 0 {
+			ele.next = c.head
+			c.head.prev = ele
+			c.head = ele
 		} else {
-			this.head = ele
-			this.tail = ele
+			c.head = ele
+			c.tail = ele
 		}
-		this.length++
+		c.length++
 	}
 }
 
-func (this *List[T]) LPop() *Iterator[T] {
-	if this.length == 0 {
+func (c *List[T]) LPop() *Iterator[T] {
+	if c.length == 0 {
 		return nil
 	}
-	var result = this.head
-	this.head = this.head.next
+	var result = c.head
+	c.head = c.head.next
 	result.next = nil
-	if this.head != nil {
-		this.head.prev = nil
+	if c.head != nil {
+		c.head.prev = nil
 	}
-	if this.length == 1 {
-		this.tail = nil
+	if c.length == 1 {
+		c.tail = nil
 	}
-	this.length--
+	c.length--
 	return result
 }
 
-func (this *List[T]) RPop() *Iterator[T] {
-	if this.length == 0 {
+func (c *List[T]) RPop() *Iterator[T] {
+	if c.length == 0 {
 		return nil
 	}
 
-	var result = this.tail
-	this.tail = this.tail.prev
+	var result = c.tail
+	c.tail = c.tail.prev
 	result.prev = nil
-	if this.tail != nil {
-		this.tail.next = nil
+	if c.tail != nil {
+		c.tail.next = nil
 	}
-	if this.length == 1 {
-		this.head = nil
+	if c.length == 1 {
+		c.head = nil
 	}
-	this.length--
+	c.length--
 	return result
 }
 
 // Delete it's safe delete in loop
-func (this *List[T]) Delete(iter *Iterator[T]) {
+func (c *List[T]) Delete(iter *Iterator[T]) {
 	var prev = iter.prev
 	var next = iter.next
 	if prev != nil && next != nil {
@@ -120,33 +119,33 @@ func (this *List[T]) Delete(iter *Iterator[T]) {
 		next.prev = prev
 	} else if prev != nil && next == nil {
 		prev.next = nil
-		this.tail = prev
+		c.tail = prev
 	} else if prev == nil && next != nil {
 		next.prev = nil
-		this.head = next
+		c.head = next
 	} else {
-		this.head = nil
-		this.tail = nil
+		c.head = nil
+		c.tail = nil
 	}
-	this.length--
+	c.length--
 }
 
-func (this *List[T]) InsertAfter(iter *Iterator[T], v T) {
+func (c *List[T]) InsertAfter(iter *Iterator[T], v T) {
 	var next = iter.next
 	var cur = &Iterator[T]{Data: v, prev: iter, next: next}
 	iter.next = cur
 	if next != nil {
 		next.prev = cur
 	}
-	this.length++
+	c.length++
 }
 
-func (this *List[T]) InsertBefore(iter *Iterator[T], v T) {
+func (c *List[T]) InsertBefore(iter *Iterator[T], v T) {
 	var prev = iter.prev
 	var cur = &Iterator[T]{Data: v, prev: prev, next: iter}
 	iter.prev = cur
 	if prev != nil {
 		prev.next = cur
 	}
-	this.length++
+	c.length++
 }

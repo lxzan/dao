@@ -8,18 +8,18 @@ import (
 
 func BenchmarkDict_Insert(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		var d = dict.New[int]()
+		var d = dict.New[int](8)
 		for j := 0; j < bench_count; j++ {
-			d.Insert(testkeys[j], testvals[j])
+			d.Set(testkeys[j], testvals[j])
 		}
 	}
 }
 
 func BenchmarkDict_Match(b *testing.B) {
-	var d = dict.New[int]()
+	var d = dict.New[int](8)
 	for j := 0; j < bench_count; j++ {
 		var length = utils.Rand.Intn(16) + 1
-		d.Insert(utils.Numeric.Generate(length), testvals[j])
+		d.Set(utils.Numeric.Generate(length), testvals[j])
 	}
 
 	b.StartTimer()
@@ -32,9 +32,9 @@ func BenchmarkDict_Match(b *testing.B) {
 }
 
 func BenchmarkDict_Delete(b *testing.B) {
-	var d = dict.New[int]()
+	var d = dict.New[int](8)
 	for j := 0; j < bench_count; j++ {
-		d.Insert(testkeys[j], testvals[j])
+		d.Set(testkeys[j], testvals[j])
 	}
 
 	b.StartTimer()

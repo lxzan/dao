@@ -17,7 +17,7 @@ func Init[T dao.Number](op Operate, x T) Schema[T] {
 		MinValue: x,
 		Sum:      x,
 	}
-	if op == Operate_Query {
+	if op == OperateQuery {
 		result.Sum = 0
 	}
 	return result

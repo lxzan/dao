@@ -5,9 +5,9 @@ import (
 	"github.com/lxzan/dao/vector"
 )
 
-func (this *RBTree[K, V]) Find(key K) (result V, exist bool) {
+func (c *RBTree[K, V]) Find(key K) (result V, exist bool) {
 	var data = &Iterator[K, V]{Key: key}
-	for i := this.begin(); !this.end(i); i = this.next(i, data) {
+	for i := c.begin(); !c.end(i); i = c.next(i, data) {
 		if key == i.data.Key {
 			return i.data.Val, true
 		}
@@ -15,30 +15,30 @@ func (this *RBTree[K, V]) Find(key K) (result V, exist bool) {
 	return result, false
 }
 
-func (this *RBTree[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
+func (c *RBTree[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
 	var iter = &Iterator[K, V]{next: true}
-	this.do_foreach(this.root, iter, fn)
+	c.do_foreach(c.root, iter, fn)
 }
 
-func (this *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, V], fn func(*Iterator[K, V])) {
-	if this.end(node) || !iter.next {
+func (c *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, V], fn func(*Iterator[K, V])) {
+	if c.end(node) || !iter.next {
 		return
 	}
 
 	iter.Key = node.data.Key
 	iter.Val = node.data.Val
 	fn(iter)
-	this.do_foreach(node.left, iter, fn)
-	this.do_foreach(node.right, iter, fn)
+	c.do_foreach(node.left, iter, fn)
+	c.do_foreach(node.right, iter, fn)
 }
 
-func (this *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Iterator[K, V], exist bool) {
+func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Iterator[K, V], exist bool) {
 	result = &Iterator[K, V]{}
 	var stack = vector.New[*rbtree_node[K, V]]()
-	stack.Push(this.root)
+	stack.Push(c.root)
 	for stack.Len() > 0 {
 		var node = stack.RPop()
-		if this.end(node) {
+		if c.end(node) {
 			continue
 		}
 		if filter(node.data.Key) {
@@ -54,13 +54,13 @@ func (this *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Iterator[K
 	return result, exist
 }
 
-func (this *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Iterator[K, V], exist bool) {
+func (c *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Iterator[K, V], exist bool) {
 	result = &Iterator[K, V]{}
 	var stack = vector.New[*rbtree_node[K, V]](0, 0)
-	stack.Push(this.root)
+	stack.Push(c.root)
 	for stack.Len() > 0 {
 		var node = stack.RPop()
-		if this.end(node) {
+		if c.end(node) {
 			continue
 		}
 		if filter(node.data.Key) {
@@ -94,21 +94,21 @@ type QueryBuilder[K dao.Comparable] struct {
 	Order       Order
 }
 
-func (this *QueryBuilder[K]) init() *QueryBuilder[K] {
-	if this.LeftFilter == nil {
-		this.LeftFilter = AlwaysTrue[K]
+func (c *QueryBuilder[K]) init() *QueryBuilder[K] {
+	if c.LeftFilter == nil {
+		c.LeftFilter = AlwaysTrue[K]
 	}
-	if this.RightFilter == nil {
-		this.RightFilter = AlwaysTrue[K]
+	if c.RightFilter == nil {
+		c.RightFilter = AlwaysTrue[K]
 	}
-	return this
+	return c
 }
 
-func (this *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Iterator[K, V] {
+func (c *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Iterator[K, V] {
 	q.init()
 	var results = make([]*Iterator[K, V], 0)
 	if q.Order == DESC {
-		res, exist := this.GetMaxKey(q.RightFilter)
+		res, exist := c.GetMaxKey(q.RightFilter)
 		if exist && q.LeftFilter(res.Key) {
 			results = append(results, res)
 		} else {
@@ -116,7 +116,7 @@ func (this *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Iterator[K, V] {
 		}
 
 		for i := 0; i < q.Limit-1; i++ {
-			res, exist = this.GetMaxKey(func(key K) bool {
+			res, exist = c.GetMaxKey(func(key K) bool {
 				return key < res.Key
 			})
 			if exist && q.LeftFilter(res.Key) {
@@ -126,7 +126,7 @@ func (this *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Iterator[K, V] {
 			}
 		}
 	} else {
-		res, exist := this.GetMinKey(q.LeftFilter)
+		res, exist := c.GetMinKey(q.LeftFilter)
 		if exist && q.RightFilter(res.Key) {
 			results = append(results, res)
 		} else {
@@ -134,7 +134,7 @@ func (this *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Iterator[K, V] {
 		}
 
 		for i := 0; i < q.Limit-1; i++ {
-			res, exist = this.GetMinKey(func(key K) bool {
+			res, exist = c.GetMinKey(func(key K) bool {
 				return key > res.Key
 			})
 			if exist && q.RightFilter(res.Key) {

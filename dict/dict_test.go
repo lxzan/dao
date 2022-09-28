@@ -10,11 +10,11 @@ import (
 const test_count = 1000000
 
 func TestNew(t *testing.T) {
-	var d = New[int]()
+	var d = New[int](8)
 	var m = make(map[string]map[string]uint8)
 	for i := 0; i < test_count; i++ {
 		var key1 = utils.Numeric.Generate(16)
-		d.Insert(key1, 1)
+		d.Set(key1, 1)
 
 		var key2 = key1[:4]
 		if m[key2] == nil {
@@ -29,7 +29,7 @@ func TestNew(t *testing.T) {
 			arr1 = append(arr1, k1)
 		}
 		var arr2 = make([]string, 0)
-		for _, item := range d.Match(k) {
+		for _, item := range d.Match(k).Elem() {
 			arr2 = append(arr2, item.Key)
 		}
 
@@ -42,13 +42,13 @@ func TestNew(t *testing.T) {
 }
 
 func TestDict_Delete(t *testing.T) {
-	var d = New[int]()
+	var d = New[int](8)
 	var m = map[string]int{}
 
 	for i := 0; i < test_count; i++ {
 		var key = utils.Numeric.Generate(16)
 		var val = rand.Int()
-		d.Insert(key, val)
+		d.Set(key, val)
 		m[key] = val
 	}
 
@@ -68,7 +68,7 @@ func TestDict_Delete(t *testing.T) {
 	for i := 0; i < test_count; i++ {
 		var key = utils.Numeric.Generate(16)
 		var val = rand.Int()
-		d.Insert(key, val)
+		d.Set(key, val)
 		m[key] = val
 	}
 

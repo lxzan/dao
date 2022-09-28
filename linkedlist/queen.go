@@ -15,55 +15,55 @@ type Queue[T any] struct {
 	tail   *Iterator[T]
 }
 
-func (this *Queue[T]) Clear() {
-	this.head = nil
-	this.tail = nil
-	this.length = 0
+func (c *Queue[T]) Clear() {
+	c.head = nil
+	c.tail = nil
+	c.length = 0
 }
 
-func (this *Queue[T]) Begin() *Iterator[T] {
-	return this.head
+func (c *Queue[T]) Begin() *Iterator[T] {
+	return c.head
 }
 
-func (this *Queue[T]) Next(iter *Iterator[T]) *Iterator[T] {
+func (c *Queue[T]) Next(iter *Iterator[T]) *Iterator[T] {
 	return iter.next
 }
 
-func (this *Queue[T]) End(iter *Iterator[T]) bool {
+func (c *Queue[T]) End(iter *Iterator[T]) bool {
 	return iter == nil
 }
 
-func (this *Queue[T]) Len() int {
-	return this.length
+func (c *Queue[T]) Len() int {
+	return c.length
 }
 
-func (this *Queue[T]) Push(values ...T) {
+func (c *Queue[T]) Push(values ...T) {
 	for _, v := range values {
 		var ele = &Iterator[T]{Data: v}
-		if this.length > 0 {
-			this.tail.next = ele
-			this.tail = ele
+		if c.length > 0 {
+			c.tail.next = ele
+			c.tail = ele
 		} else {
-			this.head = ele
-			this.tail = ele
+			c.head = ele
+			c.tail = ele
 		}
-		this.length++
+		c.length++
 	}
 }
 
-func (this *Queue[T]) Front() *Iterator[T] {
-	return this.head
+func (c *Queue[T]) Front() *Iterator[T] {
+	return c.head
 }
 
-func (this *Queue[T]) Pop() *Iterator[T] {
-	if this.length == 0 {
+func (c *Queue[T]) Pop() *Iterator[T] {
+	if c.length == 0 {
 		return nil
 	}
-	var result = this.head
-	this.head = this.head.next
-	this.length--
-	if this.length == 0 {
-		this.tail = nil
+	var result = c.head
+	c.head = c.head.next
+	c.length--
+	if c.length == 0 {
+		c.tail = nil
 	}
 	return result
 }

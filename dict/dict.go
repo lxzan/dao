@@ -1,7 +1,7 @@
 package dict
 
 import (
-	"github.com/lxzan/dao/rapid"
+	"github.com/lxzan/dao/internal/mlist"
 	"github.com/lxzan/dao/vector"
 	"math"
 )
@@ -12,61 +12,43 @@ type Pair[T any] struct {
 }
 
 type Element struct {
-	EntryPoint rapid.Pointer
+	EntryPoint mlist.Pointer
 	Children   []*Element
 }
 
 type Dict[T any] struct {
-	index_length int // 8 Byte
-	root         *Element
-	storage      *rapid.Rapid[string, T]
+	indexLength int // 8 Byte
+	root        *Element
+	storage     *mlist.MList[string, T]
 }
 
-func New[T any]() *Dict[T] {
+// New 4<=indexLength<=32
+func New[T any](indexLength int) *Dict[T] {
 	return &Dict[T]{
-		index_length: 8,
-		root:         &Element{Children: make([]*Element, sizes[0], sizes[0])},
-		storage:      rapid.New[string, T](8),
+		indexLength: indexLength,
+		root:        &Element{Children: make([]*Element, sizes[0], sizes[0])},
+		storage:     mlist.NewMList[string, T](8),
 	}
 }
 
-func (this *Dict[T]) Len() int {
-	return this.storage.Length
+func (c *Dict[T]) Len() int {
+	return c.storage.Length
 }
 
-// length<=32
-func (this *Dict[T]) SetIndexLength(length int) {
-	if length <= 0 {
-		length = 8
-	}
-	this.index_length = length
-}
-
-// insert with unique check
-func (this *Dict[T]) Insert(key string, val T) {
-	for i := this.begin(key, true); !this.end(i); i = this.next(i, true) {
+// Set insert a element into the hashmap
+// if key exists, value will be replaced
+func (c *Dict[T]) Set(key string, val T) {
+	for i := c.begin(key, true); !c.end(i); i = c.next(i, true) {
 		if i.Cursor == i.End {
-			var entrypoint = &i.Node.EntryPoint
-			this.storage.Push(entrypoint, key, val)
+			c.storage.Push(&i.Node.EntryPoint, key, val)
 			break
 		}
 	}
 }
 
-type match_params[T any] struct {
-	node    *Element
-	results []Pair[T]
-	limit   int
-	prefix  string
-	length  int
-}
-
-func (this *Dict[T]) Find(key string) (value T, exist bool) {
-	var entrypoint rapid.Pointer
-	for i := this.begin(key, false); !this.end(i); i = this.next(i, false) {
-		if i.Node == nil {
-			return value, false
-		}
+func (c *Dict[T]) Find(key string) (value T, exist bool) {
+	var entrypoint mlist.Pointer
+	for i := c.begin(key, false); !c.end(i); i = c.next(i, false) {
 		if i.Cursor == i.End {
 			if i.Node == nil || i.Node.EntryPoint == 0 {
 				return value, false
@@ -75,7 +57,7 @@ func (this *Dict[T]) Find(key string) (value T, exist bool) {
 		}
 	}
 
-	for i := this.storage.Begin(entrypoint); !this.storage.End(i); i = this.storage.Next(i) {
+	for i := c.storage.Begin(entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
 		if i.Key == key {
 			return i.Value, true
 		}
@@ -83,54 +65,62 @@ func (this *Dict[T]) Find(key string) (value T, exist bool) {
 	return value, false
 }
 
-// limit: -1 as unlimited
-func (this *Dict[T]) Match(prefix string, limit ...int) vector.Vector[Pair[T]] {
+type match_params[T any] struct {
+	node    *Element
+	results *vector.Vector[Pair[T]]
+	limit   int
+	prefix  string
+	length  int
+}
+
+// Match limit: -1 as unlimited
+func (c *Dict[T]) Match(prefix string, limit ...int) *vector.Vector[Pair[T]] {
 	if len(limit) == 0 {
 		limit = []int{math.MaxInt}
 	}
 
-	for i := this.begin(prefix, false); !this.end(i); i = this.next(i, false) {
+	for i := c.begin(prefix, false); !c.end(i); i = c.next(i, false) {
 		if i.Node == nil {
 			return nil
 		}
 		if i.Cursor == i.End {
 			var params = match_params[T]{
 				node:    i.Node,
-				results: make([]Pair[T], 0),
+				results: vector.New[Pair[T]](),
 				limit:   limit[0],
 				prefix:  prefix,
 				length:  len(prefix),
 			}
-			this.doMatch(i.Node, &params)
+			c.doMatch(i.Node, &params)
 			return params.results
 		}
 	}
 	return nil
 }
 
-func (this *Dict[T]) doMatch(node *Element, params *match_params[T]) {
-	if node == nil || len(params.results) >= params.limit {
+func (c *Dict[T]) doMatch(node *Element, params *match_params[T]) {
+	if node == nil || params.results.Len() >= params.limit {
 		return
 	}
-	for i := this.storage.Begin(node.EntryPoint); !this.storage.End(i); i = this.storage.Next(i) {
+	for i := c.storage.Begin(node.EntryPoint); !c.storage.End(i); i = c.storage.Next(i) {
 		if len(i.Key) >= params.length && i.Key[:params.length] == params.prefix {
-			params.results = append(params.results, Pair[T]{Key: i.Key, Val: i.Value})
+			params.results.Push(Pair[T]{Key: i.Key, Val: i.Value})
 		}
 	}
 	for _, item := range node.Children {
-		this.doMatch(item, params)
+		c.doMatch(item, params)
 	}
 }
 
-func (this *Dict[T]) Delete(key string) bool {
-	for i := this.begin(key, false); !this.end(i); i = this.next(i, false) {
+func (c *Dict[T]) Delete(key string) bool {
+	for i := c.begin(key, false); !c.end(i); i = c.next(i, false) {
 		if i.Node == nil {
 			return false
 		}
 		if i.Cursor == i.End {
-			for j := this.storage.Begin(i.Node.EntryPoint); !this.storage.End(j); j = this.storage.Next(j) {
+			for j := c.storage.Begin(i.Node.EntryPoint); !c.storage.End(j); j = c.storage.Next(j) {
 				if j.Key == key {
-					return this.storage.Delete(&i.Node.EntryPoint, j)
+					return c.storage.Delete(&i.Node.EntryPoint, j)
 				}
 			}
 		}
@@ -138,11 +128,11 @@ func (this *Dict[T]) Delete(key string) bool {
 	return false
 }
 
-func (this *Dict[T]) ForEach(fn func(key string, val T) (continued bool)) {
-	var n = len(this.storage.Buckets)
+func (c *Dict[T]) ForEach(fn func(key string, val T) bool) {
+	var n = len(c.storage.Buckets)
 	for i := 0; i < n; i++ {
-		if this.storage.Buckets[i].Ptr != 0 {
-			var item = &this.storage.Buckets[i]
+		if c.storage.Buckets[i].Ptr != 0 {
+			var item = &c.storage.Buckets[i]
 			if !fn(item.Key, item.Value) {
 				break
 			}

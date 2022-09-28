@@ -1,7 +1,6 @@
 package benchmark
 
 import (
-	"github.com/cespare/xxhash"
 	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/hash"
 	"github.com/lxzan/dao/internal/utils"
@@ -13,15 +12,6 @@ func BenchmarkHashMap_Hash(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
 			hash.HashBytes64(s)
-		}
-	}
-}
-
-func Benchmark_XXHash(b *testing.B) {
-	var s = utils.S2B(utils.Alphabet.Generate(32))
-	for i := 0; i < b.N; i++ {
-		for j := 0; j < bench_count; j++ {
-			xxhash.Sum64(s)
 		}
 	}
 }

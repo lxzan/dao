@@ -18,8 +18,8 @@ type Iterator[K dao.Comparable, V any] struct {
 	next bool
 }
 
-func (this *Iterator[K, V]) Break() {
-	this.next = false
+func (c *Iterator[K, V]) Break() {
+	c.next = false
 }
 
 type rbtree_node[K dao.Comparable, V any] struct {
@@ -30,25 +30,25 @@ type rbtree_node[K dao.Comparable, V any] struct {
 	data   *Iterator[K, V]
 }
 
-func (this *rbtree_node[K, V]) resert_key() {
+func (c *rbtree_node[K, V]) resert_key() {
 	var data Iterator[K, V]
-	this.data = &data
+	c.data = &data
 }
 
-func (this *rbtree_node[K, V]) set_black() {
-	this.color = BLACK
+func (c *rbtree_node[K, V]) set_black() {
+	c.color = BLACK
 }
 
-func (this *rbtree_node[K, V]) set_red() {
-	this.color = RED
+func (c *rbtree_node[K, V]) set_red() {
+	c.color = RED
 }
 
-func (this *rbtree_node[K, V]) is_black() bool {
-	return this.color == BLACK
+func (c *rbtree_node[K, V]) is_black() bool {
+	return c.color == BLACK
 }
 
-func (this *rbtree_node[K, V]) is_red() bool {
-	return this.color == RED
+func (c *rbtree_node[K, V]) is_red() bool {
+	return c.color == RED
 }
 
 func rbt_copy_color[K dao.Comparable, V any](n1, n2 *rbtree_node[K, V]) {
@@ -73,30 +73,30 @@ func New[K dao.Comparable, V any]() *RBTree[K, V] {
 	return &RBTree[K, V]{root: &node, sentinel: &node, length: 0}
 }
 
-func (this *RBTree[K, V]) Len() int {
-	return this.length
+func (c *RBTree[K, V]) Len() int {
+	return c.length
 }
 
-func (this *RBTree[K, V]) is_key_empty(d *Iterator[K, V]) bool {
+func (c *RBTree[K, V]) is_key_empty(d *Iterator[K, V]) bool {
 	return d == nil
 }
 
-func (this *RBTree[K, V]) begin() *rbtree_node[K, V] {
-	return this.root
+func (c *RBTree[K, V]) begin() *rbtree_node[K, V] {
+	return c.root
 }
 
-func (this *RBTree[K, V]) next(iter *rbtree_node[K, V], ele *Iterator[K, V]) *rbtree_node[K, V] {
+func (c *RBTree[K, V]) next(iter *rbtree_node[K, V], ele *Iterator[K, V]) *rbtree_node[K, V] {
 	if ele.Key > iter.data.Key {
 		return iter.right
 	}
 	return iter.left
 }
 
-func (this *RBTree[K, V]) end(iter *rbtree_node[K, V]) bool {
+func (c *RBTree[K, V]) end(iter *rbtree_node[K, V]) bool {
 	return iter.data == nil
 }
 
-func (this *RBTree[K, V]) left_rotate(root **rbtree_node[K, V], sentinel *rbtree_node[K, V], node *rbtree_node[K, V]) {
+func (c *RBTree[K, V]) left_rotate(root **rbtree_node[K, V], sentinel *rbtree_node[K, V], node *rbtree_node[K, V]) {
 	var temp *rbtree_node[K, V]
 	temp = node.right
 	node.right = temp.left
@@ -115,7 +115,7 @@ func (this *RBTree[K, V]) left_rotate(root **rbtree_node[K, V], sentinel *rbtree
 	node.parent = temp
 }
 
-func (this *RBTree[K, V]) right_rotate(root **rbtree_node[K, V], sentinel *rbtree_node[K, V], node *rbtree_node[K, V]) {
+func (c *RBTree[K, V]) right_rotate(root **rbtree_node[K, V], sentinel *rbtree_node[K, V], node *rbtree_node[K, V]) {
 	var temp *rbtree_node[K, V]
 	temp = node.left
 	node.left = temp.right
@@ -134,7 +134,7 @@ func (this *RBTree[K, V]) right_rotate(root **rbtree_node[K, V], sentinel *rbtre
 	node.parent = temp
 }
 
-func (this *RBTree[K, V]) do_insert(temp *rbtree_node[K, V], node *rbtree_node[K, V], sentinel *rbtree_node[K, V]) {
+func (c *RBTree[K, V]) do_insert(temp *rbtree_node[K, V], node *rbtree_node[K, V], sentinel *rbtree_node[K, V]) {
 	var p **rbtree_node[K, V]
 	for {
 		if node.data.Key < temp.data.Key {
@@ -155,15 +155,15 @@ func (this *RBTree[K, V]) do_insert(temp *rbtree_node[K, V], node *rbtree_node[K
 	node.set_red()
 }
 
-func (this *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
+func (c *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
 	var red bool
 	var root **rbtree_node[K, V]
 	var sentinel, subst, temp, w *rbtree_node[K, V]
 
 	/* a binary tree delete */
 
-	root = &this.root
-	sentinel = this.sentinel
+	root = &c.root
+	sentinel = c.sentinel
 	if node.left == sentinel {
 		temp = node.right
 		subst = node
@@ -240,7 +240,7 @@ func (this *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
 			if w.is_red() {
 				w.set_black()
 				temp.parent.set_red()
-				this.left_rotate(root, sentinel, temp.parent)
+				c.left_rotate(root, sentinel, temp.parent)
 				w = temp.parent.right
 			}
 			if w.left.is_black() && w.right.is_black() {
@@ -251,14 +251,14 @@ func (this *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
 				if w.right.is_black() {
 					w.left.set_black()
 					w.set_red()
-					this.right_rotate(root, sentinel, w)
+					c.right_rotate(root, sentinel, w)
 					w = temp.parent.right
 				}
 
 				rbt_copy_color(w, temp.parent)
 				temp.parent.set_black()
 				w.right.set_black()
-				this.left_rotate(root, sentinel, temp.parent)
+				c.left_rotate(root, sentinel, temp.parent)
 				temp = *root
 			}
 		} else {
@@ -266,7 +266,7 @@ func (this *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
 			if w.is_red() {
 				w.set_black()
 				temp.parent.set_red()
-				this.right_rotate(root, sentinel, temp.parent)
+				c.right_rotate(root, sentinel, temp.parent)
 				w = temp.parent.left
 			}
 			if w.left.is_black() && w.right.is_black() {
@@ -277,13 +277,13 @@ func (this *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
 				if w.left.is_black() {
 					w.right.set_black()
 					w.set_red()
-					this.left_rotate(root, sentinel, w)
+					c.left_rotate(root, sentinel, w)
 					w = temp.parent.left
 				}
 				rbt_copy_color(w, temp.parent)
 				temp.parent.set_black()
 				w.left.set_black()
-				this.right_rotate(root, sentinel, temp.parent)
+				c.right_rotate(root, sentinel, temp.parent)
 				temp = *root
 			}
 		}
@@ -291,41 +291,41 @@ func (this *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
 	temp.set_black()
 }
 
-func (this *RBTree[K, V]) validate(t *testing.T, node *rbtree_node[K, V]) {
+func (c *RBTree[K, V]) validate(t *testing.T, node *rbtree_node[K, V]) {
 	if node == nil {
 		return
 	}
 	if node.left != nil {
-		if !this.is_key_empty(node.left.data) && node.data.Key < node.left.data.Key {
+		if !c.is_key_empty(node.left.data) && node.data.Key < node.left.data.Key {
 			t.Error("left node error!")
 		}
-		this.validate(t, node.left)
+		c.validate(t, node.left)
 	}
 
 	if node.right != nil {
-		if !this.is_key_empty(node.right.data) && node.data.Key > node.right.data.Key {
+		if !c.is_key_empty(node.right.data) && node.data.Key > node.right.data.Key {
 			t.Error("right node error!")
 		}
-		this.validate(t, node.right)
+		c.validate(t, node.right)
 	}
 }
 
 // insert with unique check
-func (this *RBTree[K, V]) Insert(data *Iterator[K, V]) (success bool) {
-	for i := this.begin(); !this.end(i); i = this.next(i, data) {
+func (c *RBTree[K, V]) Insert(data *Iterator[K, V]) (success bool) {
+	for i := c.begin(); !c.end(i); i = c.next(i, data) {
 		if data.Key == i.data.Key {
 			return false
 		}
 	}
 
-	this.length++
+	c.length++
 	var node = &rbtree_node[K, V]{data: data}
-	var root = &this.root
+	var root = &c.root
 	var temp, sentinel *rbtree_node[K, V]
 
 	/* a binary tree insert */
 
-	sentinel = this.sentinel
+	sentinel = c.sentinel
 	if *root == sentinel {
 		node.parent = nil
 		node.left = sentinel
@@ -334,7 +334,7 @@ func (this *RBTree[K, V]) Insert(data *Iterator[K, V]) (success bool) {
 		*root = node
 		return
 	}
-	this.do_insert(*root, node, sentinel)
+	c.do_insert(*root, node, sentinel)
 
 	/* re-balance tree */
 
@@ -349,11 +349,11 @@ func (this *RBTree[K, V]) Insert(data *Iterator[K, V]) (success bool) {
 			} else {
 				if node == node.parent.right {
 					node = node.parent
-					this.left_rotate(root, sentinel, node)
+					c.left_rotate(root, sentinel, node)
 				}
 				node.parent.set_black()
 				node.parent.parent.set_red()
-				this.right_rotate(root, sentinel, node.parent.parent)
+				c.right_rotate(root, sentinel, node.parent.parent)
 			}
 		} else {
 			temp = node.parent.parent.left
@@ -366,11 +366,11 @@ func (this *RBTree[K, V]) Insert(data *Iterator[K, V]) (success bool) {
 			} else {
 				if node == node.parent.left {
 					node = node.parent
-					this.right_rotate(root, sentinel, node)
+					c.right_rotate(root, sentinel, node)
 				}
 				node.parent.set_black()
 				node.parent.parent.set_red()
-				this.left_rotate(root, sentinel, node.parent.parent)
+				c.left_rotate(root, sentinel, node.parent.parent)
 			}
 		}
 	}
@@ -378,12 +378,12 @@ func (this *RBTree[K, V]) Insert(data *Iterator[K, V]) (success bool) {
 	return true
 }
 
-func (this *RBTree[K, V]) Delete(key K) (success bool) {
+func (c *RBTree[K, V]) Delete(key K) (success bool) {
 	var data = &Iterator[K, V]{Key: key}
-	for i := this.begin(); !this.end(i); i = this.next(i, data) {
+	for i := c.begin(); !c.end(i); i = c.next(i, data) {
 		if key == i.data.Key {
-			this.length--
-			this.do_delete(i)
+			c.length--
+			c.do_delete(i)
 			return true
 		}
 	}
