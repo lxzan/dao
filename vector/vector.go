@@ -9,10 +9,19 @@ type (
 	Vector[T any] []T
 
 	Iterator[T any] struct {
-		i, n  int
+		n     int
+		Index int
 		Value T
 	}
 )
+
+func (c *Iterator[T]) Break() bool {
+	return false
+}
+
+func (c *Iterator[T]) Continue() bool {
+	return true
+}
 
 // New param1: size, param2: cap
 func New[T any](size ...int) *Vector[T] {
@@ -39,8 +48,8 @@ func (c *Vector[T]) Elem() Vector[T] {
 
 func (c *Vector[T]) Begin() *Iterator[T] {
 	var iter = &Iterator[T]{
-		i: 0,
-		n: len(*c),
+		Index: 0,
+		n:     len(*c),
 	}
 	if iter.n > 0 {
 		iter.Value = (*c)[0]
@@ -49,15 +58,15 @@ func (c *Vector[T]) Begin() *Iterator[T] {
 }
 
 func (c *Vector[T]) Next(iter *Iterator[T]) *Iterator[T] {
-	iter.i++
-	if iter.i < iter.n {
-		iter.Value = (*c)[iter.i]
+	iter.Index++
+	if iter.Index < iter.n {
+		iter.Value = (*c)[iter.Index]
 	}
 	return iter
 }
 
 func (c *Vector[T]) End(iter *Iterator[T]) bool {
-	return iter.i >= iter.n
+	return iter.Index >= iter.n
 }
 
 func (c *Vector[T]) Len() int {
@@ -116,9 +125,12 @@ func (c *Vector[T]) Sort(cmp func(a, b T) dao.Ordering) *Vector[T] {
 	return c
 }
 
-func (c *Vector[T]) ForEach(fn func(index int, value T) bool) {
+func (c *Vector[T]) ForEach(fn func(iter *Iterator[T]) bool) {
+	var iter = &Iterator[T]{n: c.Len()}
 	for i, v := range *c {
-		if !fn(i, v) {
+		iter.Index = i
+		iter.Value = v
+		if !fn(iter) {
 			return
 		}
 	}

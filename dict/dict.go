@@ -6,9 +6,17 @@ import (
 	"math"
 )
 
-type Pair[T any] struct {
-	Key string
-	Val T
+type Iterator[T any] struct {
+	Key   string
+	Value T
+}
+
+func (c *Iterator[T]) Break() bool {
+	return false
+}
+
+func (c *Iterator[T]) Continue() bool {
+	return true
 }
 
 type Element struct {
@@ -67,14 +75,14 @@ func (c *Dict[T]) Find(key string) (value T, exist bool) {
 
 type match_params[T any] struct {
 	node    *Element
-	results *vector.Vector[Pair[T]]
+	results *vector.Vector[Iterator[T]]
 	limit   int
 	prefix  string
 	length  int
 }
 
 // Match limit: -1 as unlimited
-func (c *Dict[T]) Match(prefix string, limit ...int) *vector.Vector[Pair[T]] {
+func (c *Dict[T]) Match(prefix string, limit ...int) *vector.Vector[Iterator[T]] {
 	if len(limit) == 0 {
 		limit = []int{math.MaxInt}
 	}
@@ -86,7 +94,7 @@ func (c *Dict[T]) Match(prefix string, limit ...int) *vector.Vector[Pair[T]] {
 		if i.Cursor == i.End {
 			var params = match_params[T]{
 				node:    i.Node,
-				results: vector.New[Pair[T]](),
+				results: vector.New[Iterator[T]](),
 				limit:   limit[0],
 				prefix:  prefix,
 				length:  len(prefix),
@@ -104,7 +112,7 @@ func (c *Dict[T]) doMatch(node *Element, params *match_params[T]) {
 	}
 	for i := c.storage.Begin(node.EntryPoint); !c.storage.End(i); i = c.storage.Next(i) {
 		if len(i.Key) >= params.length && i.Key[:params.length] == params.prefix {
-			params.results.Push(Pair[T]{Key: i.Key, Val: i.Value})
+			params.results.Push(Iterator[T]{Key: i.Key, Value: i.Value})
 		}
 	}
 	for _, item := range node.Children {
@@ -128,13 +136,15 @@ func (c *Dict[T]) Delete(key string) bool {
 	return false
 }
 
-func (c *Dict[T]) ForEach(fn func(key string, val T) bool) {
-	var n = len(c.storage.Buckets)
-	for i := 0; i < n; i++ {
-		if c.storage.Buckets[i].Ptr != 0 {
-			var item = &c.storage.Buckets[i]
-			if !fn(item.Key, item.Value) {
-				break
+func (c *Dict[T]) ForEach(fn func(iter *Iterator[T]) bool) {
+	var iter = &Iterator[T]{}
+	for i := 1; i < int(c.storage.Serial); i++ {
+		var item = &c.storage.Buckets[i]
+		if item.Ptr > 0 {
+			iter.Key = item.Key
+			iter.Value = item.Value
+			if !fn(iter) {
+				return
 			}
 		}
 	}

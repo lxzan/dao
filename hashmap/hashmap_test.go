@@ -1,7 +1,6 @@
 package hashmap
 
 import (
-	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/utils"
 	"testing"
 )
@@ -63,12 +62,12 @@ func TestHashMap_ForEach(t *testing.T) {
 	}
 
 	var sum = 0
-	m1.ForEach(func(key string, value int) bool {
+	m1.ForEach(func(iter *Iterator[string, int]) bool {
 		sum++
-		if m2[key] != value {
+		if m2[iter.Key] != iter.Value {
 			t.Error("error!")
 		}
-		return dao.Continue
+		return iter.Continue()
 	})
 
 	if m1.Len() != len(m2) || sum != len(m2) {

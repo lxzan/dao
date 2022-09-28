@@ -8,6 +8,19 @@ import (
 	"github.com/lxzan/dao/vector"
 )
 
+type Iterator[K dao.Hashable, V any] struct {
+	Key   K
+	Value V
+}
+
+func (c *Iterator[K, V]) Break() bool {
+	return false
+}
+
+func (c *Iterator[K, V]) Continue() bool {
+	return true
+}
+
 type HashMap[K dao.Hashable, V any] struct {
 	cap     uint32             // cap=2^n
 	b       uint64             // b=cap-1
@@ -116,11 +129,14 @@ func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
 	return false
 }
 
-func (c *HashMap[K, V]) ForEach(fn func(key K, value V) bool) {
+func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V]) bool) {
+	var iter = &Iterator[K, V]{}
 	for i := 1; i < int(c.storage.Serial); i++ {
 		var item = &c.storage.Buckets[i]
 		if item.Ptr > 0 {
-			if !fn(item.Key, item.Value) {
+			iter.Key = item.Key
+			iter.Value = item.Value
+			if !fn(iter) {
 				return
 			}
 		}
@@ -130,9 +146,9 @@ func (c *HashMap[K, V]) ForEach(fn func(key K, value V) bool) {
 // Keys get all the keys of the hashmap, construct it as a dynamic array and return it
 func (c *HashMap[K, V]) Keys() *vector.Vector[K] {
 	var keys = vector.New[K](0, c.Len())
-	c.ForEach(func(key K, value V) bool {
-		keys.Push(key)
-		return dao.Continue
+	c.ForEach(func(iter *Iterator[K, V]) bool {
+		keys.Push(iter.Key)
+		return iter.Continue()
 	})
 	return keys
 }
@@ -140,9 +156,9 @@ func (c *HashMap[K, V]) Keys() *vector.Vector[K] {
 // Values get all the values of the hashmap, construct it as a dynamic array and return it
 func (c *HashMap[K, V]) Values() *vector.Vector[V] {
 	var values = vector.New[V](0, c.Len())
-	c.ForEach(func(key K, value V) bool {
-		values.Push(value)
-		return dao.Continue
+	c.ForEach(func(iter *Iterator[K, V]) bool {
+		values.Push(iter.Value)
+		return iter.Continue()
 	})
 	return values
 }
