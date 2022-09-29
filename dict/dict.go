@@ -25,15 +25,18 @@ type Element struct {
 }
 
 type Dict[T any] struct {
-	indexLength int // 8 Byte
-	root        *Element
+	indexLength int      // 8byte index
+	root        *Element // root node
 	storage     *mlist.MList[string, T]
 }
 
 // New 4<=indexLength<=32
-func New[T any](indexLength int) *Dict[T] {
+func New[T any](indexLength ...int) *Dict[T] {
+	if len(indexLength) == 0 {
+		indexLength = []int{8}
+	}
 	return &Dict[T]{
-		indexLength: indexLength,
+		indexLength: indexLength[0],
 		root:        &Element{Children: make([]*Element, sizes[0], sizes[0])},
 		storage:     mlist.NewMList[string, T](8),
 	}

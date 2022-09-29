@@ -4,51 +4,47 @@ Simple and high-performance data structures and algorithms library
 
 
 ### Benchmark
-
+- 1,000 elements
 ```
-goos: windows
-goarch: amd64
+goos: darwin
+goarch: arm64
 pkg: github.com/lxzan/dao/benchmark
-cpu: Intel(R) Core(TM) i7-10510U CPU @ 1.80GHz
+BenchmarkMyMap_Set/string-8                59996             19892 ns/op           53248 B/op          2 allocs/op
+BenchmarkMyMap_Set/int-8                   91070             13291 ns/op           45056 B/op          2 allocs/op
+BenchmarkGoMap_Set/string-8                36583             32849 ns/op           57368 B/op          2 allocs/op
+BenchmarkGoMap_Set/int-8                   54259             22276 ns/op           41097 B/op          6 allocs/op
+BenchmarkMyMap_Get/string-8               113704             10354 ns/op               0 B/op          0 allocs/op
+BenchmarkMyMap_Get/int-8                  218997              5541 ns/op               0 B/op          0 allocs/op
+BenchmarkGoMap_Get/string-8               168564              7316 ns/op               0 B/op          0 allocs/op
+BenchmarkGoMap_Get/int-8                  167908              6520 ns/op               0 B/op          0 allocs/op
+BenchmarkMyMap_Delete/string-8             49182             24258 ns/op           12929 B/op         11 allocs/op
+BenchmarkMyMap_Delete/int-8                90664             13053 ns/op           12928 B/op         11 allocs/op
+BenchmarkGoMap_Delete/string-8             32680             36706 ns/op               1 B/op          0 allocs/op
+BenchmarkGoMap_Delete/int-8                50990             23574 ns/op               0 B/op          0 allocs/op
+PASS
+ok      github.com/lxzan/dao/benchmark  31.351s
 ```
 
-| Container        | Operate            | Elements | ns/op  | allocs/op |
-| ---------------- | ------------------ | -------- | ------ | --------- |
-| DoubleLinkedList | RPush              | 1,000    | 29.7   | 1         |
-| Dict             | Insert             | 1,000    | 651.6  | 11        |
-| Dict             | Delete             | 1,000    | 59.3   | 1         |
-| Dict             | Match (limit 10)   | 1,000    | 41.3   | 5         |
-| HashMap          | Set                | 1,000    | 33.5   | 0         |
-| Go Map           | Set                | 1,000    | 33.4   | 0         |
-| HashMap          | Get                | 1,000    | 17.0   | 0         |
-| Go Map           | Get                | 1,000    | 19.3   | 0         |
-| RBTree           | Insert             | 1,000    | 119.7  | 2         |
-| RBTree           | Find               | 1,000    | 30.9   | 2         |
-| RBTree           | Delete             | 1,000    | 178.4  | 1         |
-| RBTree           | Between (limit 10) | 1,000    | 2087.7 | 4         |
-| SegmentTree      | Query              | 1,000    | 190.8  | 0         |
-| SegmentTree      | Update             | 1,000    | 144.3  | 0         |
-| Heap             | Push               | 1,000    | 63.8   | 0         |
-
-
-
-| Container        | Operate            | Elements  | ns/op  | allocs/op |
-| ---------------- | ------------------ | --------- | ------ | --------- |
-| DoubleLinkedList | RPush              | 1,000,000 | 26.6   | 1         |
-| Dict             | Insert             | 1,000,000 | 1067.4 | 7         |
-| Dict             | Delete             | 1,000,000 | 1401.3 | 9         |
-| Dict             | Match (limit 10)   | 1,000,000 | 1822.1 | 15        |
-| HashMap          | Set                | 1,000,000 | 127.4  | 5         |
-| Go Map           | Set                | 1,000,000 | 112.3  | 2         |
-| HashMap          | Get                | 1,000,000 | 116.0  | 0         |
-| Go Map           | Get                | 1,000,000 | 99.2   | 0         |
-| RBTree           | Insert             | 1,000,000 | 228.6  | 2         |
-| RBTree           | Find               | 1,000,000 | 75.2   | 0         |
-| RBTree           | Delete             | 1,000,000 | 332.6  | 3         |
-| RBTree           | Between (limit 10) | 1,000,000 | 3190.0 | 27        |
-| SegmentTree      | Query              | 1,000,000 | 1546.8 | 2         |
-| SegmentTree      | Update             | 1,000,000 | 838.1  | 2         |
-| Heap             | Push               | 1,000,000 | 36.5   | 0         |
+- 10,000 elements
+```
+goos: darwin
+goarch: arm64
+pkg: github.com/lxzan/dao/benchmark
+BenchmarkMyMap_Set/string-8                 3825            309373 ns/op          729092 B/op          2 allocs/op
+BenchmarkMyMap_Set/int-8                    8720            134059 ns/op          598016 B/op          2 allocs/op
+BenchmarkGoMap_Set/string-8                 3256            364237 ns/op          458777 B/op          2 allocs/op
+BenchmarkGoMap_Set/int-8                    4876            243187 ns/op          322224 B/op         11 allocs/op
+BenchmarkMyMap_Get/string-8                 5068            232323 ns/op             143 B/op          0 allocs/op
+BenchmarkMyMap_Get/int-8                   15595             76749 ns/op              38 B/op          0 allocs/op
+BenchmarkGoMap_Get/string-8                 3990            300194 ns/op             114 B/op          0 allocs/op
+BenchmarkGoMap_Get/int-8                    6386            180545 ns/op              50 B/op          0 allocs/op
+BenchmarkMyMap_Delete/string-8              3648            319692 ns/op          141386 B/op         17 allocs/op
+BenchmarkMyMap_Delete/int-8                 9091            127630 ns/op          141250 B/op         17 allocs/op
+BenchmarkGoMap_Delete/string-8              3242            363678 ns/op             141 B/op          0 allocs/op
+BenchmarkGoMap_Delete/int-8                 4821            242847 ns/op              66 B/op          0 allocs/op
+PASS
+ok      github.com/lxzan/dao/benchmark  21.932s
+```
 
 ### HashMap
 
@@ -64,9 +60,9 @@ func main() {
 	m.Set("hello", 1)
 	m.Set("world", 2)
 	m.Set("!", 3)
-	m.ForEach(func(key string, val int) (continued bool) {
-		println(key)
-		return true
+	m.ForEach(func(iter *hashmap.Iterator[string, int]) bool {
+		println(iter.Key, iter.Value)
+		return iter.Continue()
 	})
 }
 
@@ -144,11 +140,6 @@ import (
 	"strconv"
 )
 
-type entry struct {
-	Key int
-	Val string
-}
-
 func main() {
 	var tree = rbtree.New[int, string]()
 
@@ -161,9 +152,9 @@ func main() {
 	}
 
 	results := tree.Query(&rbtree.QueryBuilder[int]{
-		LeftFilter: func(d int) bool { return d > 5 },
-		Limit:      3,
-		Order:      rbtree.DESC,
+		LeftFilter: func(d int) bool { return d >= 5 },
+		Limit:      10,
+		Order:      rbtree.ASC,
 	})
 	for _, item := range results {
 		println(item.Key)
@@ -181,14 +172,14 @@ import (
 )
 
 func main() {
-	var tree = dict.New[int]()
-	tree.Insert("teemo", 1)
-	tree.Insert("tesla", 2)
-	tree.Insert("task", 3)
-	tree.Insert("hasaki", 4)
-	tree.Insert("oh", 5)
-	tree.Insert("aha", 6)
-	var results = tree.Match("te")
+	var d = dict.New[int]()
+	d.Set("teemo", 1)
+	d.Set("tesla", 2)
+	d.Set("task", 3)
+	d.Set("hasaki", 4)
+	d.Set("test", 5)
+	d.Set("aha", 6)
+	var results = d.Match("te").Elem()
 	for _, item := range results {
 		println(item.Key)
 	}
