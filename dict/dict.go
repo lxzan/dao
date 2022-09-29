@@ -54,7 +54,7 @@ func (c *Dict[T]) Set(key string, val T) {
 	}
 }
 
-func (c *Dict[T]) Find(key string) (value T, exist bool) {
+func (c *Dict[T]) Get(key string) (value T, exist bool) {
 	var entrypoint mlist.Pointer
 	for i := c.begin(key, false); !c.end(i); i = c.next(i, false) {
 		if i.Cursor == i.End {

@@ -98,10 +98,10 @@ func (c *HashMap[K, V]) grow() {
 
 // Set insert a element into the hashmap
 // if key exists, value will be replaced
-func (c *HashMap[K, V]) Set(key K, val V) (replaced bool) {
+func (c *HashMap[K, V]) Set(key K, val V) {
 	c.grow()
 	var idx = c.getIndex(key)
-	return c.storage.Push(&c.indexes[idx], key, val)
+	c.storage.Push(&c.indexes[idx], key, val)
 }
 
 // Get search if hashmap contains the key

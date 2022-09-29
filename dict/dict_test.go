@@ -78,7 +78,7 @@ func TestDict_Delete(t *testing.T) {
 	}
 
 	for k, v := range m {
-		result, ok := d.Find(k)
+		result, ok := d.Get(k)
 		if !ok || result != v {
 			t.Fail()
 		}

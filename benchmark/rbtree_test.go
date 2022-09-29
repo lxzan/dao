@@ -6,11 +6,11 @@ import (
 	"testing"
 )
 
-func BenchmarkRBTree_Insert(b *testing.B) {
+func BenchmarkRBTree_Set(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		var tree = rbtree.New[int, string]()
 		for j := 0; j < bench_count; j++ {
-			tree.Insert(j, "")
+			tree.Set(j, "")
 		}
 	}
 }
@@ -18,13 +18,13 @@ func BenchmarkRBTree_Insert(b *testing.B) {
 func BenchmarkRBTree_Find(b *testing.B) {
 	var tree = rbtree.New[int, string]()
 	for j := 0; j < bench_count; j++ {
-		tree.Insert(j, "")
+		tree.Set(j, "")
 	}
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
-			tree.Find(j)
+			tree.Get(j)
 		}
 	}
 }
@@ -33,7 +33,7 @@ func BenchmarkRBTree_Delete(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		var tree = rbtree.New[int, string]()
 		for j := 0; j < bench_count; j++ {
-			tree.Insert(j, "")
+			tree.Set(j, "")
 		}
 
 		for j := 0; j < bench_count; j++ {
@@ -45,7 +45,7 @@ func BenchmarkRBTree_Delete(b *testing.B) {
 func BenchmarkRBTree_Between(b *testing.B) {
 	var tree = rbtree.New[int, string]()
 	for j := 0; j < bench_count; j++ {
-		tree.Insert(j, "")
+		tree.Set(j, "")
 	}
 
 	b.StartTimer()
@@ -68,7 +68,7 @@ func BenchmarkRBTree_Between(b *testing.B) {
 func BenchmarkRBTree_GreaterEqual(b *testing.B) {
 	var tree = rbtree.New[int, string]()
 	for j := 0; j < bench_count; j++ {
-		tree.Insert(j, "")
+		tree.Set(j, "")
 	}
 
 	b.StartTimer()
@@ -89,7 +89,7 @@ func BenchmarkRBTree_GreaterEqual(b *testing.B) {
 func BenchmarkRBTree_LessEqual(b *testing.B) {
 	var tree = rbtree.New[int, string]()
 	for j := 0; j < bench_count; j++ {
-		tree.Insert(j, "")
+		tree.Set(j, "")
 	}
 
 	b.StartTimer()
@@ -110,7 +110,7 @@ func BenchmarkRBTree_LessEqual(b *testing.B) {
 func BenchmarkRBTree_GetMinKey(b *testing.B) {
 	var tree = rbtree.New[int, string]()
 	for j := 0; j < bench_count; j++ {
-		tree.Insert(j, "")
+		tree.Set(j, "")
 	}
 
 	b.StartTimer()
@@ -128,7 +128,7 @@ func BenchmarkRBTree_GetMinKey(b *testing.B) {
 func BenchmarkRBTree_GetMaxKey(b *testing.B) {
 	var tree = rbtree.New[int, string]()
 	for j := 0; j < bench_count; j++ {
-		tree.Insert(j, "")
+		tree.Set(j, "")
 	}
 
 	b.StartTimer()

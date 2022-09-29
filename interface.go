@@ -47,3 +47,9 @@ type Iterable[I any] interface {
 	Next(I) I
 	End(I) bool
 }
+
+type Mapper[K Hashable, V any] interface {
+	Set(key K, val V)
+	Get(key K) (val V, exist bool)
+	Delete(key K) bool
+}

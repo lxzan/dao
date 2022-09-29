@@ -17,7 +17,7 @@ func TestNew(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Numeric.Generate(length)
-		tree.Insert(key, length)
+		tree.Set(key, length)
 		m[key] = length
 	}
 
@@ -34,12 +34,12 @@ func TestNew(t *testing.T) {
 	for i := 0; i < 10000; i++ {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Alphabet.Generate(length)
-		tree.Insert(key, length)
+		tree.Set(key, length)
 		m[key] = length
 	}
 
 	for k, v := range m {
-		result, exist := tree.Find(k)
+		result, exist := tree.Get(k)
 		if !exist || result != v {
 			t.Fatal("error!")
 		}
@@ -52,7 +52,7 @@ func TestNew(t *testing.T) {
 	tree.validate(t, tree.root)
 }
 
-func TestRBTree_Find(t *testing.T) {
+func TestRBTree_Get(t *testing.T) {
 	var tree = New[int, string]()
 	var m = make(map[int]string)
 
@@ -60,15 +60,13 @@ func TestRBTree_Find(t *testing.T) {
 	for i := 0; i < test_count; i++ {
 		var key = utils.Rand.Intn(test_count)
 		var val = utils.Alphabet.Generate(8)
-		tree.Insert(key, val)
-		if _, ok := m[key]; !ok {
-			m[key] = val
-		}
+		tree.Set(key, val)
+		m[key] = val
 	}
 
 	for i := 0; i < test_count; i++ {
 		var key = utils.Rand.Intn(test_count)
-		result, exist := tree.Find(key)
+		result, exist := tree.Get(key)
 		v, ok := m[key]
 		if exist != ok || (ok && result != v) {
 			t.Fatal("error!")
@@ -83,7 +81,7 @@ func TestRBTree_ForEach(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		var key = utils.Alphabet.Generate(16)
 		arr = append(arr, key)
-		tree.Insert(key, utils.Rand.Intn(1000))
+		tree.Set(key, utils.Rand.Intn(1000))
 	}
 
 	var arr1 = make([]string, 0)
@@ -114,7 +112,7 @@ func TestRBTree_Between(t *testing.T) {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Numeric.Generate(4)
 		m[key] = length
-		tree.Insert(key, length)
+		tree.Set(key, length)
 	}
 
 	var limit = 100
@@ -144,7 +142,7 @@ func TestRBTree_Between(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Iterator[string, int]) string {
+		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -159,7 +157,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Numeric.Generate(4)
 		m[key] = length
-		tree.Insert(key, length)
+		tree.Set(key, length)
 	}
 
 	var limit = 100
@@ -181,7 +179,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Iterator[string, int]) string {
+		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -196,7 +194,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Numeric.Generate(4)
 		m[key] = length
-		tree.Insert(key, length)
+		tree.Set(key, length)
 	}
 
 	var limit = 100
@@ -219,7 +217,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Iterator[string, int]) string {
+		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -233,7 +231,7 @@ func TestRBTree_GetMinKey(t *testing.T) {
 	const test_count = 100
 	for i := 0; i < test_count; i++ {
 		var v = rand.Intn(10000)
-		tree.Insert(strconv.Itoa(v), v)
+		tree.Set(strconv.Itoa(v), v)
 	}
 
 	for i := 0; i < test_count; i++ {
@@ -264,7 +262,7 @@ func TestRBTree_GetMaxKey(t *testing.T) {
 	const test_count = 100
 	for i := 0; i < test_count; i++ {
 		var v = rand.Intn(10000)
-		tree.Insert(strconv.Itoa(v), v)
+		tree.Set(strconv.Itoa(v), v)
 	}
 
 	for i := 0; i < test_count; i++ {

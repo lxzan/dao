@@ -5,8 +5,8 @@ import (
 	"github.com/lxzan/dao/vector"
 )
 
-func (c *RBTree[K, V]) Find(key K) (result V, exist bool) {
-	var data = &Iterator[K, V]{Key: key}
+func (c *RBTree[K, V]) Get(key K) (result V, exist bool) {
+	var data = &Element[K, V]{Key: key}
 	for i := c.begin(); !c.end(i); i = c.next(i, data) {
 		if key == i.data.Key {
 			return i.data.Val, true
@@ -20,7 +20,7 @@ func (c *RBTree[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
 	c.do_foreach(c.root, iter, fn)
 }
 
-func (c *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, V], fn func(*Iterator[K, V])) {
+func (c *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, V], fn func(iterator *Iterator[K, V])) {
 	if c.end(node) || iter.broken {
 		return
 	}
@@ -32,8 +32,8 @@ func (c *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, V],
 	c.do_foreach(node.right, iter, fn)
 }
 
-func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Iterator[K, V], exist bool) {
-	result = &Iterator[K, V]{}
+func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Element[K, V], exist bool) {
+	result = &Element[K, V]{}
 	var stack = vector.New[*rbtree_node[K, V]]()
 	stack.Push(c.root)
 	for stack.Len() > 0 {
@@ -54,8 +54,8 @@ func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Iterator[K, V
 	return result, exist
 }
 
-func (c *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Iterator[K, V], exist bool) {
-	result = &Iterator[K, V]{}
+func (c *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Element[K, V], exist bool) {
+	result = &Element[K, V]{}
 	var stack = vector.New[*rbtree_node[K, V]](0, 0)
 	stack.Push(c.root)
 	for stack.Len() > 0 {
@@ -104,9 +104,9 @@ func (c *QueryBuilder[K]) init() *QueryBuilder[K] {
 	return c
 }
 
-func (c *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Iterator[K, V] {
+func (c *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Element[K, V] {
 	q.init()
-	var results = make([]*Iterator[K, V], 0)
+	var results = make([]*Element[K, V], 0)
 	if q.Order == DESC {
 		res, exist := c.GetMaxKey(q.RightFilter)
 		if exist && q.LeftFilter(res.Key) {

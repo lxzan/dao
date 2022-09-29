@@ -22,16 +22,21 @@ func (c *Iterator[K, V]) Break() {
 	c.broken = true
 }
 
+type Element[K dao.Comparable, V any] struct {
+	Key K
+	Val V
+}
+
 type rbtree_node[K dao.Comparable, V any] struct {
 	left   *rbtree_node[K, V]
 	right  *rbtree_node[K, V]
 	parent *rbtree_node[K, V]
 	color  Color
-	data   *Iterator[K, V]
+	data   *Element[K, V]
 }
 
 func (c *rbtree_node[K, V]) resert_key() {
-	var data Iterator[K, V]
+	var data Element[K, V]
 	c.data = &data
 }
 
@@ -77,7 +82,7 @@ func (c *RBTree[K, V]) Len() int {
 	return c.length
 }
 
-func (c *RBTree[K, V]) is_key_empty(d *Iterator[K, V]) bool {
+func (c *RBTree[K, V]) is_key_empty(d *Element[K, V]) bool {
 	return d == nil
 }
 
@@ -85,7 +90,7 @@ func (c *RBTree[K, V]) begin() *rbtree_node[K, V] {
 	return c.root
 }
 
-func (c *RBTree[K, V]) next(iter *rbtree_node[K, V], ele *Iterator[K, V]) *rbtree_node[K, V] {
+func (c *RBTree[K, V]) next(iter *rbtree_node[K, V], ele *Element[K, V]) *rbtree_node[K, V] {
 	if ele.Key > iter.data.Key {
 		return iter.right
 	}
@@ -311,11 +316,12 @@ func (c *RBTree[K, V]) validate(t *testing.T, node *rbtree_node[K, V]) {
 }
 
 // insert with unique check
-func (c *RBTree[K, V]) Insert(key K, val V) (success bool) {
-	var data = &Iterator[K, V]{Key: key, Val: val}
+func (c *RBTree[K, V]) Set(key K, val V) {
+	var data = &Element[K, V]{Key: key, Val: val}
 	for i := c.begin(); !c.end(i); i = c.next(i, data) {
 		if data.Key == i.data.Key {
-			return false
+			i.data.Val = val
+			return
 		}
 	}
 
@@ -376,11 +382,10 @@ func (c *RBTree[K, V]) Insert(key K, val V) (success bool) {
 		}
 	}
 	(*root).set_black()
-	return true
 }
 
 func (c *RBTree[K, V]) Delete(key K) (success bool) {
-	var data = &Iterator[K, V]{Key: key}
+	var data = &Element[K, V]{Key: key}
 	for i := c.begin(); !c.end(i); i = c.next(i, data) {
 		if key == i.data.Key {
 			c.length--
