@@ -16,12 +16,12 @@ func (c *RBTree[K, V]) Find(key K) (result V, exist bool) {
 }
 
 func (c *RBTree[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
-	var iter = &Iterator[K, V]{next: true}
+	var iter = &Iterator[K, V]{}
 	c.do_foreach(c.root, iter, fn)
 }
 
 func (c *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, V], fn func(*Iterator[K, V])) {
-	if c.end(node) || !iter.next {
+	if c.end(node) || iter.broken {
 		return
 	}
 

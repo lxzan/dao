@@ -17,7 +17,7 @@ func TestNew(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Numeric.Generate(length)
-		tree.Insert(&Iterator[string, int]{Key: key, Val: length})
+		tree.Insert(key, length)
 		m[key] = length
 	}
 
@@ -34,7 +34,7 @@ func TestNew(t *testing.T) {
 	for i := 0; i < 10000; i++ {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Alphabet.Generate(length)
-		tree.Insert(&Iterator[string, int]{Key: key, Val: length})
+		tree.Insert(key, length)
 		m[key] = length
 	}
 
@@ -60,7 +60,7 @@ func TestRBTree_Find(t *testing.T) {
 	for i := 0; i < test_count; i++ {
 		var key = utils.Rand.Intn(test_count)
 		var val = utils.Alphabet.Generate(8)
-		tree.Insert(&Iterator[int, string]{Key: key, Val: val})
+		tree.Insert(key, val)
 		if _, ok := m[key]; !ok {
 			m[key] = val
 		}
@@ -83,7 +83,7 @@ func TestRBTree_ForEach(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		var key = utils.Alphabet.Generate(16)
 		arr = append(arr, key)
-		tree.Insert(&Iterator[string, int]{Key: key, Val: utils.Rand.Intn(1000)})
+		tree.Insert(key, utils.Rand.Intn(1000))
 	}
 
 	var arr1 = make([]string, 0)
@@ -114,7 +114,7 @@ func TestRBTree_Between(t *testing.T) {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Numeric.Generate(4)
 		m[key] = length
-		tree.Insert(&Iterator[string, int]{Key: key, Val: length})
+		tree.Insert(key, length)
 	}
 
 	var limit = 100
@@ -159,7 +159,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Numeric.Generate(4)
 		m[key] = length
-		tree.Insert(&Iterator[string, int]{Key: key, Val: length})
+		tree.Insert(key, length)
 	}
 
 	var limit = 100
@@ -196,7 +196,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 		var length = utils.Rand.Intn(16) + 1
 		var key = utils.Numeric.Generate(4)
 		m[key] = length
-		tree.Insert(&Iterator[string, int]{Key: key, Val: length})
+		tree.Insert(key, length)
 	}
 
 	var limit = 100
@@ -233,7 +233,7 @@ func TestRBTree_GetMinKey(t *testing.T) {
 	const test_count = 100
 	for i := 0; i < test_count; i++ {
 		var v = rand.Intn(10000)
-		tree.Insert(&Iterator[string, int]{Key: strconv.Itoa(v), Val: v})
+		tree.Insert(strconv.Itoa(v), v)
 	}
 
 	for i := 0; i < test_count; i++ {
@@ -264,7 +264,7 @@ func TestRBTree_GetMaxKey(t *testing.T) {
 	const test_count = 100
 	for i := 0; i < test_count; i++ {
 		var v = rand.Intn(10000)
-		tree.Insert(&Iterator[string, int]{Key: strconv.Itoa(v), Val: v})
+		tree.Insert(strconv.Itoa(v), v)
 	}
 
 	for i := 0; i < test_count; i++ {

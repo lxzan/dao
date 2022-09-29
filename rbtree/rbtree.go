@@ -13,13 +13,13 @@ const (
 )
 
 type Iterator[K dao.Comparable, V any] struct {
-	Key  K // unique
-	Val  V
-	next bool
+	Key    K // unique
+	Val    V
+	broken bool
 }
 
 func (c *Iterator[K, V]) Break() {
-	c.next = false
+	c.broken = true
 }
 
 type rbtree_node[K dao.Comparable, V any] struct {
@@ -311,7 +311,8 @@ func (c *RBTree[K, V]) validate(t *testing.T, node *rbtree_node[K, V]) {
 }
 
 // insert with unique check
-func (c *RBTree[K, V]) Insert(data *Iterator[K, V]) (success bool) {
+func (c *RBTree[K, V]) Insert(key K, val V) (success bool) {
+	var data = &Iterator[K, V]{Key: key, Val: val}
 	for i := c.begin(); !c.end(i); i = c.next(i, data) {
 		if data.Key == i.data.Key {
 			return false

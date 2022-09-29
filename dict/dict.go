@@ -7,16 +7,13 @@ import (
 )
 
 type Iterator[T any] struct {
-	Key   string
-	Value T
+	Key    string
+	Value  T
+	broken bool
 }
 
-func (c *Iterator[T]) Break() bool {
-	return false
-}
-
-func (c *Iterator[T]) Continue() bool {
-	return true
+func (c *Iterator[T]) Break() {
+	c.broken = true
 }
 
 type Element struct {
@@ -139,14 +136,15 @@ func (c *Dict[T]) Delete(key string) bool {
 	return false
 }
 
-func (c *Dict[T]) ForEach(fn func(iter *Iterator[T]) bool) {
+func (c *Dict[T]) ForEach(fn func(iter *Iterator[T])) {
 	var iter = &Iterator[T]{}
 	for i := 1; i < int(c.storage.Serial); i++ {
 		var item = &c.storage.Buckets[i]
 		if item.Ptr > 0 {
 			iter.Key = item.Key
 			iter.Value = item.Value
-			if !fn(iter) {
+			fn(iter)
+			if iter.broken {
 				return
 			}
 		}
