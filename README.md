@@ -1,7 +1,7 @@
 # The Great Way is Simple
 Simple and high-performance data structures and algorithms library
 
-[![Build Status](https://github.com/lxzan/dao/workflows/Go Test/badge.svg?branch=main)](https://github.com/lxzan/dao/actions?query=branch%3Amain)
+[![Build Status](https://github.com/lxzan/dao/workflows/Go%20Test/badge.svg?branch=main)](https://github.com/lxzan/dao/actions?query=branch%3Amain)
 
 ### Benchmark
 - 1,000 elements
