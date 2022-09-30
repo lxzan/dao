@@ -6,44 +6,42 @@ Simple and high-performance data structures and algorithms library
 ### Benchmark
 - 1,000 elements
 ```
-goos: darwin
-goarch: arm64
+goos: windows
+goarch: amd64
 pkg: github.com/lxzan/dao/benchmark
-BenchmarkMyMap_Set/string-8                59996             19892 ns/op           53248 B/op          2 allocs/op
-BenchmarkMyMap_Set/int-8                   91070             13291 ns/op           45056 B/op          2 allocs/op
-BenchmarkGoMap_Set/string-8                36583             32849 ns/op           57368 B/op          2 allocs/op
-BenchmarkGoMap_Set/int-8                   54259             22276 ns/op           41097 B/op          6 allocs/op
-BenchmarkMyMap_Get/string-8               113704             10354 ns/op               0 B/op          0 allocs/op
-BenchmarkMyMap_Get/int-8                  218997              5541 ns/op               0 B/op          0 allocs/op
-BenchmarkGoMap_Get/string-8               168564              7316 ns/op               0 B/op          0 allocs/op
-BenchmarkGoMap_Get/int-8                  167908              6520 ns/op               0 B/op          0 allocs/op
-BenchmarkMyMap_Delete/string-8             49182             24258 ns/op           12929 B/op         11 allocs/op
-BenchmarkMyMap_Delete/int-8                90664             13053 ns/op           12928 B/op         11 allocs/op
-BenchmarkGoMap_Delete/string-8             32680             36706 ns/op               1 B/op          0 allocs/op
-BenchmarkGoMap_Delete/int-8                50990             23574 ns/op               0 B/op          0 allocs/op
-PASS
-ok      github.com/lxzan/dao/benchmark  31.351s
+cpu: AMD Ryzen 5 PRO 4650G with Radeon Graphics
+BenchmarkMyMap_Set/string-12               38535             32238 ns/op           53248 B/op          2 allocs/op
+BenchmarkMyMap_Set/int-12                  55552             21591 ns/op           45056 B/op          2 allocs/op
+BenchmarkGoMap_Set/string-12               32197             36445 ns/op           57368 B/op          2 allocs/op
+BenchmarkGoMap_Set/int-12                  41067             28898 ns/op           41097 B/op          6 allocs/op
+BenchmarkMyMap_Get/string-12               82111             14339 ns/op               0 B/op          0 allocs/op
+BenchmarkMyMap_Get/int-12                 151774              7747 ns/op               0 B/op          0 allocs/op
+BenchmarkGoMap_Get/string-12               95738             12707 ns/op               0 B/op          0 allocs/op
+BenchmarkGoMap_Get/int-12                 146209              8044 ns/op               0 B/op          0 allocs/op
+BenchmarkMyMap_Delete/string-12            51271             23247 ns/op           12929 B/op         11 allocs/op
+BenchmarkMyMap_Delete/int-12               76872             15740 ns/op           12928 B/op         11 allocs/op
+BenchmarkGoMap_Delete/string-12            38737             31319 ns/op               1 B/op          0 allocs/op
+BenchmarkGoMap_Delete/int-12               51272             23187 ns/op               0 B/op          0 allocs/op
 ```
 
 - 10,000 elements
 ```
-goos: darwin
-goarch: arm64
+goos: windows
+goarch: amd64
 pkg: github.com/lxzan/dao/benchmark
-BenchmarkMyMap_Set/string-8                 3825            309373 ns/op          729092 B/op          2 allocs/op
-BenchmarkMyMap_Set/int-8                    8720            134059 ns/op          598016 B/op          2 allocs/op
-BenchmarkGoMap_Set/string-8                 3256            364237 ns/op          458777 B/op          2 allocs/op
-BenchmarkGoMap_Set/int-8                    4876            243187 ns/op          322224 B/op         11 allocs/op
-BenchmarkMyMap_Get/string-8                 5068            232323 ns/op             143 B/op          0 allocs/op
-BenchmarkMyMap_Get/int-8                   15595             76749 ns/op              38 B/op          0 allocs/op
-BenchmarkGoMap_Get/string-8                 3990            300194 ns/op             114 B/op          0 allocs/op
-BenchmarkGoMap_Get/int-8                    6386            180545 ns/op              50 B/op          0 allocs/op
-BenchmarkMyMap_Delete/string-8              3648            319692 ns/op          141386 B/op         17 allocs/op
-BenchmarkMyMap_Delete/int-8                 9091            127630 ns/op          141250 B/op         17 allocs/op
-BenchmarkGoMap_Delete/string-8              3242            363678 ns/op             141 B/op          0 allocs/op
-BenchmarkGoMap_Delete/int-8                 4821            242847 ns/op              66 B/op          0 allocs/op
-PASS
-ok      github.com/lxzan/dao/benchmark  21.932s
+cpu: AMD Ryzen 5 PRO 4650G with Radeon Graphics
+BenchmarkMyMap_Set/string-12                3187            369867 ns/op          729088 B/op          2 allocs/op
+BenchmarkMyMap_Set/int-12                   5449            233284 ns/op          598016 B/op          2 allocs/op
+BenchmarkGoMap_Set/string-12                3202            390564 ns/op          458776 B/op          2 allocs/op
+BenchmarkGoMap_Set/int-12                   4135            296884 ns/op          322238 B/op         11 allocs/op
+BenchmarkMyMap_Get/string-12                8564            149001 ns/op              85 B/op          0 allocs/op
+BenchmarkMyMap_Get/int-12                  13832             85587 ns/op              43 B/op          0 allocs/op
+BenchmarkGoMap_Get/string-12                5448            214066 ns/op              84 B/op          0 allocs/op
+BenchmarkGoMap_Get/int-12                   6656            173191 ns/op              48 B/op          0 allocs/op
+BenchmarkMyMap_Delete/string-12             4890            308094 ns/op          141334 B/op         17 allocs/op
+BenchmarkMyMap_Delete/int-12                6648            160257 ns/op          141274 B/op         17 allocs/op
+BenchmarkGoMap_Delete/string-12             3375            324144 ns/op             135 B/op          0 allocs/op
+BenchmarkGoMap_Delete/int-12                4882            245148 ns/op              66 B/op          0 allocs/op
 ```
 
 ### HashMap
