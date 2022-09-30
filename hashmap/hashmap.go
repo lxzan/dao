@@ -3,7 +3,6 @@ package hashmap
 import (
 	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/hash"
-	"github.com/lxzan/dao/internal/mlist"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/vector"
 )
@@ -19,10 +18,10 @@ func (c *Iterator[K, V]) Break() {
 }
 
 type HashMap[K dao.Hashable, V any] struct {
-	cap     uint32             // cap=2^n
-	b       uint64             // b=cap-1
-	indexes []mlist.Pointer    // list header pointer
-	storage *mlist.MList[K, V] // list data
+	cap     uint32       // cap=2^n
+	b       uint64       // b=cap-1
+	indexes []Pointer    // list header pointer
+	storage *MList[K, V] // list data
 }
 
 // New instantiates a hashmap
@@ -30,20 +29,19 @@ type HashMap[K dao.Hashable, V any] struct {
 func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
 	if len(caps) == 0 {
 		caps = []uint32{4}
-	} else {
-		var vol uint32 = 8
-		for vol < caps[0] {
-			vol *= 2
-		}
-		caps[0] = vol
 	}
 
-	var capacity = caps[0]
+	var size = caps[0]
+	var capacity = uint32(4)
+	for capacity < size {
+		capacity *= 2
+	}
+
 	return &HashMap[K, V]{
 		cap:     capacity,
 		b:       uint64(capacity) - 1,
-		indexes: make([]mlist.Pointer, capacity, capacity),
-		storage: mlist.NewMList[K, V](capacity),
+		indexes: make([]Pointer, capacity, capacity),
+		storage: NewMList[K, V](size),
 	}
 }
 
@@ -84,7 +82,7 @@ func (c *HashMap[K, V]) getIndex(key any) uint64 {
 }
 
 func (c *HashMap[K, V]) grow() {
-	if c.storage.Length >= int(c.cap) {
+	if c.storage.Recyclable.Len() == 0 && int(c.storage.Serial) >= cap(c.storage.Buckets) {
 		var m = New[K, V](c.cap * 2)
 		for i := 1; i < int(c.storage.Serial); i++ {
 			var item = &c.storage.Buckets[i]

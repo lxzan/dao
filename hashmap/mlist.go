@@ -1,9 +1,9 @@
-package mlist
+package hashmap
 
 type (
 	Pointer uint32
 
-	Iterator[K comparable, V any] struct {
+	element[K comparable, V any] struct {
 		Ptr     Pointer
 		PrevPtr Pointer
 		NextPtr Pointer
@@ -16,33 +16,16 @@ type MList[K comparable, V any] struct {
 	Length     int
 	Serial     uint32
 	Recyclable arrayStack // do not recycle head
-	Buckets    []Iterator[K, V]
+	Buckets    []element[K, V]
 }
 
 func NewMList[K comparable, V any](size uint32) *MList[K, V] {
 	return &MList[K, V]{
 		Serial:     1,
-		Recyclable: []Pointer{},
-		Buckets:    make([]Iterator[K, V], size+1, size+1),
+		Recyclable: nil,
+		Buckets:    make([]element[K, V], size+1, size+1),
 		Length:     0,
 	}
-}
-
-func (c *MList[K, V]) Collect(ptr Pointer) {
-	c.Buckets[ptr] = Iterator[K, V]{}
-	c.Recyclable.Push(ptr)
-}
-
-func (c *MList[K, V]) Begin(ptr Pointer) *Iterator[K, V] {
-	return &c.Buckets[ptr]
-}
-
-func (c *MList[K, V]) Next(iter *Iterator[K, V]) *Iterator[K, V] {
-	return &c.Buckets[iter.NextPtr]
-}
-
-func (c *MList[K, V]) End(iter *Iterator[K, V]) bool {
-	return iter.Ptr == 0
 }
 
 // NextID apply a pointer
@@ -52,15 +35,28 @@ func (c *MList[K, V]) NextID() Pointer {
 	}
 
 	var ptr = c.Serial
-	if ptr >= uint32(len(c.Buckets)) {
-		var ele Iterator[K, V]
-		c.Buckets = append(c.Buckets, ele)
-	}
 	c.Serial++
 	return Pointer(ptr)
 }
 
-// Push append an Iterator[] with unique check
+func (c *MList[K, V]) Collect(ptr Pointer) {
+	c.Buckets[ptr] = element[K, V]{}
+	c.Recyclable.Push(ptr)
+}
+
+func (c *MList[K, V]) Begin(ptr Pointer) *element[K, V] {
+	return &c.Buckets[ptr]
+}
+
+func (c *MList[K, V]) Next(iter *element[K, V]) *element[K, V] {
+	return &c.Buckets[iter.NextPtr]
+}
+
+func (c *MList[K, V]) End(iter *element[K, V]) bool {
+	return iter.Ptr == 0
+}
+
+// Push append an element[] with unique check
 func (c *MList[K, V]) Push(entrypoint *Pointer, key K, value V) (replaced bool) {
 	if *entrypoint == 0 {
 		*entrypoint = c.NextID()
@@ -98,7 +94,7 @@ func (c *MList[K, V]) Push(entrypoint *Pointer, key K, value V) (replaced bool) 
 }
 
 // Delete do not delete in loop if no break
-func (c *MList[K, V]) Delete(entrypoint *Pointer, target *Iterator[K, V]) (deleted bool) {
+func (c *MList[K, V]) Delete(entrypoint *Pointer, target *element[K, V]) (deleted bool) {
 	var head = c.Buckets[*entrypoint]
 	if head.Ptr == 0 || target.Ptr == 0 {
 		return false

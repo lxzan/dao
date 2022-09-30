@@ -87,3 +87,7 @@ func S2B(s string) (b []byte) {
 	bh.Len = sh.Len
 	return b
 }
+
+func XOR64(v uint64) uint32 {
+	return uint32((v >> 32) ^ (v << 32 >> 32))
+}
