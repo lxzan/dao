@@ -10,18 +10,18 @@ goos: windows
 goarch: amd64
 pkg: github.com/lxzan/dao/benchmark
 cpu: AMD Ryzen 5 PRO 4650G with Radeon Graphics
-BenchmarkMyMap_Set/string-12               38535             32238 ns/op           53248 B/op          2 allocs/op
-BenchmarkMyMap_Set/int-12                  55552             21591 ns/op           45056 B/op          2 allocs/op
-BenchmarkGoMap_Set/string-12               32197             36445 ns/op           57368 B/op          2 allocs/op
-BenchmarkGoMap_Set/int-12                  41067             28898 ns/op           41097 B/op          6 allocs/op
-BenchmarkMyMap_Get/string-12               82111             14339 ns/op               0 B/op          0 allocs/op
-BenchmarkMyMap_Get/int-12                 151774              7747 ns/op               0 B/op          0 allocs/op
-BenchmarkGoMap_Get/string-12               95738             12707 ns/op               0 B/op          0 allocs/op
-BenchmarkGoMap_Get/int-12                 146209              8044 ns/op               0 B/op          0 allocs/op
-BenchmarkMyMap_Delete/string-12            51271             23247 ns/op           12929 B/op         11 allocs/op
-BenchmarkMyMap_Delete/int-12               76872             15740 ns/op           12928 B/op         11 allocs/op
-BenchmarkGoMap_Delete/string-12            38737             31319 ns/op               1 B/op          0 allocs/op
-BenchmarkGoMap_Delete/int-12               51272             23187 ns/op               0 B/op          0 allocs/op
+BenchmarkMyMap_Set/string-12               41526             29719 ns/op           45056 B/op          2 allocs/op
+BenchmarkMyMap_Set/int-12                  61472             19395 ns/op           36864 B/op          2 allocs/op
+BenchmarkGoMap_Set/string-12               32500             36983 ns/op           57368 B/op          2 allocs/op
+BenchmarkGoMap_Set/int-12                  41932             28698 ns/op           41097 B/op          6 allocs/op
+BenchmarkMyMap_Get/string-12               80462             15024 ns/op               0 B/op          0 allocs/op
+BenchmarkMyMap_Get/int-12                 155680              7770 ns/op               0 B/op          0 allocs/op
+BenchmarkGoMap_Get/string-12               97472             12220 ns/op               0 B/op          0 allocs/op
+BenchmarkGoMap_Get/int-12                 147422              8005 ns/op               0 B/op          0 allocs/op
+BenchmarkMyMap_Delete/string-12            53302             22996 ns/op           12928 B/op         11 allocs/op
+BenchmarkMyMap_Delete/int-12               75006             15928 ns/op           12928 B/op         11 allocs/op
+BenchmarkGoMap_Delete/string-12            40443             28201 ns/op               1 B/op          0 allocs/op
+BenchmarkGoMap_Delete/int-12               54456             23162 ns/op               0 B/op          0 allocs/op
 ```
 
 - 10,000 elements
@@ -30,18 +30,18 @@ goos: windows
 goarch: amd64
 pkg: github.com/lxzan/dao/benchmark
 cpu: AMD Ryzen 5 PRO 4650G with Radeon Graphics
-BenchmarkMyMap_Set/string-12                3187            369867 ns/op          729088 B/op          2 allocs/op
-BenchmarkMyMap_Set/int-12                   5449            233284 ns/op          598016 B/op          2 allocs/op
-BenchmarkGoMap_Set/string-12                3202            390564 ns/op          458776 B/op          2 allocs/op
-BenchmarkGoMap_Set/int-12                   4135            296884 ns/op          322238 B/op         11 allocs/op
-BenchmarkMyMap_Get/string-12                8564            149001 ns/op              85 B/op          0 allocs/op
-BenchmarkMyMap_Get/int-12                  13832             85587 ns/op              43 B/op          0 allocs/op
-BenchmarkGoMap_Get/string-12                5448            214066 ns/op              84 B/op          0 allocs/op
-BenchmarkGoMap_Get/int-12                   6656            173191 ns/op              48 B/op          0 allocs/op
-BenchmarkMyMap_Delete/string-12             4890            308094 ns/op          141334 B/op         17 allocs/op
-BenchmarkMyMap_Delete/int-12                6648            160257 ns/op          141274 B/op         17 allocs/op
-BenchmarkGoMap_Delete/string-12             3375            324144 ns/op             135 B/op          0 allocs/op
-BenchmarkGoMap_Delete/int-12                4882            245148 ns/op              66 B/op          0 allocs/op
+BenchmarkMyMap_Set/string-12                3746            302377 ns/op          466944 B/op          2 allocs/op
+BenchmarkMyMap_Set/int-12                   6663            181048 ns/op          393216 B/op          2 allocs/op
+BenchmarkGoMap_Set/string-12                3297            391423 ns/op          458776 B/op          2 allocs/op
+BenchmarkGoMap_Set/int-12                   4134            295104 ns/op          322232 B/op         11 allocs/op
+BenchmarkMyMap_Get/string-12                7489            151294 ns/op              62 B/op          0 allocs/op
+BenchmarkMyMap_Get/int-12                  14103             85802 ns/op              27 B/op          0 allocs/op
+BenchmarkGoMap_Get/string-12                5449            208117 ns/op              84 B/op          0 allocs/op
+BenchmarkGoMap_Get/int-12                   6661            167246 ns/op              48 B/op          0 allocs/op
+BenchmarkMyMap_Delete/string-12             5702            208692 ns/op          141266 B/op         17 allocs/op
+BenchmarkMyMap_Delete/int-12                7051            164327 ns/op          141241 B/op         17 allocs/op
+BenchmarkGoMap_Delete/string-12             3925            302324 ns/op             116 B/op          0 allocs/op
+BenchmarkGoMap_Delete/int-12                4994            247500 ns/op              64 B/op          0 allocs/op
 ```
 
 ### HashMap
