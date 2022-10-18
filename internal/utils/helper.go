@@ -21,7 +21,7 @@ func (this RandomString) Generate(n int) string {
 	var b = make([]byte, n)
 	var length = len(this)
 	for i := 0; i < n; i++ {
-		var idx = Rand.Intn(length)
+		var idx = rand.Intn(length)
 		b[i] = this[idx]
 	}
 	return string(b)

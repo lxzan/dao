@@ -4,7 +4,6 @@ import (
 	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/hash"
 	"github.com/lxzan/dao/internal/utils"
-	"github.com/lxzan/dao/vector"
 )
 
 type Iterator[K dao.Hashable, V any] struct {
@@ -21,7 +20,7 @@ type HashMap[K dao.Hashable, V any] struct {
 	cap     uint32       // cap=2^n
 	b       uint64       // b=cap-1
 	indexes []Pointer    // list header pointer
-	storage *MList[K, V] // list data
+	storage *mList[K, V] // list data
 }
 
 // New instantiates a hashmap
@@ -41,7 +40,7 @@ func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
 		cap:     capacity,
 		b:       uint64(capacity) - 1,
 		indexes: make([]Pointer, capacity, capacity),
-		storage: NewMList[K, V](size),
+		storage: newMList[K, V](size),
 	}
 }
 
@@ -81,23 +80,23 @@ func (c *HashMap[K, V]) getIndex(key any) uint64 {
 	return hashcode & c.b
 }
 
-func (c *HashMap[K, V]) grow() {
-	if c.storage.Recyclable.Len() == 0 && int(c.storage.Serial) >= cap(c.storage.Buckets) {
-		var m = New[K, V](c.cap * 2)
-		for i := 1; i < int(c.storage.Serial); i++ {
-			var item = &c.storage.Buckets[i]
-			if item.Ptr > 0 {
-				m.Set(item.Key, item.Value)
-			}
-		}
-		*c = *m
-	}
-}
+//func (c *HashMap[K, V]) grow() {
+//	if c.storage.Recyclable.Len() == 0 && int(c.storage.Serial) >= cap(c.storage.Buckets) {
+//		var m = New[K, V](c.cap * 2)
+//		for i := 1; i < int(c.storage.Serial); i++ {
+//			var item = &c.storage.Buckets[i]
+//			if item.Ptr > 0 {
+//				m.Set(item.Key, item.Value)
+//			}
+//		}
+//		*c = *m
+//	}
+//}
 
 // Set insert a element into the hashmap
 // if key exists, value will be replaced
 func (c *HashMap[K, V]) Set(key K, val V) {
-	c.grow()
+	//c.grow()
 	var idx = c.getIndex(key)
 	c.storage.Push(&c.indexes[idx], key, val)
 }
@@ -106,53 +105,55 @@ func (c *HashMap[K, V]) Set(key K, val V) {
 func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 	var idx = c.getIndex(key)
 	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Key == key {
-			return i.Value, true
+		for j := 0; j < i.Len; j++ {
+			if i.Keys[j] == key {
+				return i.Values[j], true
+			}
 		}
 	}
 	return val, false
 }
 
 // Delete delete a element if the key exists
-func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
-	var idx = c.getIndex(key)
-	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Key == key {
-			return c.storage.Delete(&c.indexes[idx], i)
-		}
-	}
-	return false
-}
+//func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
+//	var idx = c.getIndex(key)
+//	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
+//		if i.Key == key {
+//			return c.storage.Delete(&c.indexes[idx], i)
+//		}
+//	}
+//	return false
+//}
 
-func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
-	var iter = &Iterator[K, V]{}
-	for i := 1; i < int(c.storage.Serial); i++ {
-		var item = &c.storage.Buckets[i]
-		if item.Ptr > 0 {
-			iter.Key = item.Key
-			iter.Value = item.Value
-			fn(iter)
-			if iter.broken {
-				return
-			}
-		}
-	}
-}
-
-// Keys get all the keys of the hashmap, construct it as a dynamic array and return it
-func (c *HashMap[K, V]) Keys() *vector.Vector[K] {
-	var keys = vector.New[K](0, c.Len())
-	c.ForEach(func(iter *Iterator[K, V]) {
-		keys.Push(iter.Key)
-	})
-	return keys
-}
-
-// Values get all the values of the hashmap, construct it as a dynamic array and return it
-func (c *HashMap[K, V]) Values() *vector.Vector[V] {
-	var values = vector.New[V](0, c.Len())
-	c.ForEach(func(iter *Iterator[K, V]) {
-		values.Push(iter.Value)
-	})
-	return values
-}
+//func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
+//	var iter = &Iterator[K, V]{}
+//	for i := 1; i < int(c.storage.Serial); i++ {
+//		var item = &c.storage.Buckets[i]
+//		if item.Ptr > 0 {
+//			iter.Key = item.Key
+//			iter.Value = item.Value
+//			fn(iter)
+//			if iter.broken {
+//				return
+//			}
+//		}
+//	}
+//}
+//
+//// Keys get all the keys of the hashmap, construct it as a dynamic array and return it
+//func (c *HashMap[K, V]) Keys() *vector.Vector[K] {
+//	var keys = vector.New[K](0, c.Len())
+//	c.ForEach(func(iter *Iterator[K, V]) {
+//		keys.Push(iter.Key)
+//	})
+//	return keys
+//}
+//
+//// Values get all the values of the hashmap, construct it as a dynamic array and return it
+//func (c *HashMap[K, V]) Values() *vector.Vector[V] {
+//	var values = vector.New[V](0, c.Len())
+//	c.ForEach(func(iter *Iterator[K, V]) {
+//		values.Push(iter.Value)
+//	})
+//	return values
+//}
