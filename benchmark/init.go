@@ -4,7 +4,7 @@ import (
 	"github.com/lxzan/dao/internal/utils"
 )
 
-const bench_count = 1000
+const bench_count = 10000
 
 var (
 	testkeys []string

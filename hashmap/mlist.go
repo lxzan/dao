@@ -4,11 +4,12 @@ type (
 	Pointer uint32
 
 	element[K comparable, V any] struct {
-		Ptr     Pointer
-		PrevPtr Pointer
-		NextPtr Pointer
-		Key     K
-		Value   V
+		Ptr      Pointer
+		PrevPtr  Pointer
+		NextPtr  Pointer
+		HashCode uint64
+		Key      K
+		Value    V
 	}
 )
 
@@ -48,6 +49,7 @@ func (c *mList[K, V]) Collect(ptr Pointer) {
 	bucket.PrevPtr = 0
 	bucket.Key = c.EmptyKey
 	bucket.Value = c.EmptyValue
+	bucket.HashCode = 0
 	c.Recyclable.Push(ptr)
 }
 
@@ -64,7 +66,7 @@ func (c *mList[K, V]) End(iter *element[K, V]) bool {
 }
 
 // Push append an element[] with unique check
-func (c *mList[K, V]) Push(entrypoint *Pointer, key K, value V) (replaced bool) {
+func (c *mList[K, V]) Push(entrypoint *Pointer, key K, value V, hashCode uint64) (replaced bool) {
 	if *entrypoint == 0 {
 		*entrypoint = c.NextID()
 	}
@@ -76,11 +78,12 @@ func (c *mList[K, V]) Push(entrypoint *Pointer, key K, value V) (replaced bool) 
 		head.NextPtr = 0
 		head.Key = key
 		head.Value = value
+		head.HashCode = hashCode
 		return false
 	}
 
 	for i := c.Begin(*entrypoint); !c.End(i); i = c.Next(i) {
-		if i.Key == key {
+		if i.HashCode == hashCode && i.Key == key {
 			i.Value = value
 			return true
 		}
@@ -93,6 +96,7 @@ func (c *mList[K, V]) Push(entrypoint *Pointer, key K, value V) (replaced bool) 
 			dst.NextPtr = 0
 			dst.Key = key
 			dst.Value = value
+			dst.HashCode = hashCode
 			c.Length++
 			break
 		}

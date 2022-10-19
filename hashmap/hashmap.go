@@ -50,7 +50,7 @@ func (c *HashMap[K, V]) Len() int {
 	return c.storage.Length
 }
 
-func (c *HashMap[K, V]) getIndex(key any) uint64 {
+func (c *HashMap[K, V]) hash(key any) uint64 {
 	var hashcode uint64
 	switch val := key.(type) {
 	case string:
@@ -78,7 +78,7 @@ func (c *HashMap[K, V]) getIndex(key any) uint64 {
 	default:
 		panic("key type not supported")
 	}
-	return hashcode & c.mod
+	return hashcode
 }
 
 func (c *HashMap[K, V]) grow() {
@@ -98,15 +98,17 @@ func (c *HashMap[K, V]) grow() {
 // if key exists, value will be replaced
 func (c *HashMap[K, V]) Set(key K, val V) {
 	c.grow()
-	var idx = c.getIndex(key)
-	c.storage.Push(&c.indexes[idx], key, val)
+	var hashCode = c.hash(key)
+	var idx = hashCode & c.mod
+	c.storage.Push(&c.indexes[idx], key, val, hashCode)
 }
 
 // Get search if hashmap contains the key
 func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
-	var idx = c.getIndex(key)
+	var hashCode = c.hash(key)
+	var idx = hashCode & c.mod
 	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Key == key {
+		if i.HashCode == hashCode && i.Key == key {
 			return i.Value, true
 		}
 	}
@@ -115,9 +117,10 @@ func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
 
 // Delete delete a element if the key exists
 func (c *HashMap[K, V]) Delete(key K) (deleted bool) {
-	var idx = c.getIndex(key)
+	var hashCode = c.hash(key)
+	var idx = hashCode & c.mod
 	for i := c.storage.Begin(c.indexes[idx]); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Key == key {
+		if i.HashCode == hashCode && i.Key == key {
 			return c.storage.Delete(&c.indexes[idx], i)
 		}
 	}
