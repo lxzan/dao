@@ -11,14 +11,13 @@ var testdata []string
 
 func init() {
 	for i := 0; i < test_count; i++ {
-		//length := utils.Rand.Intn(16) + 1
-		length := 16
+		length := utils.Rand.Intn(16) + 1
 		testdata = append(testdata, utils.Alphabet.Generate(length))
 	}
 }
 
 func TestHashMap(t *testing.T) {
-	var m1 = New[string, int](test_count)
+	var m1 = New[string, int]()
 	var m2 = make(map[string]int)
 
 	for _, item := range testdata {
@@ -27,17 +26,17 @@ func TestHashMap(t *testing.T) {
 		m2[item] = val
 	}
 
-	//for i := 0; i < test_count/2; i++ {
-	//	m1.Delete(testdata[i])
-	//	delete(m2, testdata[i])
-	//}
+	for i := 0; i < test_count/2; i++ {
+		m1.Delete(testdata[i])
+		delete(m2, testdata[i])
+	}
 
-	//for i := 0; i < test_count/2; i++ {
-	//	var key = utils.Alphabet.Generate(8)
-	//	var val = utils.Rand.Int()
-	//	m1.Set(key, val)
-	//	m2[key] = val
-	//}
+	for i := 0; i < test_count/2; i++ {
+		var key = utils.Alphabet.Generate(8)
+		var val = utils.Rand.Int()
+		m1.Set(key, val)
+		m2[key] = val
+	}
 
 	if m1.Len() != len(m2) {
 		println(m1.Len(), len(m2))
@@ -53,25 +52,25 @@ func TestHashMap(t *testing.T) {
 }
 
 func TestHashMap_ForEach(t *testing.T) {
-	//var m1 = New[string, int]()
-	//var m2 = make(map[string]int)
-	//
-	//for _, item := range testdata {
-	//	var val = utils.Rand.Int()
-	//	m1.Set(item, val)
-	//	m2[item] = val
-	//}
-	//
-	//var sum = 0
-	//m1.ForEach(func(iter *Iterator[string, int]) {
-	//	sum++
-	//	if m2[iter.Key] != iter.Value {
-	//		t.Error("error!")
-	//	}
-	//})
-	//
-	//if m1.Len() != len(m2) || sum != len(m2) {
-	//	println(m1.Len(), len(m2))
-	//	t.Error("m1.length != m2.length")
-	//}
+	var m1 = New[string, int]()
+	var m2 = make(map[string]int)
+
+	for _, item := range testdata {
+		var val = utils.Rand.Int()
+		m1.Set(item, val)
+		m2[item] = val
+	}
+
+	var sum = 0
+	m1.ForEach(func(iter *Iterator[string, int]) {
+		sum++
+		if m2[iter.Key] != iter.Value {
+			t.Error("error!")
+		}
+	})
+
+	if m1.Len() != len(m2) || sum != len(m2) {
+		println(m1.Len(), len(m2))
+		t.Error("m1.length != m2.length")
+	}
 }
