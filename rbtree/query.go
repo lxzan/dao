@@ -6,8 +6,7 @@ import (
 )
 
 func (c *RBTree[K, V]) Get(key K) (result V, exist bool) {
-	var data = &Element[K, V]{Key: key}
-	for i := c.begin(); !c.end(i); i = c.next(i, data) {
+	for i := c.begin(); !c.end(i); i = c.next(i, key) {
 		if key == i.data.Key {
 			return i.data.Val, true
 		}
@@ -107,38 +106,41 @@ func (c *QueryBuilder[K]) init() *QueryBuilder[K] {
 func (c *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Element[K, V] {
 	q.init()
 	var results = make([]*Element[K, V], 0)
+
 	if q.Order == DESC {
-		res, exist := c.GetMaxKey(q.RightFilter)
-		if exist && q.LeftFilter(res.Key) {
-			results = append(results, res)
+		maxEle, exist := c.GetMaxKey(q.RightFilter)
+		if exist && q.LeftFilter(maxEle.Key) {
+			results = append(results, maxEle)
 		} else {
 			return results
 		}
 
 		for i := 0; i < q.Limit-1; i++ {
-			res, exist = c.GetMaxKey(func(key K) bool {
-				return key < res.Key
+			result, exist := c.GetMaxKey(func(key K) bool {
+				return key < maxEle.Key
 			})
-			if exist && q.LeftFilter(res.Key) {
-				results = append(results, res)
+			if exist && q.LeftFilter(result.Key) {
+				results = append(results, result)
+				maxEle = result
 			} else {
 				break
 			}
 		}
 	} else {
-		res, exist := c.GetMinKey(q.LeftFilter)
-		if exist && q.RightFilter(res.Key) {
-			results = append(results, res)
+		minEle, exist := c.GetMinKey(q.LeftFilter)
+		if exist && q.RightFilter(minEle.Key) {
+			results = append(results, minEle)
 		} else {
 			return results
 		}
 
 		for i := 0; i < q.Limit-1; i++ {
-			res, exist = c.GetMinKey(func(key K) bool {
-				return key > res.Key
+			result, exist := c.GetMinKey(func(key K) bool {
+				return key > minEle.Key
 			})
-			if exist && q.RightFilter(res.Key) {
-				results = append(results, res)
+			if exist && q.RightFilter(result.Key) {
+				results = append(results, result)
+				minEle = result
 			} else {
 				break
 			}
