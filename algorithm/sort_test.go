@@ -2,9 +2,26 @@ package algorithm
 
 import (
 	"github.com/lxzan/dao"
+	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"
 )
+
+func TestIsSorted(t *testing.T) {
+	var as = assert.New(t)
+	as.Equal(true, IsSorted([]int{1, 2, 3}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{1, 2, 3, 4}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{1}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{1, 2, 2, 2}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{3, 2, 1}, dao.DESC[int]))
+
+	as.Equal(false, IsSorted([]int{1, 3, 2}, dao.ASC[int]))
+	as.Equal(false, IsSorted([]int{1, 2, 3, 2}, dao.ASC[int]))
+	as.Equal(false, IsSorted([]int{1, 2, 2, 1}, dao.ASC[int]))
+	as.Equal(false, IsSorted([]int{3, 2, 1}, dao.ASC[int]))
+	as.Equal(false, IsSorted([]int{3, 2, 1, 0}, dao.ASC[int]))
+}
 
 func TestSort(t *testing.T) {
 	var arr = make([]int, 0)
