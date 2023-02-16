@@ -24,13 +24,18 @@ func Sort[T any](arr []T, cmp func(a, b T) dao.Ordering) {
 
 func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering) int {
 	var mid = (begin + end) / 2
-	if cmp(arr[end], arr[begin])+cmp(arr[begin], arr[mid]) != 0 {
-		return begin
-	} else if cmp(arr[end], arr[mid])+cmp(arr[mid], arr[begin]) != 0 {
+	var x = cmp(arr[begin], arr[mid])
+	var y = cmp(arr[mid], arr[end])
+	if x+y != 0 {
 		return mid
-	} else {
+	}
+
+	var z = cmp(arr[begin], arr[end])
+	y *= -1
+	if y+z != 0 {
 		return end
 	}
+	return begin
 }
 
 func insertionSort[T any](arr []T, a, b int, cmp func(a, b T) dao.Ordering) {

@@ -7,6 +7,30 @@ import (
 	"testing"
 )
 
+func TestGetMedium(t *testing.T) {
+	var as = assert.New(t)
+	{
+		arr := []int{1, 2, 3}
+		idx := getMedium(arr, 0, 2, dao.ASC[int])
+		as.Equal(2, arr[idx])
+	}
+	{
+		arr := []int{1, 3, 2}
+		idx := getMedium(arr, 0, 2, dao.ASC[int])
+		as.Equal(2, arr[idx])
+	}
+	{
+		arr := []int{5, 2, 3}
+		idx := getMedium(arr, 0, 2, dao.ASC[int])
+		as.Equal(3, arr[idx])
+	}
+	{
+		arr := []int{3, 5, 1}
+		idx := getMedium(arr, 0, 2, dao.ASC[int])
+		as.Equal(3, arr[idx])
+	}
+}
+
 func TestIsSorted(t *testing.T) {
 	var as = assert.New(t)
 	as.Equal(true, IsSorted([]int{1, 2, 3}, dao.ASC[int]))
