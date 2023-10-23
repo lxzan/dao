@@ -1,8 +1,8 @@
 package dict
 
 import (
+	"github.com/lxzan/dao/array_list"
 	"github.com/lxzan/dao/internal/mlist"
-	"github.com/lxzan/dao/vector"
 	"math"
 )
 
@@ -75,14 +75,14 @@ func (c *Dict[T]) Get(key string) (value T, exist bool) {
 
 type match_params[T any] struct {
 	node    *Element
-	results *vector.Vector[Iterator[T]]
+	results *array_list.ArrayList[Iterator[T]]
 	limit   int
 	prefix  string
 	length  int
 }
 
 // Match limit: -1 as unlimited
-func (c *Dict[T]) Match(prefix string, limit ...int) *vector.Vector[Iterator[T]] {
+func (c *Dict[T]) Match(prefix string, limit ...int) *array_list.ArrayList[Iterator[T]] {
 	if len(limit) == 0 {
 		limit = []int{math.MaxInt}
 	}
@@ -94,7 +94,7 @@ func (c *Dict[T]) Match(prefix string, limit ...int) *vector.Vector[Iterator[T]]
 		if i.Cursor == i.End {
 			var params = match_params[T]{
 				node:    i.Node,
-				results: vector.New[Iterator[T]](),
+				results: array_list.New[Iterator[T]](),
 				limit:   limit[0],
 				prefix:  prefix,
 				length:  len(prefix),

@@ -2,18 +2,7 @@ package hashmap
 
 import (
 	"github.com/lxzan/dao"
-	"github.com/lxzan/dao/vector"
 )
-
-type Iterator[K dao.Hashable, V any] struct {
-	Key    K
-	Value  V
-	broken bool
-}
-
-func (c *Iterator[K, V]) Break() {
-	c.broken = true
-}
 
 type HashMap[K dao.Hashable, V any] struct {
 	m map[K]V
@@ -53,32 +42,30 @@ func (c *HashMap[K, V]) Delete(key K) {
 	delete(c.m, key)
 }
 
-func (c *HashMap[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
-	var iter = &Iterator[K, V]{}
+func (c *HashMap[K, V]) ForEach(f func(key K, val V) bool) {
 	for k, v := range c.m {
-		iter.Key = k
-		iter.Value = v
-		fn(iter)
-		if iter.broken {
+		if !f(k, v) {
 			break
 		}
 	}
 }
 
 // Keys get all the keys of the hashmap, construct it as a dynamic array and return it
-func (c *HashMap[K, V]) Keys() *vector.Vector[K] {
-	var keys = vector.New[K](0, c.Len())
-	c.ForEach(func(iter *Iterator[K, V]) {
-		keys.Push(iter.Key)
+func (c *HashMap[K, V]) Keys() []K {
+	var keys = make([]K, 0, len(c.m))
+	c.ForEach(func(k K, v V) bool {
+		keys = append(keys, k)
+		return true
 	})
 	return keys
 }
 
 // Values get all the values of the hashmap, construct it as a dynamic array and return it
-func (c *HashMap[K, V]) Values() *vector.Vector[V] {
-	var values = vector.New[V](0, c.Len())
-	c.ForEach(func(iter *Iterator[K, V]) {
-		values.Push(iter.Value)
+func (c *HashMap[K, V]) Values() []V {
+	var vals = make([]V, 0, len(c.m))
+	c.ForEach(func(k K, v V) bool {
+		vals = append(vals, v)
+		return true
 	})
-	return values
+	return vals
 }

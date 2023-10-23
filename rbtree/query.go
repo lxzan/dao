@@ -2,7 +2,7 @@ package rbtree
 
 import (
 	"github.com/lxzan/dao"
-	"github.com/lxzan/dao/vector"
+	"github.com/lxzan/dao/array_list"
 )
 
 func (c *RBTree[K, V]) Get(key K) (result V, exist bool) {
@@ -33,7 +33,7 @@ func (c *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, V],
 
 func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Element[K, V], exist bool) {
 	result = &Element[K, V]{}
-	var stack = vector.New[*rbtree_node[K, V]]()
+	var stack = array_list.New[*rbtree_node[K, V]]()
 	stack.Push(c.root)
 	for stack.Len() > 0 {
 		var node = stack.RPop()
@@ -55,7 +55,7 @@ func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Element[K, V]
 
 func (c *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Element[K, V], exist bool) {
 	result = &Element[K, V]{}
-	var stack = vector.New[*rbtree_node[K, V]](0, 0)
+	var stack = array_list.New[*rbtree_node[K, V]](0, 0)
 	stack.Push(c.root)
 	for stack.Len() > 0 {
 		var node = stack.RPop()
