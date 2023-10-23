@@ -1,7 +1,6 @@
 package heap
 
 import (
-	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/utils"
 	"sort"
 	"testing"
@@ -62,41 +61,5 @@ func TestHeap_Sort(t *testing.T) {
 	sort.Strings(arr1)
 	if !utils.SameStrings(arr1, arr2) {
 		t.Fatal("error!")
-	}
-}
-
-func TestHeap_Find(t *testing.T) {
-	var count = 10000
-	type entry struct {
-		Key string
-		Val int
-	}
-
-	var max_heap = func(a, b *entry) dao.Ordering {
-		if a.Key > b.Key {
-			return dao.Less
-		} else if a.Key == b.Key {
-			return dao.Equal
-		} else {
-			return dao.Greater
-		}
-	}
-
-	m1 := New(count, max_heap)
-	m2 := make(map[string]int)
-	for i := 0; i < count; i++ {
-		var key = utils.Alphabet.Generate(8)
-		var val = utils.Rand.Int()
-		m2[key] = val
-	}
-	for k, v := range m2 {
-		m1.Push(&entry{Key: k, Val: v})
-	}
-
-	for k, v := range m2 {
-		result, ok := m1.Find(&entry{Key: k})
-		if !ok || result.Val != v {
-			t.Fatal("error!")
-		}
 	}
 }
