@@ -2,9 +2,50 @@ package algorithm
 
 import (
 	"github.com/lxzan/dao"
+	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"
 )
+
+func TestGetMedium(t *testing.T) {
+	var as = assert.New(t)
+	{
+		arr := []int{1, 2, 3}
+		idx := getMedium(arr, 0, 2, dao.ASC[int])
+		as.Equal(2, arr[idx])
+	}
+	{
+		arr := []int{1, 3, 2}
+		idx := getMedium(arr, 0, 2, dao.ASC[int])
+		as.Equal(2, arr[idx])
+	}
+	{
+		arr := []int{5, 2, 3}
+		idx := getMedium(arr, 0, 2, dao.ASC[int])
+		as.Equal(3, arr[idx])
+	}
+	{
+		arr := []int{3, 5, 1}
+		idx := getMedium(arr, 0, 2, dao.ASC[int])
+		as.Equal(3, arr[idx])
+	}
+}
+
+func TestIsSorted(t *testing.T) {
+	var as = assert.New(t)
+	as.Equal(true, IsSorted([]int{1, 2, 3}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{1, 2, 3, 4}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{1}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{1, 2, 2, 2}, dao.ASC[int]))
+	as.Equal(true, IsSorted([]int{3, 2, 1}, dao.DESC[int]))
+
+	as.Equal(false, IsSorted([]int{1, 3, 2}, dao.ASC[int]))
+	as.Equal(false, IsSorted([]int{1, 2, 3, 2}, dao.ASC[int]))
+	as.Equal(false, IsSorted([]int{1, 2, 2, 1}, dao.ASC[int]))
+	as.Equal(false, IsSorted([]int{3, 2, 1}, dao.ASC[int]))
+	as.Equal(false, IsSorted([]int{3, 2, 1, 0}, dao.ASC[int]))
+}
 
 func TestSort(t *testing.T) {
 	var arr = make([]int, 0)

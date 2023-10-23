@@ -4,21 +4,15 @@ import "github.com/lxzan/dao"
 
 func IsSorted[T any](arr []T, cmp func(a, b T) dao.Ordering) bool {
 	var n = len(arr)
-	if n == 0 {
+	if n <= 1 {
 		return true
 	}
-
-	var flag1 = false
-	var flag2 = false
 	for i := 1; i < n; i++ {
-		var result = cmp(arr[i], arr[i-1])
-		if result == dao.Less {
-			flag1 = true
-		} else if result == dao.Greater {
-			flag2 = true
+		if cmp(arr[i], arr[i-1]) < 0 {
+			return false
 		}
 	}
-	return !(flag1 && flag2)
+	return true
 }
 
 func Sort[T any](arr []T, cmp func(a, b T) dao.Ordering) {
@@ -30,13 +24,18 @@ func Sort[T any](arr []T, cmp func(a, b T) dao.Ordering) {
 
 func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering) int {
 	var mid = (begin + end) / 2
-	if cmp(arr[end], arr[begin])+cmp(arr[begin], arr[mid]) != 0 {
-		return begin
-	} else if cmp(arr[end], arr[mid])+cmp(arr[mid], arr[begin]) != 0 {
+	var x = cmp(arr[begin], arr[mid])
+	var y = cmp(arr[mid], arr[end])
+	if x+y != 0 {
 		return mid
-	} else {
+	}
+
+	var z = cmp(arr[begin], arr[end])
+	y *= -1
+	if y+z != 0 {
 		return end
 	}
+	return begin
 }
 
 func insertionSort[T any](arr []T, a, b int, cmp func(a, b T) dao.Ordering) {
