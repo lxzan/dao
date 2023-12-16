@@ -4,56 +4,48 @@ import (
 	"github.com/lxzan/dao"
 )
 
-type HashMap[K dao.Hashable, V any] struct {
-	m map[K]V
-}
+type HashMap[K dao.Hashable, V any] map[K]V
 
 // New instantiates a hashmap
 // at most one param, means initial capacity
-func New[K dao.Hashable, V any](caps ...uint32) *HashMap[K, V] {
-	if len(caps) == 0 {
-		caps = []uint32{4}
-	}
-
-	return &HashMap[K, V]{
-		m: make(map[K]V, caps[0]),
-	}
+func New[K dao.Hashable, V any](capacity uint32) HashMap[K, V] {
+	return make(map[K]V, capacity)
 }
 
 // Len get the length of hashmap
-func (c *HashMap[K, V]) Len() int {
-	return len(c.m)
+func (c HashMap[K, V]) Len() int {
+	return len(c)
 }
 
 // Set insert a element into the hashmap
 // if key exists, value will be replaced
-func (c *HashMap[K, V]) Set(key K, val V) {
-	c.m[key] = val
+func (c HashMap[K, V]) Set(key K, val V) {
+	c[key] = val
 }
 
 // Get search if hashmap contains the key
-func (c *HashMap[K, V]) Get(key K) (val V, exist bool) {
-	val, exist = c.m[key]
+func (c HashMap[K, V]) Get(key K) (val V, exist bool) {
+	val, exist = c[key]
 	return
 }
 
 // Delete delete a element if the key exists
-func (c *HashMap[K, V]) Delete(key K) {
-	delete(c.m, key)
+func (c HashMap[K, V]) Delete(key K) {
+	delete(c, key)
 }
 
-func (c *HashMap[K, V]) ForEach(f func(key K, val V) bool) {
-	for k, v := range c.m {
+func (c HashMap[K, V]) Range(f func(key K, val V) bool) {
+	for k, v := range c {
 		if !f(k, v) {
-			break
+			return
 		}
 	}
 }
 
 // Keys get all the keys of the hashmap, construct it as a dynamic array and return it
-func (c *HashMap[K, V]) Keys() []K {
-	var keys = make([]K, 0, len(c.m))
-	c.ForEach(func(k K, v V) bool {
+func (c HashMap[K, V]) Keys() []K {
+	var keys = make([]K, 0, c.Len())
+	c.Range(func(k K, v V) bool {
 		keys = append(keys, k)
 		return true
 	})
@@ -61,9 +53,9 @@ func (c *HashMap[K, V]) Keys() []K {
 }
 
 // Values get all the values of the hashmap, construct it as a dynamic array and return it
-func (c *HashMap[K, V]) Values() []V {
-	var vals = make([]V, 0, len(c.m))
-	c.ForEach(func(k K, v V) bool {
+func (c HashMap[K, V]) Values() []V {
+	var vals = make([]V, 0, c.Len())
+	c.Range(func(k K, v V) bool {
 		vals = append(vals, v)
 		return true
 	})

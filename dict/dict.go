@@ -64,19 +64,18 @@ func (c *Dict[T]) doReset(ele *element) {
 }
 
 // Set 插入或替换元素
-func (c *Dict[T]) Set(key string, val T) (exist bool) {
+func (c *Dict[T]) Set(key string, val T) {
 	if key == "" {
-		_, exist = c.storage.Push(&c.root.EntryPoint, key, val)
-		return exist
+		c.storage.Push(&c.root.EntryPoint, key, val)
+		return
 	}
 
 	for i := c.begin(key, true); i != nil; i = i.next() {
 		if i.hit() {
-			_, exist = c.storage.Push(&i.Node.EntryPoint, key, val)
-			break
+			c.storage.Push(&i.Node.EntryPoint, key, val)
+			return
 		}
 	}
-	return exist
 }
 
 // Get 根据key查询数据
@@ -98,14 +97,13 @@ func (c *Dict[T]) Get(key string) (value T, exist bool) {
 }
 
 // Delete 删除元素
-func (c *Dict[T]) Delete(key string) (exist bool) {
+func (c *Dict[T]) Delete(key string) {
 	for i := c.begin(key, false); i != nil; i = i.next() {
 		if i.hit() {
-			exist = c.storage.Delete(&i.Node.EntryPoint, key)
-			break
+			c.storage.Delete(&i.Node.EntryPoint, key)
+			return
 		}
 	}
-	return exist
 }
 
 // Match 前缀匹配

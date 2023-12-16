@@ -17,8 +17,8 @@ type (
 	Map[K comparable, V any] interface {
 		Len() int
 		Get(key K) (V, bool)
-		Set(key K, value V) bool
-		Delete(key K) bool
+		Set(key K, value V)
+		Delete(key K)
 		Range(f func(K, V) bool)
 	}
 )
