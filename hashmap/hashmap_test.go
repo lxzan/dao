@@ -62,11 +62,12 @@ func TestHashMap_ForEach(t *testing.T) {
 	}
 
 	var sum = 0
-	m1.ForEach(func(iter *Iterator[string, int]) {
+	m1.ForEach(func(key string, val int) bool {
 		sum++
-		if m2[iter.Key] != iter.Value {
+		if m2[key] != val {
 			t.Error("error!")
 		}
+		return true
 	})
 
 	if m1.Len() != len(m2) || sum != len(m2) {

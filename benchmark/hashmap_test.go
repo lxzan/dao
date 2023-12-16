@@ -8,7 +8,7 @@ import (
 )
 
 func BenchmarkFnv64(b *testing.B) {
-	var s = utils.S2B(utils.Alphabet.Generate(32))
+	var s = utils.S2B(utils.Alphabet.Generate(16))
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
 			hash.HashBytes64(s)
@@ -70,9 +70,9 @@ func BenchmarkMyMap_Get(b *testing.B) {
 	})
 
 	b.Run("int", func(b *testing.B) {
-		m := hashmap.New[int, int](bench_count)
+		m := hashmap.New[int, string](bench_count)
 		for j := 0; j < bench_count; j++ {
-			m.Set(testvals[j], 1)
+			m.Set(testvals[j], testkeys[j])
 		}
 		for i := 0; i < b.N; i++ {
 			for j := 0; j < bench_count; j++ {
@@ -96,9 +96,9 @@ func BenchmarkGoMap_Get(b *testing.B) {
 	})
 
 	b.Run("int", func(b *testing.B) {
-		m := make(map[int]int, bench_count)
+		m := make(map[int]string, bench_count)
 		for j := 0; j < bench_count; j++ {
-			m[testvals[j]] = 1
+			m[testvals[j]] = testkeys[j]
 		}
 		for i := 0; i < b.N; i++ {
 			for j := 0; j < bench_count; j++ {

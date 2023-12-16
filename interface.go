@@ -27,7 +27,13 @@ func ASC[T Comparable](a, b T) Ordering {
 }
 
 func DESC[T Comparable](a, b T) Ordering {
-	return -1 * ASC(a, b)
+	if a > b {
+		return Less
+	} else if a < b {
+		return Greater
+	} else {
+		return Equal
+	}
 }
 
 type Number interface {

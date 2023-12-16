@@ -90,8 +90,8 @@ func (c *RBTree[K, V]) begin() *rbtree_node[K, V] {
 	return c.root
 }
 
-func (c *RBTree[K, V]) next(iter *rbtree_node[K, V], ele *Element[K, V]) *rbtree_node[K, V] {
-	if ele.Key > iter.data.Key {
+func (c *RBTree[K, V]) next(iter *rbtree_node[K, V], key K) *rbtree_node[K, V] {
+	if key > iter.data.Key {
 		return iter.right
 	}
 	return iter.left
@@ -317,15 +317,15 @@ func (c *RBTree[K, V]) validate(t *testing.T, node *rbtree_node[K, V]) {
 
 // insert with unique check
 func (c *RBTree[K, V]) Set(key K, val V) {
-	var data = &Element[K, V]{Key: key, Val: val}
-	for i := c.begin(); !c.end(i); i = c.next(i, data) {
-		if data.Key == i.data.Key {
+	for i := c.begin(); !c.end(i); i = c.next(i, key) {
+		if key == i.data.Key {
 			i.data.Val = val
 			return
 		}
 	}
 
 	c.length++
+	var data = &Element[K, V]{Key: key, Val: val}
 	var node = &rbtree_node[K, V]{data: data}
 	var root = &c.root
 	var temp, sentinel *rbtree_node[K, V]
@@ -385,8 +385,7 @@ func (c *RBTree[K, V]) Set(key K, val V) {
 }
 
 func (c *RBTree[K, V]) Delete(key K) (success bool) {
-	var data = &Element[K, V]{Key: key}
-	for i := c.begin(); !c.end(i); i = c.next(i, data) {
+	for i := c.begin(); !c.end(i); i = c.next(i, key) {
 		if key == i.data.Key {
 			c.length--
 			c.do_delete(i)
