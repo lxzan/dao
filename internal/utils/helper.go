@@ -91,3 +91,11 @@ func S2B(s string) (b []byte) {
 func XOR64(v uint64) uint32 {
 	return uint32((v >> 32) ^ (v << 32 >> 32))
 }
+
+type Integer interface {
+	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8
+}
+
+func IsBinaryNumber[T Integer](x T) bool {
+	return x&(x-1) == 0
+}

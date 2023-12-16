@@ -1,145 +1,157 @@
 package mlist
 
-type (
-	Pointer uint32
+import "github.com/lxzan/dao/types"
 
-	Iterator[K comparable, V any] struct {
-		Ptr     Pointer
-		PrevPtr Pointer
-		NextPtr Pointer
-		Key     K
-		Value   V
+type (
+	EntryPoint struct{ Head, Tail types.Pointer }
+
+	// Element 链表元素
+	// 不能在外部引用*Element, 必须使用types.Pointer.
+	Element[K comparable, V any] struct {
+		Prev, Addr, Next types.Pointer
+		Key              K
+		Value            V
 	}
 )
 
+// MList 多维链表
+// 用于解决哈希冲突
+// 在一个数组里面维护多条链表, 同个链表里面数据不能重复.
 type MList[K comparable, V any] struct {
-	Length     int
-	Serial     uint32
-	Recyclable arrayStack // do not recycle head
-	Buckets    []Iterator[K, V]
+	length     int
+	serial     uint32
+	recyclable arrayStack
+	template   Element[K, V]
+	Buckets    []Element[K, V]
 }
 
 func NewMList[K comparable, V any](size uint32) *MList[K, V] {
 	return &MList[K, V]{
-		Serial:     1,
-		Recyclable: []Pointer{},
-		Buckets:    make([]Iterator[K, V], size+1, size+1),
-		Length:     0,
+		Buckets: make([]Element[K, V], 1, size+1),
 	}
 }
 
-func (c *MList[K, V]) Collect(ptr Pointer) {
-	c.Buckets[ptr] = Iterator[K, V]{}
-	c.Recyclable.Push(ptr)
+func (c *MList[K, V]) Reset() {
+	c.length, c.serial = 0, 0
+	clear(c.recyclable)
+	clear(c.Buckets)
+	c.recyclable = c.recyclable[:0]
+	c.Buckets = c.Buckets[:1]
 }
 
-func (c *MList[K, V]) Begin(ptr Pointer) *Iterator[K, V] {
-	return &c.Buckets[ptr]
-}
-
-func (c *MList[K, V]) Next(iter *Iterator[K, V]) *Iterator[K, V] {
-	return &c.Buckets[iter.NextPtr]
-}
-
-func (c *MList[K, V]) End(iter *Iterator[K, V]) bool {
-	return iter.Ptr == 0
-}
-
-// NextID apply a pointer
-func (c *MList[K, V]) NextID() Pointer {
-	if c.Recyclable.Len() > 0 {
-		return c.Recyclable.Pop()
+func (c *MList[K, V]) getElement() types.Pointer {
+	if c.recyclable.Len() > 0 {
+		return c.recyclable.Pop()
 	}
 
-	var ptr = c.Serial
-	if ptr >= uint32(len(c.Buckets)) {
-		var ele Iterator[K, V]
-		c.Buckets = append(c.Buckets, ele)
-	}
-	c.Serial++
-	return Pointer(ptr)
+	c.serial++
+	var addr = c.serial
+	c.Buckets = append(c.Buckets, c.template)
+	return types.Pointer(addr)
 }
 
-// Push append an Iterator[] with unique check
-func (c *MList[K, V]) Push(entrypoint *Pointer, key K, value V) (replaced bool) {
-	if *entrypoint == 0 {
-		*entrypoint = c.NextID()
+func (c *MList[K, V]) putElement(addr types.Pointer) {
+	c.Buckets[addr] = c.template
+	c.recyclable.Push(addr)
+}
+
+func (c *MList[K, V]) newElement(key K, value V) *Element[K, V] {
+	addr := c.getElement()
+	ele := c.Get(addr)
+	ele.Addr, ele.Key, ele.Value = addr, key, value
+	c.length++
+	return ele
+}
+
+func (c *MList[K, V]) Len() int {
+	return c.length
+}
+
+func (c *MList[K, V]) Get(addr types.Pointer) *Element[K, V] {
+	if addr > 0 {
+		return &c.Buckets[addr]
 	}
-	var head = &c.Buckets[*entrypoint]
-	if head.Ptr == 0 {
-		c.Length++
-		head.Ptr = *entrypoint
-		head.PrevPtr = 0
-		head.NextPtr = 0
-		head.Key = key
-		head.Value = value
-		return false
+	return nil
+}
+
+func (c *MList[K, V]) Range(entrypoint *EntryPoint, f func(iter *Element[K, V]) bool) {
+	for i := c.Get(entrypoint.Head); i != nil; i = c.Get(i.Next) {
+		if !f(i) {
+			return
+		}
+	}
+}
+
+// Push append an Element[] with unique check
+func (c *MList[K, V]) Push(entrypoint *EntryPoint, key K, value V) (addr types.Pointer, exist bool) {
+	// 链表为空
+	if entrypoint.Head == types.Nil {
+		ele := c.newElement(key, value)
+		entrypoint.Head, entrypoint.Tail = ele.Addr, ele.Addr
+		return ele.Addr, false
 	}
 
-	for i := c.Begin(*entrypoint); !c.End(i); i = c.Next(i) {
+	// key存在, 替换value
+	for i := c.Get(entrypoint.Head); i != nil; i = c.Get(i.Next) {
 		if i.Key == key {
 			i.Value = value
-			return true
+			return i.Addr, true
 		}
-		if i.NextPtr == 0 {
-			var cursor = c.NextID()
-			c.Buckets[i.Ptr].NextPtr = cursor
-			var dst = &c.Buckets[cursor]
-			dst.Ptr = cursor
-			dst.PrevPtr = i.Ptr
-			dst.NextPtr = 0
-			dst.Key = key
-			dst.Value = value
-			c.Length++
-			break
+	}
+
+	// key不存在, 插入新数据
+	ele := c.newElement(key, value)
+	tail := c.Get(entrypoint.Tail)
+	tail.Next = ele.Addr
+	ele.Prev = tail.Addr
+	entrypoint.Tail = ele.Addr
+	return ele.Addr, false
+}
+
+func (c *MList[K, V]) Delete(entrypoint *EntryPoint, key K) (exists bool) {
+	for i := c.Get(entrypoint.Head); i != nil; i = c.Get(i.Next) {
+		if i.Key == key {
+			c.doDelete(entrypoint, i)
+			return true
 		}
 	}
 	return false
 }
 
 // Delete do not delete in loop if no break
-func (c *MList[K, V]) Delete(entrypoint *Pointer, target *Iterator[K, V]) (deleted bool) {
-	var head = c.Buckets[*entrypoint]
-	if head.Ptr == 0 || target.Ptr == 0 {
-		return false
+func (c *MList[K, V]) doDelete(entrypoint *EntryPoint, ele *Element[K, V]) {
+	var prev, next *Element[K, V] = nil, nil
+	var state = 0
+	if ele.Prev > 0 {
+		prev = c.Get(ele.Prev)
+		state += 1
+	}
+	if ele.Next > 0 {
+		next = c.Get(ele.Next)
+		state += 2
 	}
 
-	c.Length--
-
-	// delete last node
-	if target.NextPtr == 0 && target.PrevPtr == 0 {
-		*entrypoint = 0
-		c.Collect(target.Ptr)
-		return true
+	switch state {
+	case 3:
+		prev.Next = next.Addr
+		next.Prev = prev.Addr
+	case 2:
+		next.Prev = 0
+		entrypoint.Head = next.Addr
+	case 1:
+		prev.Next = 0
+		entrypoint.Tail = prev.Addr
+	default:
+		entrypoint.Head = 0
+		entrypoint.Tail = 0
 	}
 
-	// delete head
-	if target.PrevPtr == 0 {
-		var next = &c.Buckets[target.NextPtr]
-		*entrypoint = next.Ptr
-		next.PrevPtr = 0
-		c.Collect(target.Ptr)
-		return true
-	}
-
-	// delete tail
-	if target.NextPtr == 0 {
-		var prev = &c.Buckets[target.PrevPtr]
-		prev.NextPtr = 0
-		c.Collect(target.Ptr)
-		return true
-	}
-
-	var prev = &c.Buckets[target.PrevPtr]
-	var next = &c.Buckets[target.NextPtr]
-	next.PrevPtr = prev.Ptr
-	prev.NextPtr = next.Ptr
-	c.Collect(target.Ptr)
-	return true
+	c.putElement(ele.Addr)
+	c.length--
 }
 
-func (c *MList[K, V]) Find(entrypoint Pointer, key K) (value V, exist bool) {
-	for i := c.Begin(entrypoint); !c.End(i); i = c.Next(i) {
+func (c *MList[K, V]) Find(entrypoint *EntryPoint, key K) (value V, exist bool) {
+	for i := c.Get(entrypoint.Head); i != nil; i = c.Get(i.Next) {
 		if i.Key == key {
 			return i.Value, true
 		}
@@ -147,22 +159,19 @@ func (c *MList[K, V]) Find(entrypoint Pointer, key K) (value V, exist bool) {
 	return value, false
 }
 
-type arrayStack []Pointer
+type arrayStack []types.Pointer
 
 func (c *arrayStack) Len() int {
 	return len(*c)
 }
 
-func (c *arrayStack) Push(v Pointer) {
+func (c *arrayStack) Push(v types.Pointer) {
 	*c = append(*c, v)
 }
 
-func (c *arrayStack) Pop() Pointer {
-	var n = c.Len()
-	if n >= 1 {
-		var result = (*c)[n-1]
-		*c = (*c)[:n-1]
-		return result
-	}
-	return 0
+func (c *arrayStack) Pop() types.Pointer {
+	var n = len(*c)
+	var v = (*c)[n-1]
+	*c = (*c)[:n-1]
+	return v
 }

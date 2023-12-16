@@ -2,151 +2,149 @@ package dict
 
 import (
 	"github.com/lxzan/dao/internal/mlist"
-	"github.com/lxzan/dao/vector"
-	"math"
+	"github.com/lxzan/dao/internal/utils"
+	"github.com/lxzan/dao/types"
+	"strings"
 )
 
-type Iterator[T any] struct {
-	Key    string
-	Value  T
-	broken bool
-}
-
-func (c *Iterator[T]) Break() {
-	c.broken = true
-}
-
-type Element struct {
-	EntryPoint mlist.Pointer
-	Children   []*Element
+type element struct {
+	EntryPoint mlist.EntryPoint
+	Children   []*element
 }
 
 type Dict[T any] struct {
-	indexLength int      // 8byte index
-	root        *Element // root node
-	storage     *mlist.MList[string, T]
+	indexes []uint8                 // 索引
+	root    *element                // 根节点
+	storage *mlist.MList[string, T] // 存储
 }
 
-// New 4<=indexLength<=32
-func New[T any](indexLength ...int) *Dict[T] {
-	if len(indexLength) == 0 {
-		indexLength = []int{8}
-	}
+// New 新建字典树
+// 注意: key不能重复
+func New[T any]() *Dict[T] {
 	return &Dict[T]{
-		indexLength: indexLength[0],
-		root:        &Element{Children: make([]*Element, sizes[0], sizes[0])},
-		storage:     mlist.NewMList[string, T](8),
+		indexes: defaultIndexes,
+		root:    &element{Children: make([]*element, defaultIndexes[0])},
+		storage: mlist.NewMList[string, T](8),
 	}
+}
+
+// WithIndexes 设置索引
+// 索引元素必须满足 y=2^x
+func (c *Dict[T]) WithIndexes(indexes []uint8) *Dict[T] {
+	if len(indexes) < 2 {
+		panic("indexes length at least 2")
+	}
+	for _, item := range indexes {
+		if !utils.IsBinaryNumber(item) {
+			panic("indexes contains elements that must satisfy y=2^x")
+		}
+	}
+	c.indexes = indexes
+	c.root.Children = make([]*element, indexes[0])
+	return c
 }
 
 func (c *Dict[T]) Len() int {
-	return c.storage.Length
+	return c.storage.Len()
 }
 
-// Set insert a element into the hashmap
-// if key exists, value will be replaced
-func (c *Dict[T]) Set(key string, val T) {
-	for i := c.begin(key, true); !c.end(i); i = c.next(i, true) {
-		if i.Cursor == i.End {
-			c.storage.Push(&i.Node.EntryPoint, key, val)
+func (c *Dict[T]) Reset() {
+	c.doReset(c.root)
+	c.storage.Reset()
+}
+
+func (c *Dict[T]) doReset(ele *element) {
+	if ele == nil {
+		return
+	}
+	ele.EntryPoint.Head, ele.EntryPoint.Tail = 0, 0
+	for _, item := range ele.Children {
+		c.doReset(item)
+	}
+}
+
+// Set 插入或替换元素
+func (c *Dict[T]) Set(key string, val T) (exist bool) {
+	if key == "" {
+		_, exist = c.storage.Push(&c.root.EntryPoint, key, val)
+		return exist
+	}
+
+	for i := c.begin(key, true); i != nil; i = i.next() {
+		if i.hit() {
+			_, exist = c.storage.Push(&i.Node.EntryPoint, key, val)
 			break
 		}
 	}
+	return exist
 }
 
+// Get 根据key查询数据
 func (c *Dict[T]) Get(key string) (value T, exist bool) {
-	var entrypoint mlist.Pointer
-	for i := c.begin(key, false); !c.end(i); i = c.next(i, false) {
-		if i.Cursor == i.End {
-			if i.Node == nil || i.Node.EntryPoint == 0 {
+	if key == "" {
+		return c.storage.Find(&c.root.EntryPoint, key)
+	}
+
+	for i := c.begin(key, false); i != nil; i = i.next() {
+		if i.hit() {
+			if i.Node.EntryPoint.Head == 0 {
 				return value, false
 			}
-			entrypoint = i.Node.EntryPoint
+			value, exist = c.storage.Find(&i.Node.EntryPoint, key)
+			break
 		}
 	}
-
-	for i := c.storage.Begin(entrypoint); !c.storage.End(i); i = c.storage.Next(i) {
-		if i.Key == key {
-			return i.Value, true
-		}
-	}
-	return value, false
+	return value, exist
 }
 
-type match_params[T any] struct {
-	node    *Element
-	results *vector.Vector[Iterator[T]]
-	limit   int
-	prefix  string
-	length  int
-}
-
-// Match limit: -1 as unlimited
-func (c *Dict[T]) Match(prefix string, limit ...int) *vector.Vector[Iterator[T]] {
-	if len(limit) == 0 {
-		limit = []int{math.MaxInt}
-	}
-
-	for i := c.begin(prefix, false); !c.end(i); i = c.next(i, false) {
-		if i.Node == nil {
-			return nil
-		}
-		if i.Cursor == i.End {
-			var params = match_params[T]{
-				node:    i.Node,
-				results: vector.New[Iterator[T]](),
-				limit:   limit[0],
-				prefix:  prefix,
-				length:  len(prefix),
-			}
-			c.doMatch(i.Node, &params)
-			return params.results
+// Delete 删除元素
+func (c *Dict[T]) Delete(key string) (exist bool) {
+	for i := c.begin(key, false); i != nil; i = i.next() {
+		if i.hit() {
+			exist = c.storage.Delete(&i.Node.EntryPoint, key)
+			break
 		}
 	}
-	return nil
+	return exist
 }
 
-func (c *Dict[T]) doMatch(node *Element, params *match_params[T]) {
-	if node == nil || params.results.Len() >= params.limit {
+// Match 前缀匹配
+func (c *Dict[T]) Match(prefix string, f func(key string, value T) bool) {
+	var next = true
+
+	for i := c.begin(prefix, true); i != nil; i = i.next() {
+		if i.hit() {
+			c.doMatch(i.Node, prefix, &next, f)
+			return
+		}
+	}
+}
+
+func (c *Dict[T]) doMatch(node *element, prefix string, next *bool, f func(key string, value T) bool) {
+	if node == nil || !*next {
 		return
 	}
-	for i := c.storage.Begin(node.EntryPoint); !c.storage.End(i); i = c.storage.Next(i) {
-		if len(i.Key) >= params.length && i.Key[:params.length] == params.prefix {
-			params.results.Push(Iterator[T]{Key: i.Key, Value: i.Value})
+	c.storage.Range(&node.EntryPoint, func(iter *mlist.Element[string, T]) bool {
+		if strings.HasPrefix(iter.Key, prefix) {
+			if ok := f(iter.Key, iter.Value); !ok {
+				*next = ok
+			}
 		}
-	}
+		return *next
+	})
 	for _, item := range node.Children {
-		c.doMatch(item, params)
+		c.doMatch(item, prefix, next, f)
 	}
 }
 
-func (c *Dict[T]) Delete(key string) bool {
-	for i := c.begin(key, false); !c.end(i); i = c.next(i, false) {
-		if i.Node == nil {
-			return false
+// Range 遍历字典树
+func (c *Dict[T]) Range(f func(key string, value T) bool) {
+	for _, item := range c.storage.Buckets {
+		if item.Addr == types.Nil {
+			continue
 		}
-		if i.Cursor == i.End {
-			for j := c.storage.Begin(i.Node.EntryPoint); !c.storage.End(j); j = c.storage.Next(j) {
-				if j.Key == key {
-					return c.storage.Delete(&i.Node.EntryPoint, j)
-				}
-			}
-		}
-	}
-	return false
-}
-
-func (c *Dict[T]) ForEach(fn func(iter *Iterator[T])) {
-	var iter = &Iterator[T]{}
-	for i := 1; i < int(c.storage.Serial); i++ {
-		var item = &c.storage.Buckets[i]
-		if item.Ptr > 0 {
-			iter.Key = item.Key
-			iter.Value = item.Value
-			fn(iter)
-			if iter.broken {
-				return
-			}
+		if !f(item.Key, item.Value) {
+			return
 		}
 	}
 }

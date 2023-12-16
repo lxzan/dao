@@ -2,45 +2,43 @@ package benchmark
 
 import (
 	"github.com/lxzan/dao/dict"
-	"github.com/lxzan/dao/internal/utils"
 	"testing"
 )
 
-func BenchmarkDict_Insert(b *testing.B) {
+func BenchmarkDict_Set(b *testing.B) {
+	var d = dict.New[int]()
 	for i := 0; i < b.N; i++ {
-		var d = dict.New[int](8)
-		for j := 0; j < bench_count; j++ {
-			d.Set(testkeys[j], testvals[j])
-		}
+		key := testkeys[i%bench_count]
+		d.Set(key, 1)
+	}
+}
+
+func BenchmarkDict_Get(b *testing.B) {
+	var d = dict.New[int]()
+	for j := 0; j < bench_count; j++ {
+		d.Set(testkeys[j], 1)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		var key = testkeys[i%bench_count]
+		d.Get(key)
 	}
 }
 
 func BenchmarkDict_Match(b *testing.B) {
-	var d = dict.New[int](8)
-	for j := 0; j < bench_count; j++ {
-		var length = utils.Rand.Intn(16) + 1
-		d.Set(utils.Numeric.Generate(length), testvals[j])
-	}
-
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		var prefix = utils.Numeric.Generate(4)
-		for j := 0; j < bench_count; j++ {
-			d.Match(prefix, 10)
-		}
-	}
-}
-
-func BenchmarkDict_Delete(b *testing.B) {
-	var d = dict.New[int](8)
+	var d = dict.New[int]()
 	for j := 0; j < bench_count; j++ {
 		d.Set(testkeys[j], testvals[j])
 	}
 
-	b.StartTimer()
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		for j := 0; j < bench_count; j++ {
-			d.Delete(testkeys[j])
-		}
+		var prefix = testkeys[i%bench_count][:8]
+		var num = 0
+		d.Match(prefix, func(key string, value int) bool {
+			num++
+			return num < 10
+		})
 	}
 }
