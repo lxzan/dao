@@ -17,7 +17,7 @@ func init() {
 }
 
 func TestHashMap(t *testing.T) {
-	var m1 = New[string, int]()
+	var m1 = New[string, int](0)
 	var m2 = make(map[string]int)
 
 	for _, item := range testdata {
@@ -52,7 +52,7 @@ func TestHashMap(t *testing.T) {
 }
 
 func TestHashMap_ForEach(t *testing.T) {
-	var m1 = New[string, int]()
+	var m1 = New[string, int](0)
 	var m2 = make(map[string]int)
 
 	for _, item := range testdata {
@@ -62,7 +62,7 @@ func TestHashMap_ForEach(t *testing.T) {
 	}
 
 	var sum = 0
-	m1.ForEach(func(key string, val int) bool {
+	m1.Range(func(key string, val int) bool {
 		sum++
 		if m2[key] != val {
 			t.Error("error!")

@@ -11,6 +11,7 @@ type Schema[T dao.Number] struct {
 	Sum      T
 }
 
+// Init 初始化函数
 func Init[T dao.Number](op Operate, x T) Schema[T] {
 	var result = Schema[T]{
 		MaxValue: x,
@@ -23,6 +24,7 @@ func Init[T dao.Number](op Operate, x T) Schema[T] {
 	return result
 }
 
+// Merge 合并函数
 func Merge[T dao.Number](a, b Schema[T]) Schema[T] {
 	return Schema[T]{
 		MaxValue: algorithm.Max(a.MaxValue, b.MaxValue),

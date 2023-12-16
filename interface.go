@@ -1,40 +1,19 @@
 package dao
 
-type Ordering int8
+type CompareResult int8
 
 const (
-	Less    Ordering = -1
-	Equal   Ordering = 0
-	Greater Ordering = 1
+	Less    CompareResult = -1
+	Equal   CompareResult = 0
+	Greater CompareResult = 1
 )
 
-type Comparer[T any] interface {
-	Compare(a, b *T) Ordering
-}
+type Order uint8
 
-type Comparable interface {
-	~string | ~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float64 | ~float32
-}
-
-func ASC[T Comparable](a, b T) Ordering {
-	if a > b {
-		return Greater
-	} else if a < b {
-		return Less
-	} else {
-		return Equal
-	}
-}
-
-func DESC[T Comparable](a, b T) Ordering {
-	if a > b {
-		return Less
-	} else if a < b {
-		return Greater
-	} else {
-		return Equal
-	}
-}
+const (
+	ASC  Order = 0
+	DESC Order = 1
+)
 
 type Number interface {
 	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float32 | ~float64
@@ -44,18 +23,15 @@ type Integer interface {
 	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8
 }
 
-type Hashable interface {
-	Integer | ~string
+// Map 键不可重复
+type Map[K comparable, V any] interface {
+	Len() int
+	Get(key K) (V, bool)
+	Set(key K, value V)
+	Delete(key K)
+	Range(f func(K, V) bool)
 }
 
-type Iterable[I any] interface {
-	Begin() I
-	Next(I) I
-	End(I) bool
-}
-
-type Mapper[K Hashable, V any] interface {
-	Set(key K, val V)
-	Get(key K) (val V, exist bool)
-	Delete(key K) bool
+type Resetter interface {
+	Reset()
 }

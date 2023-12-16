@@ -1,14 +1,10 @@
 package hashmap
 
-import (
-	"github.com/lxzan/dao"
-)
-
-type HashMap[K dao.Hashable, V any] map[K]V
+type HashMap[K comparable, V any] map[K]V
 
 // New instantiates a hashmap
 // at most one param, means initial capacity
-func New[K dao.Hashable, V any](capacity uint32) HashMap[K, V] {
+func New[K comparable, V any](capacity uint32) HashMap[K, V] {
 	return make(map[K]V, capacity)
 }
 

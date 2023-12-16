@@ -40,7 +40,7 @@ func TestNew(t *testing.T) {
 
 		arr1 = utils.UniqueString(arr1)
 		arr2 = utils.UniqueString(arr2)
-		if !utils.SameStrings(arr1, arr2) {
+		if !utils.IsSameSlice(arr1, arr2) {
 			t.Fatal("error!")
 		}
 	}
@@ -145,7 +145,7 @@ func TestDict_Get(t *testing.T) {
 		_, ok := d.Get("abc")
 		assert.True(t, ok)
 
-		for i := d.begin("abd", false); i != nil; i = i.next() {
+		for i := d.begin("abd", false); i != nil; i = d.next(i) {
 		}
 	})
 }

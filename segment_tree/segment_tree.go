@@ -57,6 +57,7 @@ func (c *SegmentTree[T, S]) build(cur *Element[T, S]) {
 	cur.data = c.merge(cur.son.data, cur.daughter.data)
 }
 
+// Query 查询
 func (c *SegmentTree[T, S]) Query(left int, right int) S {
 	var result S
 	result = c.init(OperateQuery, c.arr[left])
@@ -73,6 +74,7 @@ func (c *SegmentTree[T, S]) doQuery(cur *Element[T, S], left int, right int, res
 	}
 }
 
+// Update 更新
 func (c *SegmentTree[T, S]) Update(i int, v T) {
 	c.arr[i] = v
 	c.rebuild(c.root, i)

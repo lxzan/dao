@@ -42,15 +42,12 @@ func SameInts(arr1, arr2 []int) bool {
 	return true
 }
 
-func SameStrings(arr1, arr2 []string) bool {
-	sort.Strings(arr1)
-	sort.Strings(arr2)
-	var n = len(arr1)
-	if n != len(arr2) {
+func IsSameSlice[T comparable](a, b []T) bool {
+	if len(a) != len(b) {
 		return false
 	}
-	for i := 0; i < n; i++ {
-		if arr1[i] != arr2[i] {
+	for i, v := range a {
+		if v != b[i] {
 			return false
 		}
 	}

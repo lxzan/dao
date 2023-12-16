@@ -1,6 +1,6 @@
 package dict
 
-var defaultIndexes = []uint8{16, 16, 16, 8, 8, 8, 8, 4, 4, 4, 4, 2, 2, 2, 2, 2, 2}
+var defaultIndexes = []uint8{32, 32, 16, 16, 16, 16, 16, 8, 8, 8, 8, 8, 8, 4, 4, 4, 4}
 
 type iterator struct {
 	Node       *element
@@ -8,44 +8,43 @@ type iterator struct {
 	N          int
 	Cursor     int
 	Initialize bool
-	Indexes    []uint8
 }
 
 func (c *iterator) hit() bool {
 	return c.Cursor == c.N-1
 }
 
-func (c *iterator) getIndex() int {
-	return int(c.Key[c.Cursor]) & int(c.Indexes[c.Cursor]-1)
+func (c *Dict[T]) getIndex(iter *iterator) int {
+	return int(iter.Key[iter.Cursor]) & int(c.indexes[iter.Cursor]-1)
 }
 
 func (c *Dict[T]) begin(key string, initialize bool) *iterator {
-	var iter = &iterator{Node: c.root, Key: key, N: min(len(key), len(c.indexes)-1), Initialize: initialize, Indexes: c.indexes}
-	var idx = iter.getIndex()
+	var iter = &iterator{Node: c.root, Key: key, N: min(len(key), len(c.indexes)-1), Initialize: initialize}
+	var idx = c.getIndex(iter)
 	if iter.Node.Children[idx] == nil {
 		if !iter.Initialize {
 			return nil
 		}
-		iter.Node.Children[idx] = &element{Children: make([]*element, iter.Indexes[1])}
+		iter.Node.Children[idx] = &element{Children: make([]*element, c.indexes[1])}
 	}
 	iter.Node = iter.Node.Children[idx]
 	return iter
 }
 
-func (c *iterator) next() *iterator {
-	c.Cursor++
-	if c.Cursor >= c.N {
+func (c *Dict[T]) next(iter *iterator) *iterator {
+	iter.Cursor++
+	if iter.Cursor >= iter.N {
 		return nil
 	}
 
-	var idx = c.getIndex()
-	if c.Node.Children[idx] == nil {
-		if !c.Initialize {
+	var idx = c.getIndex(iter)
+	if iter.Node.Children[idx] == nil {
+		if !iter.Initialize {
 			return nil
 		}
-		c.Node.Children[idx] = &element{Children: make([]*element, c.Indexes[c.Cursor+1])}
+		iter.Node.Children[idx] = &element{Children: make([]*element, c.indexes[iter.Cursor+1])}
 	}
-	c.Node = c.Node.Children[idx]
+	iter.Node = iter.Node.Children[idx]
 
-	return c
+	return iter
 }

@@ -2,8 +2,10 @@ package rbtree
 
 import (
 	"fmt"
+	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/algorithm"
 	"github.com/lxzan/dao/internal/utils"
+	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -85,24 +87,22 @@ func TestRBTree_ForEach(t *testing.T) {
 	}
 
 	var arr1 = make([]string, 0)
-	tree.ForEach(func(iter *Iterator[string, int]) {
-		arr1 = append(arr1, iter.Key)
-		if len(arr1) >= 50 {
-			iter.Break()
-		}
+	tree.Range(func(key string, value int) bool {
+		arr1 = append(arr1, key)
+		return len(arr1) < 50
 	})
 	if len(arr1) != 50 {
 		t.Fatal("error!")
 	}
 
 	var arr2 = make([]string, 0)
-	tree.ForEach(func(iter *Iterator[string, int]) {
-		arr2 = append(arr2, iter.Key)
+	tree.Range(func(key string, value int) bool {
+		arr2 = append(arr2, key)
+		return true
 	})
 
-	if len(arr2) != tree.Len() || !utils.SameStrings(arr, arr2) {
-		t.Fatal("error!")
-	}
+	assert.Equal(t, len(arr2), tree.Len())
+	assert.ElementsMatch(t, arr, arr2)
 }
 
 func TestRBTree_Between(t *testing.T) {
@@ -124,12 +124,13 @@ func TestRBTree_Between(t *testing.T) {
 		if left > right {
 			right, left = left, right
 		}
-		var keys1 = tree.Query(&QueryBuilder[string]{
-			LeftFilter:  func(d string) bool { return d >= left },
-			RightFilter: func(d string) bool { return d <= right },
-			Limit:       limit,
-			Order:       DESC,
-		})
+		var keys1 = tree.
+			NewQuery().
+			Left(func(key string) bool { return key >= left }).
+			Right(func(key string) bool { return key <= right }).
+			Order(dao.DESC).
+			Limit(limit).
+			Do()
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k >= left && k <= right {
@@ -142,7 +143,7 @@ func TestRBTree_Between(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.GetFields(keys1, func(x *Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -163,11 +164,11 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 	var limit = 100
 	for i := 0; i < 100; i++ {
 		var left = utils.Numeric.Generate(4)
-		var keys1 = tree.Query(&QueryBuilder[string]{
-			LeftFilter: func(d string) bool { return d >= left },
-			Limit:      limit,
-			Order:      ASC,
-		})
+		var keys1 = tree.
+			NewQuery().
+			Left(func(key string) bool { return key >= left }).
+			Limit(limit).
+			Do()
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k >= left {
@@ -179,7 +180,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.GetFields(keys1, func(x *Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -200,11 +201,12 @@ func TestRBTree_LessEqual(t *testing.T) {
 	var limit = 100
 	for i := 0; i < 100; i++ {
 		var target = utils.Numeric.Generate(4)
-		var keys1 = tree.Query(&QueryBuilder[string]{
-			RightFilter: func(d string) bool { return d <= target },
-			Limit:       limit,
-			Order:       DESC,
-		})
+		var keys1 = tree.
+			NewQuery().
+			Right(func(key string) bool { return key <= target }).
+			Order(dao.DESC).
+			Limit(limit).
+			Do()
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k <= target {
@@ -217,7 +219,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.GetFields(keys1, func(x *Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -241,16 +243,18 @@ func TestRBTree_GetMinKey(t *testing.T) {
 		})
 
 		if !exist {
-			tree.ForEach(func(iter *Iterator[string, int]) {
-				if iter.Key >= k {
+			tree.Range(func(key string, value int) bool {
+				if key >= k {
 					t.Fatal("error!")
 				}
+				return true
 			})
 		} else {
-			tree.ForEach(func(iter *Iterator[string, int]) {
-				if iter.Key < result.Key && iter.Key >= k {
+			tree.Range(func(key string, value int) bool {
+				if key < result.Key && key >= k {
 					t.Fatal("error!")
 				}
+				return true
 			})
 		}
 	}
@@ -272,16 +276,18 @@ func TestRBTree_GetMaxKey(t *testing.T) {
 		})
 
 		if !exist {
-			tree.ForEach(func(iter *Iterator[string, int]) {
-				if iter.Key <= k {
+			tree.Range(func(key string, value int) bool {
+				if key <= k {
 					t.Fatal("error!")
 				}
+				return true
 			})
 		} else {
-			tree.ForEach(func(iter *Iterator[string, int]) {
-				if iter.Key > result.Key && iter.Key <= k {
+			tree.Range(func(key string, value int) bool {
+				if key > result.Key && key <= k {
 					t.Fatal("error!")
 				}
+				return true
 			})
 		}
 	}

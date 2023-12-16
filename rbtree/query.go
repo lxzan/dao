@@ -1,10 +1,13 @@
 package rbtree
 
 import (
+	"cmp"
 	"github.com/lxzan/dao"
-	"github.com/lxzan/dao/array_list"
+	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/stack"
 )
 
+// Get 查询一个key
 func (c *RBTree[K, V]) Get(key K) (result V, exist bool) {
 	for i := c.begin(); !c.end(i); i = c.next(i, key) {
 		if key == i.data.Key {
@@ -14,29 +17,33 @@ func (c *RBTree[K, V]) Get(key K) (result V, exist bool) {
 	return result, false
 }
 
-func (c *RBTree[K, V]) ForEach(fn func(iter *Iterator[K, V])) {
-	var iter = &Iterator[K, V]{}
-	c.do_foreach(c.root, iter, fn)
+// Range 遍历树
+func (c *RBTree[K, V]) Range(fn func(key K, value V) bool) {
+	var next = true
+	c.do_range(c.root, &next, fn)
 }
 
-func (c *RBTree[K, V]) do_foreach(node *rbtree_node[K, V], iter *Iterator[K, V], fn func(iterator *Iterator[K, V])) {
-	if c.end(node) || iter.broken {
+func (c *RBTree[K, V]) do_range(node *rbtree_node[K, V], next *bool, fn func(K, V) bool) {
+	if c.end(node) || !*next {
 		return
 	}
 
-	iter.Key = node.data.Key
-	iter.Val = node.data.Val
-	fn(iter)
-	c.do_foreach(node.left, iter, fn)
-	c.do_foreach(node.right, iter, fn)
+	if ok := fn(node.data.Key, node.data.Val); !ok {
+		*next = ok
+	}
+
+	c.do_range(node.left, next, fn)
+	c.do_range(node.right, next, fn)
 }
 
-func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Element[K, V], exist bool) {
-	result = &Element[K, V]{}
-	var stack = array_list.New[*rbtree_node[K, V]]()
-	stack.Push(c.root)
-	for stack.Len() > 0 {
-		var node = stack.RPop()
+// GetMinKey 获取最小的key, 过滤条件可为空
+func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Pair[K, V], exist bool) {
+	filter = algorithm.SelectValue(filter == nil, TrueFunc[K], filter)
+	result = &Pair[K, V]{}
+	var s = stack.Stack[*rbtree_node[K, V]]{}
+	s.Push(c.root)
+	for s.Len() > 0 {
+		var node = s.Pop()
 		if c.end(node) {
 			continue
 		}
@@ -45,20 +52,22 @@ func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Element[K, V]
 				exist = true
 				result = node.data
 			}
-			stack.Push(node.left)
+			s.Push(node.left)
 		} else {
-			stack.Push(node.right)
+			s.Push(node.right)
 		}
 	}
 	return result, exist
 }
 
-func (c *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Element[K, V], exist bool) {
-	result = &Element[K, V]{}
-	var stack = array_list.New[*rbtree_node[K, V]](0, 0)
-	stack.Push(c.root)
-	for stack.Len() > 0 {
-		var node = stack.RPop()
+// GetMaxKey 获取最大的key, 过滤条件可为空
+func (c *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Pair[K, V], exist bool) {
+	filter = algorithm.SelectValue(filter == nil, TrueFunc[K], filter)
+	result = &Pair[K, V]{}
+	var s = stack.Stack[*rbtree_node[K, V]]{}
+	s.Push(c.root)
+	for s.Len() > 0 {
+		var node = s.Pop()
 		if c.end(node) {
 			continue
 		}
@@ -67,59 +76,90 @@ func (c *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Element[K, V]
 				exist = true
 				result = node.data
 			}
-			stack.Push(node.right)
+			s.Push(node.right)
 		} else {
-			stack.Push(node.left)
+			s.Push(node.left)
 		}
 	}
 	return result, exist
 }
 
-type Order uint8
-
-const (
-	ASC  Order = 0
-	DESC Order = 1
-)
-
-func AlwaysTrue[K dao.Comparable](d K) bool {
+func TrueFunc[K cmp.Ordered](d K) bool {
 	return true
 }
 
-type QueryBuilder[K dao.Comparable] struct {
-	LeftFilter  func(d K) bool
-	RightFilter func(d K) bool
-	Limit       int
-	Order       Order
+type QueryBuilder[K cmp.Ordered, V any] struct {
+	tree        *RBTree[K, V]
+	leftFilter  func(key K) bool
+	rightFilter func(key K) bool
+	limit       int
+	order       dao.Order
 }
 
-func (c *QueryBuilder[K]) init() *QueryBuilder[K] {
-	if c.LeftFilter == nil {
-		c.LeftFilter = AlwaysTrue[K]
+func (c *QueryBuilder[K, V]) init() *QueryBuilder[K, V] {
+	if c.leftFilter == nil {
+		c.leftFilter = TrueFunc[K]
 	}
-	if c.RightFilter == nil {
-		c.RightFilter = AlwaysTrue[K]
+	if c.rightFilter == nil {
+		c.rightFilter = TrueFunc[K]
+	}
+	if c.limit <= 0 {
+		c.limit = 10
 	}
 	return c
 }
 
-func (c *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Element[K, V] {
-	q.init()
-	var results = make([]*Element[K, V], 0)
+// Left 设置左边界过滤条件
+func (c *QueryBuilder[K, V]) Left(f func(key K) bool) *QueryBuilder[K, V] {
+	c.leftFilter = f
+	return c
+}
 
-	if q.Order == DESC {
-		maxEle, exist := c.GetMaxKey(q.RightFilter)
-		if exist && q.LeftFilter(maxEle.Key) {
+// Right 设置右边界过滤条件
+func (c *QueryBuilder[K, V]) Right(f func(key K) bool) *QueryBuilder[K, V] {
+	c.rightFilter = f
+	return c
+}
+
+// Order 设置排序, 默认ASC
+func (c *QueryBuilder[K, V]) Order(o dao.Order) *QueryBuilder[K, V] {
+	c.order = o
+	return c
+}
+
+// Limit 设置结果数量限制, 默认10条
+func (c *QueryBuilder[K, V]) Limit(n int) *QueryBuilder[K, V] {
+	c.limit = n
+	return c
+}
+
+// Do 执行查询
+func (c *QueryBuilder[K, V]) Do() []*Pair[K, V] {
+	return c.tree.query(c)
+}
+
+// NewQuery 新建一个查询
+func (c *RBTree[K, V]) NewQuery() *QueryBuilder[K, V] {
+	return &QueryBuilder[K, V]{tree: c}
+}
+
+func (c *RBTree[K, V]) query(q *QueryBuilder[K, V]) []*Pair[K, V] {
+	q.init()
+	var results = make([]*Pair[K, V], 0)
+
+	if q.order == dao.DESC {
+		maxEle, exist := c.GetMaxKey(q.rightFilter)
+		if exist && q.leftFilter(maxEle.Key) {
 			results = append(results, maxEle)
 		} else {
 			return results
 		}
 
-		for i := 0; i < q.Limit-1; i++ {
+		for i := 0; i < q.limit-1; i++ {
 			result, exist := c.GetMaxKey(func(key K) bool {
 				return key < maxEle.Key
 			})
-			if exist && q.LeftFilter(result.Key) {
+			if exist && q.leftFilter(result.Key) {
 				results = append(results, result)
 				maxEle = result
 			} else {
@@ -127,18 +167,18 @@ func (c *RBTree[K, V]) Query(q *QueryBuilder[K]) []*Element[K, V] {
 			}
 		}
 	} else {
-		minEle, exist := c.GetMinKey(q.LeftFilter)
-		if exist && q.RightFilter(minEle.Key) {
+		minEle, exist := c.GetMinKey(q.leftFilter)
+		if exist && q.rightFilter(minEle.Key) {
 			results = append(results, minEle)
 		} else {
 			return results
 		}
 
-		for i := 0; i < q.Limit-1; i++ {
+		for i := 0; i < q.limit-1; i++ {
 			result, exist := c.GetMinKey(func(key K) bool {
 				return key > minEle.Key
 			})
-			if exist && q.RightFilter(result.Key) {
+			if exist && q.rightFilter(result.Key) {
 				results = append(results, result)
 				minEle = result
 			} else {

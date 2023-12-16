@@ -1,14 +1,16 @@
 package mlist
 
-import "github.com/lxzan/dao/types"
+const Nil = 0
 
 type (
-	EntryPoint struct{ Head, Tail types.Pointer }
+	Pointer uint32
+
+	EntryPoint struct{ Head, Tail Pointer }
 
 	// Element 链表元素
-	// 不能在外部引用*Element, 必须使用types.Pointer.
+	// 不能在外部引用*Element, 必须使用Pointer.
 	Element[K comparable, V any] struct {
-		Prev, Addr, Next types.Pointer
+		Prev, Addr, Next Pointer
 		Key              K
 		Value            V
 	}
@@ -39,7 +41,7 @@ func (c *MList[K, V]) Reset() {
 	c.Buckets = c.Buckets[:1]
 }
 
-func (c *MList[K, V]) getElement() types.Pointer {
+func (c *MList[K, V]) getElement() Pointer {
 	if c.recyclable.Len() > 0 {
 		return c.recyclable.Pop()
 	}
@@ -47,10 +49,10 @@ func (c *MList[K, V]) getElement() types.Pointer {
 	c.serial++
 	var addr = c.serial
 	c.Buckets = append(c.Buckets, c.template)
-	return types.Pointer(addr)
+	return Pointer(addr)
 }
 
-func (c *MList[K, V]) putElement(addr types.Pointer) {
+func (c *MList[K, V]) putElement(addr Pointer) {
 	c.Buckets[addr] = c.template
 	c.recyclable.Push(addr)
 }
@@ -67,7 +69,7 @@ func (c *MList[K, V]) Len() int {
 	return c.length
 }
 
-func (c *MList[K, V]) Get(addr types.Pointer) *Element[K, V] {
+func (c *MList[K, V]) Get(addr Pointer) *Element[K, V] {
 	if addr > 0 {
 		return &c.Buckets[addr]
 	}
@@ -83,9 +85,9 @@ func (c *MList[K, V]) Range(entrypoint *EntryPoint, f func(iter *Element[K, V]) 
 }
 
 // Push append an Element[] with unique check
-func (c *MList[K, V]) Push(entrypoint *EntryPoint, key K, value V) (addr types.Pointer, exist bool) {
+func (c *MList[K, V]) Push(entrypoint *EntryPoint, key K, value V) (addr Pointer, exist bool) {
 	// 链表为空
-	if entrypoint.Head == types.Nil {
+	if entrypoint.Head == Nil {
 		ele := c.newElement(key, value)
 		entrypoint.Head, entrypoint.Tail = ele.Addr, ele.Addr
 		return ele.Addr, false
@@ -159,17 +161,17 @@ func (c *MList[K, V]) Find(entrypoint *EntryPoint, key K) (value V, exist bool) 
 	return value, false
 }
 
-type arrayStack []types.Pointer
+type arrayStack []Pointer
 
 func (c *arrayStack) Len() int {
 	return len(*c)
 }
 
-func (c *arrayStack) Push(v types.Pointer) {
+func (c *arrayStack) Push(v Pointer) {
 	*c = append(*c, v)
 }
 
-func (c *arrayStack) Pop() types.Pointer {
+func (c *arrayStack) Pop() Pointer {
 	var n = len(*c)
 	var v = (*c)[n-1]
 	*c = (*c)[:n-1]

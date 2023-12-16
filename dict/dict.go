@@ -3,7 +3,6 @@ package dict
 import (
 	"github.com/lxzan/dao/internal/mlist"
 	"github.com/lxzan/dao/internal/utils"
-	"github.com/lxzan/dao/types"
 	"strings"
 )
 
@@ -70,7 +69,7 @@ func (c *Dict[T]) Set(key string, val T) {
 		return
 	}
 
-	for i := c.begin(key, true); i != nil; i = i.next() {
+	for i := c.begin(key, true); i != nil; i = c.next(i) {
 		if i.hit() {
 			c.storage.Push(&i.Node.EntryPoint, key, val)
 			return
@@ -84,7 +83,7 @@ func (c *Dict[T]) Get(key string) (value T, exist bool) {
 		return c.storage.Find(&c.root.EntryPoint, key)
 	}
 
-	for i := c.begin(key, false); i != nil; i = i.next() {
+	for i := c.begin(key, false); i != nil; i = c.next(i) {
 		if i.hit() {
 			if i.Node.EntryPoint.Head == 0 {
 				return value, false
@@ -98,7 +97,7 @@ func (c *Dict[T]) Get(key string) (value T, exist bool) {
 
 // Delete 删除元素
 func (c *Dict[T]) Delete(key string) {
-	for i := c.begin(key, false); i != nil; i = i.next() {
+	for i := c.begin(key, false); i != nil; i = c.next(i) {
 		if i.hit() {
 			c.storage.Delete(&i.Node.EntryPoint, key)
 			return
@@ -110,7 +109,7 @@ func (c *Dict[T]) Delete(key string) {
 func (c *Dict[T]) Match(prefix string, f func(key string, value T) bool) {
 	var next = true
 
-	for i := c.begin(prefix, true); i != nil; i = i.next() {
+	for i := c.begin(prefix, true); i != nil; i = c.next(i) {
 		if i.hit() {
 			c.doMatch(i.Node, prefix, &next, f)
 			return
@@ -138,7 +137,7 @@ func (c *Dict[T]) doMatch(node *element, prefix string, next *bool, f func(key s
 // Range 遍历字典树
 func (c *Dict[T]) Range(f func(key string, value T) bool) {
 	for _, item := range c.storage.Buckets {
-		if item.Addr == types.Nil {
+		if item.Addr == mlist.Nil {
 			continue
 		}
 		if !f(item.Key, item.Value) {
