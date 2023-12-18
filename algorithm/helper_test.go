@@ -60,7 +60,7 @@ func TestUniqueBy(t *testing.T) {
 		arr := UniqueBy[http.Request, int](reqs, func(item http.Request) int {
 			return item.ProtoMajor
 		})
-		children := GetChildren[http.Request, int](arr, func(x http.Request) int {
+		children := Map[http.Request, int](arr, func(x http.Request) int {
 			return x.ProtoMajor
 		})
 		assert.ElementsMatch(t, children, []int{})
@@ -76,7 +76,7 @@ func TestUniqueBy(t *testing.T) {
 		arr := UniqueBy[http.Request, int](reqs, func(item http.Request) int {
 			return item.ProtoMajor
 		})
-		children := GetChildren[http.Request, int](arr, func(x http.Request) int {
+		children := Map[http.Request, int](arr, func(x http.Request) int {
 			return x.ProtoMajor
 		})
 		assert.ElementsMatch(t, children, []int{1, 3, 5})
@@ -89,7 +89,7 @@ func TestUniqueBy(t *testing.T) {
 		arr := UniqueBy[http.Request, int](reqs, func(item http.Request) int {
 			return item.ProtoMajor
 		})
-		children := GetChildren[http.Request, int](arr, func(x http.Request) int {
+		children := Map[http.Request, int](arr, func(x http.Request) int {
 			return x.ProtoMajor
 		})
 		assert.ElementsMatch(t, children, []int{1})
@@ -108,7 +108,7 @@ func TestUniqueBy(t *testing.T) {
 		arr := UniqueBy[http.Request, int](reqs, func(item http.Request) int {
 			return item.ProtoMajor
 		})
-		children := GetChildren[http.Request, int](arr, func(x http.Request) int {
+		children := Map[http.Request, int](arr, func(x http.Request) int {
 			return x.ProtoMajor
 		})
 		assert.ElementsMatch(t, children, []int{1, 2, 3, 5})
@@ -161,4 +161,12 @@ func TestContains(t *testing.T) {
 	assert.True(t, Contains([]int{1, 2}, 1))
 	assert.True(t, Contains([]int{1, 2}, 2))
 	assert.False(t, Contains([]int{1, 2}, 3))
+}
+
+func TestFilter(t *testing.T) {
+	var arr = []int{1, 2, 3, 4}
+	arr = Filter(arr, func(item int) bool {
+		return item%2 == 0
+	})
+	assert.ElementsMatch(t, arr, []int{2, 4})
 }
