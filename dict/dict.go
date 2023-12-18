@@ -97,6 +97,11 @@ func (c *Dict[T]) Get(key string) (value T, exist bool) {
 
 // Delete 删除元素
 func (c *Dict[T]) Delete(key string) {
+	if key == "" {
+		c.storage.Delete(&c.root.EntryPoint, key)
+		return
+	}
+
 	for i := c.begin(key, false); i != nil; i = c.next(i) {
 		if i.hit() {
 			c.storage.Delete(&i.Node.EntryPoint, key)
@@ -108,6 +113,10 @@ func (c *Dict[T]) Delete(key string) {
 // Match 前缀匹配
 func (c *Dict[T]) Match(prefix string, f func(key string, value T) bool) {
 	var next = true
+	if prefix == "" {
+		c.doMatch(c.root, prefix, &next, f)
+		return
+	}
 
 	for i := c.begin(prefix, true); i != nil; i = c.next(i) {
 		if i.hit() {

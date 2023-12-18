@@ -38,9 +38,13 @@ func (c *RBTree[K, V]) do_range(node *rbtree_node[K, V], next *bool, fn func(K, 
 
 // GetMinKey 获取最小的key, 过滤条件可为空
 func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Pair[K, V], exist bool) {
+	return c.doGetMinKey(stack.New[*rbtree_node[K, V]](10), filter)
+}
+
+func (c *RBTree[K, V]) doGetMinKey(s *stack.Stack[*rbtree_node[K, V]], filter func(key K) bool) (result *Pair[K, V], exist bool) {
+	s.Reset()
 	filter = algorithm.SelectValue(filter == nil, TrueFunc[K], filter)
 	result = &Pair[K, V]{}
-	var s = stack.Stack[*rbtree_node[K, V]]{}
 	s.Push(c.root)
 	for s.Len() > 0 {
 		var node = s.Pop()
@@ -62,9 +66,13 @@ func (c *RBTree[K, V]) GetMinKey(filter func(key K) bool) (result *Pair[K, V], e
 
 // GetMaxKey 获取最大的key, 过滤条件可为空
 func (c *RBTree[K, V]) GetMaxKey(filter func(key K) bool) (result *Pair[K, V], exist bool) {
+	return c.doGetMaxKey(stack.New[*rbtree_node[K, V]](10), filter)
+}
+
+func (c *RBTree[K, V]) doGetMaxKey(s *stack.Stack[*rbtree_node[K, V]], filter func(key K) bool) (result *Pair[K, V], exist bool) {
+	s.Reset()
 	filter = algorithm.SelectValue(filter == nil, TrueFunc[K], filter)
 	result = &Pair[K, V]{}
-	var s = stack.Stack[*rbtree_node[K, V]]{}
 	s.Push(c.root)
 	for s.Len() > 0 {
 		var node = s.Pop()
@@ -135,7 +143,7 @@ func (c *QueryBuilder[K, V]) Limit(n int) *QueryBuilder[K, V] {
 
 // Do 执行查询
 func (c *QueryBuilder[K, V]) Do() []*Pair[K, V] {
-	return c.tree.query(c)
+	return c.tree.do_query(c)
 }
 
 // NewQuery 新建一个查询
@@ -143,12 +151,13 @@ func (c *RBTree[K, V]) NewQuery() *QueryBuilder[K, V] {
 	return &QueryBuilder[K, V]{tree: c}
 }
 
-func (c *RBTree[K, V]) query(q *QueryBuilder[K, V]) []*Pair[K, V] {
+func (c *RBTree[K, V]) do_query(q *QueryBuilder[K, V]) []*Pair[K, V] {
 	q.init()
 	var results = make([]*Pair[K, V], 0)
+	var s = stack.New[*rbtree_node[K, V]](uint32(q.limit))
 
 	if q.order == dao.DESC {
-		maxEle, exist := c.GetMaxKey(q.rightFilter)
+		maxEle, exist := c.doGetMaxKey(s, q.rightFilter)
 		if exist && q.leftFilter(maxEle.Key) {
 			results = append(results, maxEle)
 		} else {
@@ -156,7 +165,7 @@ func (c *RBTree[K, V]) query(q *QueryBuilder[K, V]) []*Pair[K, V] {
 		}
 
 		for i := 0; i < q.limit-1; i++ {
-			result, exist := c.GetMaxKey(func(key K) bool {
+			result, exist := c.doGetMaxKey(s, func(key K) bool {
 				return key < maxEle.Key
 			})
 			if exist && q.leftFilter(result.Key) {
@@ -167,7 +176,7 @@ func (c *RBTree[K, V]) query(q *QueryBuilder[K, V]) []*Pair[K, V] {
 			}
 		}
 	} else {
-		minEle, exist := c.GetMinKey(q.leftFilter)
+		minEle, exist := c.doGetMinKey(s, q.leftFilter)
 		if exist && q.rightFilter(minEle.Key) {
 			results = append(results, minEle)
 		} else {
@@ -175,7 +184,7 @@ func (c *RBTree[K, V]) query(q *QueryBuilder[K, V]) []*Pair[K, V] {
 		}
 
 		for i := 0; i < q.limit-1; i++ {
-			result, exist := c.GetMinKey(func(key K) bool {
+			result, exist := c.doGetMinKey(s, func(key K) bool {
 				return key > minEle.Key
 			})
 			if exist && q.rightFilter(result.Key) {

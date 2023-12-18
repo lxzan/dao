@@ -77,6 +77,7 @@ func (c *Deque[T]) putElement(ele *Element[T]) {
 func (c *Deque[T]) Reset() {
 	c.head, c.tail, c.length = Nil, Nil, 0
 	c.stack = c.stack[:0]
+	clear(c.elements)
 	c.elements = c.elements[:1]
 }
 
@@ -152,6 +153,7 @@ func (c *Deque[T]) PopFront() (value T) {
 	c.putElement(ele)
 	if c.length == 0 {
 		c.tail = Nil
+		c.Reset()
 	}
 
 	return value
@@ -173,6 +175,7 @@ func (c *Deque[T]) PopBack() (value T) {
 	c.putElement(ele)
 	if c.length == 0 {
 		c.head = Nil
+		c.Reset()
 	}
 
 	return value
@@ -244,6 +247,9 @@ func (c *Deque[T]) Remove(addr Pointer) {
 	if ele := c.Get(addr); ele != nil {
 		c.doRemove(ele)
 		c.putElement(ele)
+		if c.length == 0 {
+			c.Reset()
+		}
 	}
 }
 
@@ -259,6 +265,7 @@ func (c *Deque[T]) doRemove(ele *Element[T]) {
 		state += 2
 	}
 
+	c.length--
 	switch state {
 	case 3:
 		prev.next = next.addr
@@ -273,8 +280,6 @@ func (c *Deque[T]) doRemove(ele *Element[T]) {
 		c.head = Nil
 		c.tail = Nil
 	}
-
-	c.length--
 }
 
 func (c *Deque[T]) Range(f func(ele *Element[T]) bool) {

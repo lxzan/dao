@@ -2,7 +2,6 @@ package rbtree
 
 import (
 	"cmp"
-	"testing"
 )
 
 type Color uint8
@@ -73,9 +72,9 @@ func (c *RBTree[K, V]) Len() int {
 	return c.length
 }
 
-func (c *RBTree[K, V]) is_key_empty(d *Pair[K, V]) bool {
-	return d == nil
-}
+//func (c *RBTree[K, V]) is_key_empty(d *Pair[K, V]) bool {
+//	return d == nil
+//}
 
 func (c *RBTree[K, V]) begin() *rbtree_node[K, V] {
 	return c.root
@@ -285,25 +284,6 @@ func (c *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
 		}
 	}
 	temp.set_black()
-}
-
-func (c *RBTree[K, V]) validate(t *testing.T, node *rbtree_node[K, V]) {
-	if node == nil {
-		return
-	}
-	if node.left != nil {
-		if !c.is_key_empty(node.left.data) && node.data.Key < node.left.data.Key {
-			t.Error("left node error!")
-		}
-		c.validate(t, node.left)
-	}
-
-	if node.right != nil {
-		if !c.is_key_empty(node.right.data) && node.data.Key > node.right.data.Key {
-			t.Error("right node error!")
-		}
-		c.validate(t, node.right)
-	}
 }
 
 // Set 新增或替换键值对

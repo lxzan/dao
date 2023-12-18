@@ -2,7 +2,9 @@ package dict
 
 import (
 	"fmt"
+	"github.com/lxzan/dao/algorithm"
 	"github.com/lxzan/dao/internal/utils"
+	"github.com/lxzan/dao/internal/validator"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"sort"
@@ -38,8 +40,8 @@ func TestNew(t *testing.T) {
 			return true
 		})
 
-		arr1 = utils.UniqueString(arr1)
-		arr2 = utils.UniqueString(arr2)
+		arr1 = algorithm.Unique(arr1)
+		arr2 = algorithm.Unique(arr2)
 		if !utils.IsSameSlice(arr1, arr2) {
 			t.Fatal("error!")
 		}
@@ -88,6 +90,18 @@ func TestDict_Delete(t *testing.T) {
 			t.Fail()
 		}
 	}
+
+	t.Run("", func(t *testing.T) {
+		var d = New[int]()
+
+		d.Set("", 1)
+		v, _ := d.Get("")
+		assert.Equal(t, v, 1)
+
+		d.Delete("")
+		v, _ = d.Get("")
+		assert.Equal(t, v, 0)
+	})
 }
 
 func TestDict_Match(t *testing.T) {
@@ -101,6 +115,13 @@ func TestDict_Match(t *testing.T) {
 		return len(list) < 1
 	})
 	assert.Equal(t, len(list), 1)
+
+	list = list[:0]
+	d.Match("", func(key string, value uint8) bool {
+		list = append(list, key)
+		return true
+	})
+	assert.Equal(t, len(list), 3)
 }
 
 func TestDict_Range(t *testing.T) {
@@ -215,4 +236,8 @@ func TestDict_Random(t *testing.T) {
 		})
 		assert.ElementsMatch(t, list1, list2)
 	}
+}
+
+func TestDict_Map(t *testing.T) {
+	assert.True(t, validator.ValidateMapImpl(New[int]()))
 }

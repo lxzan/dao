@@ -2,6 +2,11 @@ package stack
 
 type Stack[T any] []T
 
+func New[T any](capacity uint32) *Stack[T] {
+	s := Stack[T](make([]T, 0, capacity))
+	return &s
+}
+
 func (c *Stack[T]) Reset() {
 	*c = (*c)[:0]
 }

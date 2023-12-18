@@ -21,3 +21,44 @@ func TestIsSameSlice(t *testing.T) {
 		[]int{1, 2, 4},
 	))
 }
+
+func TestRandomString_Generate(t *testing.T) {
+	var s = Numeric.Generate(6)
+	assert.Equal(t, len(s), 6)
+}
+
+func TestReverseStrings(t *testing.T) {
+	{
+		var arr = []string{"a", "b", "c"}
+		ReverseStrings(arr)
+		assert.True(t, IsSameSlice(arr, []string{"c", "b", "a"}))
+	}
+
+	{
+		var arr = []string{"a", "b"}
+		ReverseStrings(arr)
+		assert.True(t, IsSameSlice(arr, []string{"b", "a"}))
+	}
+
+	{
+		var arr = []string{"a"}
+		ReverseStrings(arr)
+		assert.True(t, IsSameSlice(arr, []string{"a"}))
+	}
+
+	{
+		var arr = []string{}
+		ReverseStrings(arr)
+		assert.True(t, IsSameSlice(arr, []string{}))
+	}
+}
+
+func TestIsBinaryNumber(t *testing.T) {
+	assert.True(t, IsBinaryNumber(1))
+	assert.True(t, IsBinaryNumber(2))
+	assert.True(t, IsBinaryNumber(16))
+
+	assert.False(t, IsBinaryNumber(3))
+	assert.False(t, IsBinaryNumber(7))
+	assert.False(t, IsBinaryNumber(21))
+}

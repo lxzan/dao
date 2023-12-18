@@ -2,6 +2,8 @@ package hashmap
 
 import (
 	"github.com/lxzan/dao/internal/utils"
+	"github.com/lxzan/dao/internal/validator"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -74,4 +76,45 @@ func TestHashMap_ForEach(t *testing.T) {
 		println(m1.Len(), len(m2))
 		t.Error("m1.length != m2.length")
 	}
+}
+
+func TestDict_Map(t *testing.T) {
+	assert.True(t, validator.ValidateMapImpl(New[string, int](8)))
+}
+
+func TestHashMap_Keys(t *testing.T) {
+	var m = New[string, int](8)
+	m.Set("a", 1)
+	m.Set("b", 2)
+	m.Set("c", 3)
+	assert.ElementsMatch(t, m.Keys(), []string{"a", "b", "c"})
+}
+
+func TestHashMap_Values(t *testing.T) {
+	var m = New[string, int](8)
+	m.Set("a", 1)
+	m.Set("b", 2)
+	m.Set("c", 3)
+	assert.ElementsMatch(t, m.Values(), []int{1, 2, 3})
+}
+
+func TestHashMap_Range(t *testing.T) {
+	var m = New[string, int](8)
+	m.Set("a", 1)
+	m.Set("b", 2)
+	m.Set("c", 3)
+
+	var keys []string
+	m.Range(func(key string, val int) bool {
+		keys = append(keys, key)
+		return true
+	})
+	assert.ElementsMatch(t, keys, []string{"a", "b", "c"})
+
+	keys = keys[:0]
+	m.Range(func(key string, val int) bool {
+		keys = append(keys, key)
+		return len(keys) < 2
+	})
+	assert.Equal(t, len(keys), 2)
 }

@@ -1,6 +1,6 @@
 package heap
 
-import "cmp"
+import "github.com/lxzan/dao"
 
 const (
 	Binary = 2
@@ -10,19 +10,9 @@ const (
 	Octal = 8
 )
 
-// MINIMUM 最小堆
-func MINIMUM[T cmp.Ordered](a, b T) bool {
-	return a < b
-}
-
-// MAXIMUM 最大堆
-func MAXIMUM[T cmp.Ordered](a, b T) bool {
-	return a > b
-}
-
 // New 新建一个堆
 // Create a new heap
-func New[T any](less func(a, b T) bool) *Heap[T] {
+func New[T any](less dao.LessFunc[T]) *Heap[T] {
 	h := &Heap[T]{cmp: less}
 	h.SetForkNumber(Quadratic)
 	return h

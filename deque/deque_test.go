@@ -1,6 +1,7 @@
 package deque
 
 import (
+	"cmp"
 	"container/list"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/stretchr/testify/assert"
@@ -8,7 +9,7 @@ import (
 	"testing"
 )
 
-func validate[T any](q *Deque[T]) bool {
+func validate[T cmp.Ordered](q *Deque[T]) bool {
 	var sum = 0
 	for i := q.Get(q.head); i != nil; i = q.Get(i.next) {
 		sum++
@@ -38,6 +39,10 @@ func validate[T any](q *Deque[T]) bool {
 		if tail.next != 0 {
 			return false
 		}
+	}
+
+	if q.Len() == 1 && q.Front().Value() != q.Back().Value() {
+		return false
 	}
 
 	return true
@@ -305,6 +310,14 @@ func TestDeque_Delete(t *testing.T) {
 		assert.True(t, utils.IsSameSlice(arr, []int{1, 2}))
 		assert.True(t, validate(q))
 	})
+
+	t.Run("", func(t *testing.T) {
+		var q = New[int](8)
+		var node = q.PushBack(3)
+		q.Remove(node.Addr())
+		assert.Equal(t, q.Len(), 0)
+		assert.True(t, validate(q))
+	})
 }
 
 func TestQueue_Random(t *testing.T) {
@@ -312,7 +325,7 @@ func TestQueue_Random(t *testing.T) {
 	var q = New[int](0)
 	var linkedlist = list.New()
 	for i := 0; i < count; i++ {
-		var flag = rand.Intn(8)
+		var flag = rand.Intn(10)
 		var val = rand.Int()
 		switch flag {
 		case 0, 1:
@@ -331,12 +344,12 @@ func TestQueue_Random(t *testing.T) {
 				q.PopBack()
 				linkedlist.Remove(linkedlist.Back())
 			}
-		case 6:
+		case 6, 7:
 			if node := q.Front(); node != nil {
 				q.MoveToBack(node.Addr())
 				linkedlist.MoveToBack(linkedlist.Front())
 			}
-		case 7:
+		case 8:
 			if node := q.Back(); node != nil {
 				q.MoveToFront(node.Addr())
 				linkedlist.MoveToFront(linkedlist.Back())

@@ -40,6 +40,10 @@ func validate[T comparable](q *LinkedList[T]) bool {
 		}
 	}
 
+	if q.Len() == 1 && q.Front().Value != q.Back().Value {
+		return false
+	}
+
 	return true
 }
 
@@ -296,6 +300,20 @@ func TestLinkedList_Delete(t *testing.T) {
 		assert.True(t, utils.IsSameSlice(arr, []int{1, 2}))
 		assert.True(t, validate(q))
 	})
+
+	t.Run("", func(t *testing.T) {
+		var q = New[int]()
+		var node = q.PushBack(3)
+		q.Remove(node)
+		assert.Equal(t, q.Len(), 0)
+		assert.True(t, validate(q))
+	})
+}
+
+func TestLinkedList_PushFront(t *testing.T) {
+	var q = New[int]()
+	q.PushFront(1)
+	assert.True(t, validate(q))
 }
 
 func TestQueue_Random(t *testing.T) {
