@@ -99,15 +99,6 @@ func SelectValue[T any](flag bool, a T, b T) T {
 	return b
 }
 
-// GetChildren 获取子数组
-func GetChildren[T any, K any](arr []T, get_field func(item T) K) []K {
-	var results = make([]K, 0, len(arr))
-	for i := range arr {
-		results = append(results, get_field(arr[i]))
-	}
-	return results
-}
-
 // Contains 是否包含
 func Contains[T comparable](arr []T, target T) bool {
 	for i := range arr {
@@ -116,4 +107,24 @@ func Contains[T comparable](arr []T, target T) bool {
 		}
 	}
 	return false
+}
+
+// Map 转换器 将A数组转换为B数组
+func Map[A any, B any](arr []A, transfer func(item A) B) []B {
+	var results = make([]B, 0, len(arr))
+	for i := range arr {
+		results = append(results, transfer(arr[i]))
+	}
+	return results
+}
+
+// Filter 过滤器
+func Filter[T any](arr []T, check func(item T) bool) []T {
+	var results = make([]T, 0, len(arr))
+	for i, v := range arr {
+		if check(v) {
+			results = append(results, arr[i])
+		}
+	}
+	return results
 }

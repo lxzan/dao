@@ -178,7 +178,7 @@ func TestRBTree_Between(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.IsSameSlice(keys2, algorithm.GetChildren(keys1, func(x Pair[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.Map(keys1, func(x Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -215,7 +215,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.IsSameSlice(keys2, algorithm.GetChildren(keys1, func(x Pair[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.Map(keys1, func(x Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -253,7 +253,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.IsSameSlice(keys2, algorithm.GetChildren(keys1, func(x Pair[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.Map(keys1, func(x Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
