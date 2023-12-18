@@ -8,26 +8,32 @@ const (
 	OperateUpdate Operate = 2
 )
 
-type Element[T any, S any] struct {
+type (
+	Initer[T any] interface {
+		Init(op Operate) T
+	}
+
+	Merger[T any] interface {
+		Merge(T) T
+	}
+)
+
+type Element[S Merger[S], T Initer[S]] struct {
 	left     int
 	right    int
-	son      *Element[T, S]
-	daughter *Element[T, S]
+	son      *Element[S, T]
+	daughter *Element[S, T]
 	data     S
 }
 
-type SegmentTree[T any, S any] struct {
-	init  func(op Operate, x T) S
-	merge func(a, b S) S
-	root  *Element[T, S]
-	arr   []T
+type SegmentTree[S Merger[S], T Initer[S]] struct {
+	root *Element[S, T]
+	arr  []T
 }
 
-func New[T any, S any](arr []T, init func(op Operate, x T) S, merge func(a, b S) S) *SegmentTree[T, S] {
-	var obj = &SegmentTree[T, S]{
-		init:  init,
-		merge: merge,
-		root: &Element[T, S]{
+func New[S Merger[S], T Initer[S]](arr []T) *SegmentTree[S, T] {
+	var obj = &SegmentTree[S, T]{
+		root: &Element[S, T]{
 			left:  0,
 			right: len(arr) - 1,
 		},
@@ -37,37 +43,37 @@ func New[T any, S any](arr []T, init func(op Operate, x T) S, merge func(a, b S)
 	return obj
 }
 
-func (c *SegmentTree[T, S]) build(cur *Element[T, S]) {
+func (c *SegmentTree[S, T]) build(cur *Element[S, T]) {
 	if cur.left == cur.right {
-		cur.data = c.init(OperateCreate, c.arr[cur.left])
+		cur.data = c.arr[cur.left].Init(OperateCreate)
 		return
 	}
 
 	var mid = (cur.left + cur.right) / 2
-	cur.son = &Element[T, S]{
+	cur.son = &Element[S, T]{
 		left:  cur.left,
 		right: mid,
 	}
-	cur.daughter = &Element[T, S]{
+	cur.daughter = &Element[S, T]{
 		left:  mid + 1,
 		right: cur.right,
 	}
 	c.build(cur.son)
 	c.build(cur.daughter)
-	cur.data = c.merge(cur.son.data, cur.daughter.data)
+	cur.data = cur.son.data.Merge(cur.daughter.data)
 }
 
 // Query 查询 left <= index <= right 区间
-func (c *SegmentTree[T, S]) Query(left int, right int) S {
+func (c *SegmentTree[S, T]) Query(left int, right int) S {
 	var result S
-	result = c.init(OperateQuery, c.arr[left])
+	result = c.arr[left].Init(OperateQuery)
 	c.doQuery(c.root, left, right, &result)
 	return result
 }
 
-func (c *SegmentTree[T, S]) doQuery(cur *Element[T, S], left int, right int, result *S) {
+func (c *SegmentTree[S, T]) doQuery(cur *Element[S, T], left int, right int, result *S) {
 	if cur.left >= left && cur.right <= right {
-		*result = c.merge(*result, cur.data)
+		*result = cur.data.Merge(*result)
 	} else if !(cur.left > right || cur.right < left) {
 		c.doQuery(cur.son, left, right, result)
 		c.doQuery(cur.daughter, left, right, result)
@@ -75,22 +81,22 @@ func (c *SegmentTree[T, S]) doQuery(cur *Element[T, S], left int, right int, res
 }
 
 // Update 更新
-func (c *SegmentTree[T, S]) Update(i int, v T) {
+func (c *SegmentTree[S, T]) Update(i int, v T) {
 	c.arr[i] = v
 	c.rebuild(c.root, i)
 }
 
-func (c *SegmentTree[T, S]) rebuild(cur *Element[T, S], i int) {
+func (c *SegmentTree[S, T]) rebuild(cur *Element[S, T], i int) {
 	if !(i >= cur.left && i <= cur.right) {
 		return
 	}
 
 	if cur.left == cur.right && cur.left == i {
-		cur.data = c.init(OperateUpdate, c.arr[cur.left])
+		cur.data = c.arr[cur.left].Init(OperateUpdate)
 		return
 	}
 
 	c.rebuild(cur.son, i)
 	c.rebuild(cur.daughter, i)
-	cur.data = c.merge(cur.son.data, cur.daughter.data)
+	cur.data = cur.son.data.Merge(cur.daughter.data)
 }

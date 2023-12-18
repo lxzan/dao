@@ -1,10 +1,26 @@
 # DAO
 
-道生一, 一生二, 二生三, 三生万物
-
-Go 数据结构与算法库
-
 [![Build Status](https://github.com/lxzan/dao/workflows/Go%20Test/badge.svg?branch=main)](https://github.com/lxzan/dao/actions?query=branch%3Amain)
+
+***道生一, 一生二, 二生三, 三生万物***
+
+### 目录
+
+- [DAO](#dao)
+    - [目录](#目录)
+    - [基准测试](#基准测试)
+    - [堆](#堆)
+        - [二叉堆](#二叉堆)
+        - [四叉堆](#四叉堆)
+    - [栈](#栈)
+    - [双端队列](#双端队列)
+    - [双向链表](#双向链表)
+    - [红黑树](#红黑树)
+        - [区间查询](#区间查询)
+        - [极值查询](#极值查询)
+    - [前缀树](#前缀树)
+    - [哈希表](#哈希表)
+    - [线段树](#线段树)
 
 ### 基准测试
 
@@ -16,46 +32,31 @@ goos: windows
 goarch: amd64
 pkg: github.com/lxzan/dao/benchmark
 cpu: AMD Ryzen 5 PRO 4650G with Radeon Graphics
-BenchmarkDict_Set-12                                 416           2459922 ns/op          518439 B/op      10655 allocs/op
-BenchmarkDict_Get-12                                 495           2416006 ns/op          480000 B/op      10000 allocs/op
-BenchmarkDict_Match-12                               255           4653380 ns/op          480000 B/op      10000 allocs/op
-BenchmarkHeap_Push_Binary-12                        4887            261661 ns/op          357624 B/op         19 allocs/op
-BenchmarkHeap_Push_Quadratic-12                     6343            190584 ns/op          357625 B/op         19 allocs/op
-BenchmarkHeap_Push_Octal-12                         7406            162332 ns/op          357625 B/op         19 allocs/op
-BenchmarkHeap_PushAndPop_Binary-12                  1762            671138 ns/op               0 B/op          0 allocs/op
-BenchmarkHeap_PushAndPop_Quadratic-12               2499            473334 ns/op               0 B/op          0 allocs/op
-BenchmarkHeap_PushAndPop_Octal-12                   2319            501286 ns/op               0 B/op          0 allocs/op
-BenchmarkLinkedList_Push-12                         3590            320770 ns/op          240001 B/op      10000 allocs/op
-BenchmarkLinkedList_PushAndPop-12                   3505            341217 ns/op          240001 B/op      10000 allocs/op
-BenchmarkDeque_Push-12                             10000            107996 ns/op          245760 B/op          1 allocs/op
-BenchmarkDeque_PushAndPop-12                        6319            186998 ns/op          386937 B/op         18 allocs/op
-BenchmarkRBTree_Set-12                               853           1399383 ns/op          720059 B/op      20001 allocs/op
-BenchmarkRBTree_Get-12                              3525            344257 ns/op               0 B/op          0 allocs/op
-BenchmarkRBTree_Query-12                              52          23095863 ns/op         6156409 B/op     199917 allocs/op
-BenchmarkSegmentTree_Query-12                        450           2669998 ns/op            3639 B/op         44 allocs/op
-BenchmarkSegmentTree_Update-12                       714           1672594 ns/op            2293 B/op         28 allocs/op
-BenchmarkSort_Quick-12                              1635            727184 ns/op           81920 B/op          1 allocs/op
-BenchmarkSort_Std-12                                1396            860684 ns/op           81944 B/op          2 allocs/op
+BenchmarkDict_Set-12                                 415           2500775 ns/op          518543 B/op      10657 allocs/op
+BenchmarkDict_Get-12                                 476           2478004 ns/op          480000 B/op      10000 allocs/op
+BenchmarkDict_Match-12                               249           4767976 ns/op          480000 B/op      10000 allocs/op
+BenchmarkHeap_Push_Binary-12                        4443            257819 ns/op          357625 B/op         19 allocs/op
+BenchmarkHeap_Push_Quadratic-12                     5714            193541 ns/op          357625 B/op         19 allocs/op
+BenchmarkHeap_Push_Octal-12                         6922            161285 ns/op          357625 B/op         19 allocs/op
+BenchmarkHeap_PushAndPop_Binary-12                  1788            663102 ns/op               0 B/op          0 allocs/op
+BenchmarkHeap_PushAndPop_Quadratic-12               2454            479880 ns/op               0 B/op          0 allocs/op
+BenchmarkHeap_PushAndPop_Octal-12                   2283            512334 ns/op               0 B/op          0 allocs/op
+BenchmarkStdList_Push-12                            2084            574892 ns/op          558002 B/op      19745 allocs/op
+BenchmarkStdList_PushAndPop-12                      1947            609196 ns/op          558003 B/op      19745 allocs/op
+BenchmarkLinkedList_Push-12                         3636            320485 ns/op          240000 B/op      10000 allocs/op
+BenchmarkLinkedList_PushAndPop-12                   3529            336472 ns/op          240000 B/op      10000 allocs/op
+BenchmarkDeque_Push-12                             10000            109128 ns/op          245760 B/op          1 allocs/op
+BenchmarkDeque_PushAndPop-12                        5454            211606 ns/op          386937 B/op         18 allocs/op
+BenchmarkRBTree_Set-12                               860           1408598 ns/op          720059 B/op      20001 allocs/op
+BenchmarkRBTree_Get-12                              3428            339183 ns/op               0 B/op          0 allocs/op
+BenchmarkRBTree_Query-12                              69          16775216 ns/op         3680055 B/op      60000 allocs/op
+BenchmarkSegmentTree_Query-12                        448           2690483 ns/op            3655 B/op         44 allocs/op
+BenchmarkSegmentTree_Update-12                       714           1674503 ns/op            2293 B/op         28 allocs/op
+BenchmarkSort_Quick-12                              1621            715638 ns/op           81920 B/op          1 allocs/op
+BenchmarkSort_Std-12                                1378            860971 ns/op           81944 B/op          2 allocs/op
 PASS
+ok      github.com/lxzan/dao/benchmark  30.795s
 ```
-
-### 目录
-
-- [DAO](#dao)
-    - [基准测试](#基准测试)
-    - [目录](#目录)
-    - [堆](#堆)
-      - [二叉堆](#二叉堆)
-      - [四叉堆](#四叉堆)
-    - [栈](#栈)
-    - [双端队列](#双端队列)
-    - [双向链表](#双向链表)
-    - [红黑树](#红黑树)
-      - [区间查询](#区间查询)
-      - [极值查询](#极值查询)
-    - [前缀树](#前缀树)
-    - [哈希表](#哈希表)
-    - [线段树](#线段树)
 
 ### 堆
 
@@ -238,6 +239,10 @@ func main() {
 
 ### 前缀树
 
+可以动态配置槽位宽度的前缀树
+
+注意: 合理设置索引, 超出索引长度的字符不能被索引优化
+
 ```go
 package main
 
@@ -262,6 +267,7 @@ func main() {
 ```
 
 ### 哈希表
+
 ```go
 package main
 
@@ -287,13 +293,13 @@ func main() {
 package main
 
 import (
-	"github.com/lxzan/dao/segment_tree"
+	tree "github.com/lxzan/dao/segment_tree"
 )
 
 func main() {
-	var data = []int{1, 3, 5, 7, 9, 2, 4, 6, 8, 10}
-	var lines = segment_tree.New(data, segment_tree.Init[int], segment_tree.Merge[int])
-	var result = lines.Query(0, 1)
+	var data = []tree.Int64{1, 3, 5, 7, 9, 2, 4, 6, 8, 10}
+	var lines = tree.New[tree.Int64Schema, tree.Int64](data)
+	var result = lines.Query(0, 9)
 	println(result.MinValue, result.MaxValue, result.Sum)
 }
 

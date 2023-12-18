@@ -178,7 +178,6 @@ func TestDeque_InsertAfter(t *testing.T) {
 	t.Run("", func(t *testing.T) {
 		var q = New[int](8)
 		assert.Nil(t, q.InsertAfter(1, 0))
-
 	})
 
 	t.Run("", func(t *testing.T) {
@@ -322,10 +321,10 @@ func TestDeque_Delete(t *testing.T) {
 
 func TestQueue_Random(t *testing.T) {
 	var count = 10000
-	var q = New[int](0)
+	var q = Deque[int]{}
 	var linkedlist = list.New()
 	for i := 0; i < count; i++ {
-		var flag = rand.Intn(10)
+		var flag = rand.Intn(13)
 		var val = rand.Int()
 		switch flag {
 		case 0, 1:
@@ -354,12 +353,69 @@ func TestQueue_Random(t *testing.T) {
 				q.MoveToFront(node.Addr())
 				linkedlist.MoveToFront(linkedlist.Back())
 			}
+		case 9:
+			var n = rand.Intn(10)
+			var index = 0
+			for iter := q.Front(); iter != nil; iter = q.Get(iter.Next()) {
+				index++
+				if index >= n {
+					q.InsertAfter(val, iter.Addr())
+					break
+				}
+			}
+
+			index = 0
+			for iter := linkedlist.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					linkedlist.InsertAfter(val, iter)
+					break
+				}
+			}
+		case 10:
+			var n = rand.Intn(10)
+			var index = 0
+			for iter := q.Front(); iter != nil; iter = q.Get(iter.Next()) {
+				index++
+				if index >= n {
+					q.InsertBefore(val, iter.Addr())
+					break
+				}
+			}
+
+			index = 0
+			for iter := linkedlist.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					linkedlist.InsertBefore(val, iter)
+					break
+				}
+			}
+		case 11, 12:
+			var n = rand.Intn(10)
+			var index = 0
+			for iter := q.Front(); iter != nil; iter = q.Get(iter.Next()) {
+				index++
+				if index >= n {
+					q.Remove(iter.Addr())
+					break
+				}
+			}
+
+			index = 0
+			for iter := linkedlist.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					linkedlist.Remove(iter)
+					break
+				}
+			}
 		default:
 
 		}
 	}
 
-	assert.True(t, validate(q))
+	assert.True(t, validate(&q))
 	for i := linkedlist.Front(); i != nil; i = i.Next() {
 		var val = q.PopFront()
 		assert.Equal(t, i.Value, val)

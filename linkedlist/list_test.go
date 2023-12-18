@@ -318,10 +318,10 @@ func TestLinkedList_PushFront(t *testing.T) {
 
 func TestQueue_Random(t *testing.T) {
 	var count = 10000
-	var q = New[int]()
+	var q = LinkedList[int]{}
 	var linkedlist = list.New()
 	for i := 0; i < count; i++ {
-		var flag = rand.Intn(8)
+		var flag = rand.Intn(13)
 		var val = rand.Int()
 		switch flag {
 		case 0, 1:
@@ -350,12 +350,74 @@ func TestQueue_Random(t *testing.T) {
 				q.MoveToFront(node)
 				linkedlist.MoveToFront(linkedlist.Back())
 			}
+		case 8:
+			if node := q.Back(); node != nil {
+				q.MoveToFront(node)
+				linkedlist.MoveToFront(linkedlist.Back())
+			}
+		case 9:
+			var n = rand.Intn(10)
+			var index = 0
+			for iter := q.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					q.InsertAfter(val, iter)
+					break
+				}
+			}
+
+			index = 0
+			for iter := linkedlist.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					linkedlist.InsertAfter(val, iter)
+					break
+				}
+			}
+		case 10:
+			var n = rand.Intn(10)
+			var index = 0
+			for iter := q.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					q.InsertBefore(val, iter)
+					break
+				}
+			}
+
+			index = 0
+			for iter := linkedlist.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					linkedlist.InsertBefore(val, iter)
+					break
+				}
+			}
+		case 11, 12:
+			var n = rand.Intn(10)
+			var index = 0
+			for iter := q.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					q.Remove(iter)
+					break
+				}
+			}
+
+			index = 0
+			for iter := linkedlist.Front(); iter != nil; iter = iter.Next() {
+				index++
+				if index >= n {
+					linkedlist.Remove(iter)
+					break
+				}
+			}
 		default:
 
 		}
 	}
 
-	assert.True(t, validate(q))
+	assert.True(t, validate(&q))
 	for i := linkedlist.Front(); i != nil; i = i.Next() {
 		var val = q.PopFront()
 		assert.Equal(t, i.Value, val)

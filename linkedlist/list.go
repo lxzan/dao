@@ -20,6 +20,8 @@ func (c *Element[T]) Prev() *Element[T] {
 	return c.prev
 }
 
+// New 创建双向链表
+// 可以声明值类型自动初始化
 func New[T any]() *LinkedList[T] {
 	return &LinkedList[T]{}
 }

@@ -1,10 +1,32 @@
 package benchmark
 
 import (
+	list2 "container/list"
 	"github.com/lxzan/dao/deque"
 	"github.com/lxzan/dao/linkedlist"
 	"testing"
 )
+
+func BenchmarkStdList_Push(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var list = list2.New()
+		for j := 0; j < bench_count; j++ {
+			list.PushBack(j)
+		}
+	}
+}
+
+func BenchmarkStdList_PushAndPop(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		var list = list2.New()
+		for j := 0; j < bench_count; j++ {
+			list.PushBack(j)
+		}
+		for list.Len() > 0 {
+			list.Remove(list.Front())
+		}
+	}
+}
 
 func BenchmarkLinkedList_Push(b *testing.B) {
 	for i := 0; i < b.N; i++ {
