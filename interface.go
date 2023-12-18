@@ -1,61 +1,50 @@
 package dao
 
-type Ordering int8
+import "cmp"
+
+type CompareResult int8
 
 const (
-	Less    Ordering = -1
-	Equal   Ordering = 0
-	Greater Ordering = 1
+	Less    CompareResult = -1
+	Equal   CompareResult = 0
+	Greater CompareResult = 1
 )
 
-type Comparer[T any] interface {
-	Compare(a, b *T) Ordering
-}
+// LessFunc 比大小
+type LessFunc[T any] func(a, b T) bool
 
-type Comparable interface {
-	~string | ~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float64 | ~float32
-}
+// AscFunc 升序函数
+func AscFunc[T cmp.Ordered](a, b T) bool { return a < b }
 
-func ASC[T Comparable](a, b T) Ordering {
-	if a > b {
-		return Greater
-	} else if a < b {
-		return Less
-	} else {
-		return Equal
+// DescFunc 降序函数
+func DescFunc[T cmp.Ordered](a, b T) bool { return a > b }
+
+type Order uint8
+
+const (
+	ASC  Order = 0 // 升序
+	DESC Order = 1 // 降序
+)
+
+type (
+	Number interface {
+		Integer | ~float32 | ~float64
 	}
-}
 
-func DESC[T Comparable](a, b T) Ordering {
-	if a > b {
-		return Less
-	} else if a < b {
-		return Greater
-	} else {
-		return Equal
+	Integer interface {
+		~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8
 	}
-}
 
-type Number interface {
-	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8 | ~float32 | ~float64
-}
+	// Map 键不可重复
+	Map[K comparable, V any] interface {
+		Len() int
+		Get(key K) (V, bool)
+		Set(key K, value V)
+		Delete(key K)
+		Range(f func(K, V) bool)
+	}
 
-type Integer interface {
-	~int64 | ~int | ~int32 | ~int16 | ~int8 | ~uint64 | ~uint | ~uint32 | ~uint16 | ~uint8
-}
-
-type Hashable interface {
-	Integer | ~string
-}
-
-type Iterable[I any] interface {
-	Begin() I
-	Next(I) I
-	End(I) bool
-}
-
-type Mapper[K Hashable, V any] interface {
-	Set(key K, val V)
-	Get(key K) (val V, exist bool)
-	Delete(key K) bool
-}
+	Resetter interface {
+		Reset()
+	}
+)

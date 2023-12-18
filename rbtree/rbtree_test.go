@@ -1,14 +1,51 @@
 package rbtree
 
 import (
+	"cmp"
 	"fmt"
+	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/algorithm"
 	"github.com/lxzan/dao/internal/utils"
+	"github.com/lxzan/dao/internal/validator"
+	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"sort"
 	"strconv"
 	"testing"
 )
+
+func validate[K cmp.Ordered, V any](t *testing.T, node *rbtree_node[K, V]) {
+	if node == nil {
+		return
+	}
+	if node.left != nil {
+		if node.left.data != nil && node.data.Key < node.left.data.Key {
+			t.Error("left node error!")
+		}
+		validate(t, node.left)
+	}
+
+	if node.right != nil {
+		if node.right.data != nil && node.data.Key > node.right.data.Key {
+			t.Error("right node error!")
+		}
+		validate(t, node.right)
+	}
+}
+
+func TestRBTree_Delete(t *testing.T) {
+	var tree = New[string, uint8]()
+	var keys []string
+	for i := 0; i < 1000; i++ {
+		key := utils.Alphabet.Generate(16)
+		keys = append(keys, key)
+		tree.Set(key, 1)
+	}
+	for _, key := range keys {
+		tree.Delete(key)
+	}
+	assert.Equal(t, tree.Len(), 0)
+}
 
 func TestNew(t *testing.T) {
 	var tree = New[string, int]()
@@ -49,7 +86,7 @@ func TestNew(t *testing.T) {
 		t.Fatal("error!")
 	}
 
-	tree.validate(t, tree.root)
+	validate(t, tree.root)
 }
 
 func TestRBTree_Get(t *testing.T) {
@@ -85,24 +122,22 @@ func TestRBTree_ForEach(t *testing.T) {
 	}
 
 	var arr1 = make([]string, 0)
-	tree.ForEach(func(iter *Iterator[string, int]) {
-		arr1 = append(arr1, iter.Key)
-		if len(arr1) >= 50 {
-			iter.Break()
-		}
+	tree.Range(func(key string, value int) bool {
+		arr1 = append(arr1, key)
+		return len(arr1) < 50
 	})
 	if len(arr1) != 50 {
 		t.Fatal("error!")
 	}
 
 	var arr2 = make([]string, 0)
-	tree.ForEach(func(iter *Iterator[string, int]) {
-		arr2 = append(arr2, iter.Key)
+	tree.Range(func(key string, value int) bool {
+		arr2 = append(arr2, key)
+		return true
 	})
 
-	if len(arr2) != tree.Len() || !utils.SameStrings(arr, arr2) {
-		t.Fatal("error!")
-	}
+	assert.Equal(t, len(arr2), tree.Len())
+	assert.ElementsMatch(t, arr, arr2)
 }
 
 func TestRBTree_Between(t *testing.T) {
@@ -124,12 +159,13 @@ func TestRBTree_Between(t *testing.T) {
 		if left > right {
 			right, left = left, right
 		}
-		var keys1 = tree.Query(&QueryBuilder[string]{
-			LeftFilter:  func(d string) bool { return d >= left },
-			RightFilter: func(d string) bool { return d <= right },
-			Limit:       limit,
-			Order:       DESC,
-		})
+		var keys1 = tree.
+			NewQuery().
+			Left(func(key string) bool { return key >= left }).
+			Right(func(key string) bool { return key <= right }).
+			Order(dao.DESC).
+			Limit(limit).
+			Do()
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k >= left && k <= right {
@@ -142,7 +178,7 @@ func TestRBTree_Between(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.GetChildren(keys1, func(x Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -163,11 +199,11 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 	var limit = 100
 	for i := 0; i < 100; i++ {
 		var left = utils.Numeric.Generate(4)
-		var keys1 = tree.Query(&QueryBuilder[string]{
-			LeftFilter: func(d string) bool { return d >= left },
-			Limit:      limit,
-			Order:      ASC,
-		})
+		var keys1 = tree.
+			NewQuery().
+			Left(func(key string) bool { return key >= left }).
+			Limit(limit).
+			Do()
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k >= left {
@@ -179,7 +215,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.GetChildren(keys1, func(x Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -197,14 +233,14 @@ func TestRBTree_LessEqual(t *testing.T) {
 		tree.Set(key, length)
 	}
 
-	var limit = 100
+	var limit = 10
 	for i := 0; i < 100; i++ {
 		var target = utils.Numeric.Generate(4)
-		var keys1 = tree.Query(&QueryBuilder[string]{
-			RightFilter: func(d string) bool { return d <= target },
-			Limit:       limit,
-			Order:       DESC,
-		})
+		var keys1 = tree.
+			NewQuery().
+			Right(func(key string) bool { return key <= target }).
+			Order(dao.DESC).
+			Do()
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k <= target {
@@ -217,7 +253,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.SameStrings(keys2, algorithm.GetFields(keys1, func(x *Element[string, int]) string {
+		if !utils.IsSameSlice(keys2, algorithm.GetChildren(keys1, func(x Pair[string, int]) string {
 			return x.Key
 		})) {
 			t.Fatal("error!")
@@ -241,16 +277,18 @@ func TestRBTree_GetMinKey(t *testing.T) {
 		})
 
 		if !exist {
-			tree.ForEach(func(iter *Iterator[string, int]) {
-				if iter.Key >= k {
+			tree.Range(func(key string, value int) bool {
+				if key >= k {
 					t.Fatal("error!")
 				}
+				return true
 			})
 		} else {
-			tree.ForEach(func(iter *Iterator[string, int]) {
-				if iter.Key < result.Key && iter.Key >= k {
+			tree.Range(func(key string, value int) bool {
+				if key < result.Key && key >= k {
 					t.Fatal("error!")
 				}
+				return true
 			})
 		}
 	}
@@ -272,17 +310,50 @@ func TestRBTree_GetMaxKey(t *testing.T) {
 		})
 
 		if !exist {
-			tree.ForEach(func(iter *Iterator[string, int]) {
-				if iter.Key <= k {
+			tree.Range(func(key string, value int) bool {
+				if key <= k {
 					t.Fatal("error!")
 				}
+				return true
 			})
 		} else {
-			tree.ForEach(func(iter *Iterator[string, int]) {
-				if iter.Key > result.Key && iter.Key <= k {
+			tree.Range(func(key string, value int) bool {
+				if key > result.Key && key <= k {
 					t.Fatal("error!")
 				}
+				return true
 			})
 		}
 	}
+}
+
+func TestDict_Map(t *testing.T) {
+	assert.True(t, validator.ValidateMapImpl(New[string, int]()))
+}
+
+func TestRBTree_NewQuery(t *testing.T) {
+	var tree = New[int, uint8]()
+	tree.Set(1, 1)
+	tree.Set(2, 1)
+	tree.Set(5, 1)
+	tree.Set(2, 1)
+	tree.Set(4, 1)
+	tree.Set(6, 1)
+
+	t.Run("", func(t *testing.T) {
+		var results = tree.
+			NewQuery().
+			Left(func(key int) bool { return key > 10 }).
+			Do()
+		assert.Equal(t, len(results), 0)
+	})
+
+	t.Run("", func(t *testing.T) {
+		var results = tree.
+			NewQuery().
+			Left(func(key int) bool { return key > 10 }).
+			Order(dao.DESC).
+			Do()
+		assert.Equal(t, len(results), 0)
+	})
 }

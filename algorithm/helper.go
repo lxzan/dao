@@ -1,59 +1,89 @@
 package algorithm
 
 import (
+	"cmp"
 	"github.com/lxzan/dao"
+	"slices"
 	"strconv"
 )
 
-func ForEach[I any](c dao.Iterable[I], fn func(iter I)) {
-	for i := c.Begin(); !c.End(i); i = c.Next(i) {
-		fn(i)
-	}
-}
-
+// ToString 数字转字符串
 func ToString[T dao.Integer](x T) string {
 	return strconv.Itoa(int(x))
 }
 
-func Max[T dao.Comparable](a, b T) T {
+// Max 获取最大值
+func Max[T cmp.Ordered](a, b T) T {
 	if a > b {
 		return a
 	}
 	return b
 }
 
-func Min[T dao.Comparable](a, b T) T {
+// Min 获取最小值
+func Min[T cmp.Ordered](a, b T) T {
 	if a < b {
 		return a
 	}
 	return b
 }
 
+// Swap 交换数据
 func Swap[T any](a, b *T) {
-	*a, *b = *b, *a
+	temp := *a
+	*a = *b
+	*b = temp
 }
 
-func Unique[T any, K comparable](arr []T, getKey func(x T) K) []T {
+func Unique[T cmp.Ordered](arr []T) []T {
+	if len(arr) == 0 {
+		return arr
+	}
+
+	slices.Sort(arr)
+
 	var n = len(arr)
-	var m = make(map[K]T, n)
-	for i := range arr {
-		var key = getKey((arr)[i])
-		m[key] = (arr)[i]
+	var j = 1
+	for i := 1; i < n; i++ {
+		if arr[i] != arr[i-1] {
+			arr[j] = arr[i]
+			j++
+		}
 	}
-
-	var results = make([]T, 0, len(m))
-	for k, _ := range m {
-		results = append(results, m[k])
-	}
-	return results
+	arr = arr[:j]
+	return arr
 }
 
-func Fill[T any](arr []T, v T) {
-	for i := range arr {
-		arr[i] = v
+func UniqueBy[T any, K cmp.Ordered](arr []T, getKey func(item T) K) []T {
+	if len(arr) == 0 {
+		return arr
 	}
+
+	slices.SortFunc(arr, func(a, b T) int {
+		x := getKey(a)
+		y := getKey(b)
+		if x < y {
+			return -1
+		} else if x > y {
+			return 1
+		} else {
+			return 0
+		}
+	})
+
+	var n = len(arr)
+	var j = 1
+	for i := 1; i < n; i++ {
+		if getKey(arr[i]) != getKey(arr[i-1]) {
+			arr[j] = arr[i]
+			j++
+		}
+	}
+	arr = arr[:j]
+	return arr
 }
 
+// Reverse 反转数组
 func Reverse[T any](arr []T) {
 	var n = len(arr)
 	for i := 0; i < n/2; i++ {
@@ -61,14 +91,16 @@ func Reverse[T any](arr []T) {
 	}
 }
 
-func Select[T any](flag bool, a T, b T) T {
+// SelectValue 选择一个值 三元操作符替代品
+func SelectValue[T any](flag bool, a T, b T) T {
 	if flag {
 		return a
 	}
 	return b
 }
 
-func GetFields[T any, K any](arr []T, get_field func(x T) K) []K {
+// GetChildren 获取子数组
+func GetChildren[T any, K any](arr []T, get_field func(item T) K) []K {
 	var results = make([]K, 0, len(arr))
 	for i := range arr {
 		results = append(results, get_field(arr[i]))
@@ -76,6 +108,7 @@ func GetFields[T any, K any](arr []T, get_field func(x T) K) []K {
 	return results
 }
 
+// Contains 是否包含
 func Contains[T comparable](arr []T, target T) bool {
 	for i := range arr {
 		if arr[i] == target {

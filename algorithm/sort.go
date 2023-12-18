@@ -2,7 +2,7 @@ package algorithm
 
 import "github.com/lxzan/dao"
 
-func IsSorted[T any](arr []T, cmp func(a, b T) dao.Ordering) bool {
+func IsSorted[T any](arr []T, cmp func(a, b T) dao.CompareResult) bool {
 	var n = len(arr)
 	if n <= 1 {
 		return true
@@ -15,14 +15,14 @@ func IsSorted[T any](arr []T, cmp func(a, b T) dao.Ordering) bool {
 	return true
 }
 
-func Sort[T any](arr []T, cmp func(a, b T) dao.Ordering) {
+func Sort[T any](arr []T, cmp func(a, b T) dao.CompareResult) {
 	if IsSorted(arr, cmp) {
 		return
 	}
 	QuickSort(arr, 0, len(arr)-1, cmp)
 }
 
-func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering) int {
+func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.CompareResult) int {
 	var mid = (begin + end) / 2
 	var x = cmp(arr[begin], arr[mid])
 	var y = cmp(arr[mid], arr[end])
@@ -38,7 +38,7 @@ func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering
 	return begin
 }
 
-func insertionSort[T any](arr []T, a, b int, cmp func(a, b T) dao.Ordering) {
+func insertionSort[T any](arr []T, a, b int, cmp func(a, b T) dao.CompareResult) {
 	for i := a + 1; i <= b; i++ {
 		for j := i; j > a && cmp(arr[j], arr[j-1]) == dao.Less; j-- {
 			arr[j], arr[j-1] = arr[j-1], arr[j]
@@ -46,7 +46,7 @@ func insertionSort[T any](arr []T, a, b int, cmp func(a, b T) dao.Ordering) {
 	}
 }
 
-func QuickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering) {
+func QuickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.CompareResult) {
 	if begin >= end {
 		return
 	}
@@ -71,8 +71,9 @@ func QuickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.Ordering
 	QuickSort(arr, index+1, end, cmp)
 }
 
-// not exist return -1
-func BinarySearch[T any](arr []T, target T, cmp func(a, b T) dao.Ordering) int {
+// BinarySearch 二分搜索
+// @return 数组下标 如果不存在, 返回-1
+func BinarySearch[T any](arr []T, target T, cmp func(a, b T) dao.CompareResult) int {
 	var n = len(arr)
 	if n == 0 {
 		return -1
@@ -82,12 +83,12 @@ func BinarySearch[T any](arr []T, target T, cmp func(a, b T) dao.Ordering) int {
 	var right = n - 1
 	for right-left > 1 {
 		var mid = (left + right) / 2
-		var flag = cmp(arr[mid], target)
-		if flag == dao.Equal {
+		switch cmp(arr[mid], target) {
+		case dao.Equal:
 			return mid
-		} else if flag == dao.Greater {
+		case dao.Greater:
 			right = mid
-		} else {
+		default:
 			left = mid
 		}
 	}

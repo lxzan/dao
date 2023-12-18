@@ -1,17 +1,17 @@
 package benchmark
 
 import (
-	"github.com/lxzan/dao/segment_tree"
+	tree "github.com/lxzan/dao/segment_tree"
 	"math/rand"
 	"testing"
 )
 
 func BenchmarkSegmentTree_Query(b *testing.B) {
-	var arr = make([]int, 0)
+	var arr = make([]tree.Int64, 0)
 	for i := 0; i < bench_count; i++ {
-		arr = append(arr, testvals[i])
+		arr = append(arr, tree.Int64(testvals[i]))
 	}
-	var tree = segment_tree.New(arr, segment_tree.Init[int], segment_tree.Merge[int])
+	var st = tree.New[tree.Int64Schema, tree.Int64](arr)
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
@@ -21,23 +21,23 @@ func BenchmarkSegmentTree_Query(b *testing.B) {
 			if left > right {
 				left, right = right, left
 			}
-			tree.Query(left, right)
+			st.Query(left, right)
 		}
 	}
 }
 
 func BenchmarkSegmentTree_Update(b *testing.B) {
-	var arr1 = make([]int, 0)
+	var arr1 = make([]tree.Int64, 0)
 	for i := 0; i < bench_count; i++ {
-		arr1 = append(arr1, testvals[i])
+		arr1 = append(arr1, tree.Int64(testvals[i]))
 	}
-	var tree = segment_tree.New(arr1, segment_tree.Init[int], segment_tree.Merge[int])
+	var st = tree.New[tree.Int64Schema, tree.Int64](arr1)
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
 			var x = rand.Intn(bench_count)
-			tree.Update(x, x)
+			st.Update(x, tree.Int64(x))
 		}
 	}
 }

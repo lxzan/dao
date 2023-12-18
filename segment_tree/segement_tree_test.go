@@ -8,12 +8,12 @@ import (
 
 func TestSegmentTree_Query(t *testing.T) {
 	var n = 10000
-	var arr = make([]int, 0)
+	var arr = make([]Int64, 0)
 	for i := 0; i < n; i++ {
-		arr = append(arr, utils.Rand.Intn(n))
+		arr = append(arr, Int64(utils.Rand.Intn(n)))
 	}
 
-	var tree = New(arr, Init[int], Merge[int])
+	var tree = New[Int64Schema, Int64](arr)
 
 	for i := 0; i < 1000; i++ {
 		var left = utils.Rand.Intn(n)
@@ -23,15 +23,15 @@ func TestSegmentTree_Query(t *testing.T) {
 		}
 		var result1 = tree.Query(left, right)
 
-		var result2 = Schema[int]{
-			MaxValue: arr[left],
-			MinValue: arr[left],
+		var result2 = Int64Schema{
+			MaxValue: arr[left].Value(),
+			MinValue: arr[left].Value(),
 			Sum:      0,
 		}
 		for j := left; j <= right; j++ {
-			result2.Sum += arr[j]
-			result2.MaxValue = algorithm.Max(result2.MaxValue, arr[j])
-			result2.MinValue = algorithm.Min(result2.MinValue, arr[j])
+			result2.Sum += arr[j].Value()
+			result2.MaxValue = algorithm.Max(result2.MaxValue, arr[j].Value())
+			result2.MinValue = algorithm.Min(result2.MinValue, arr[j].Value())
 		}
 
 		if result1.Sum != result2.Sum || result1.MinValue != result2.MinValue || result1.MaxValue != result2.MaxValue {
@@ -41,7 +41,7 @@ func TestSegmentTree_Query(t *testing.T) {
 
 	for i := 0; i < 1000; i++ {
 		var index = utils.Rand.Intn(n)
-		var value = utils.Rand.Intn(n)
+		var value = Int64(utils.Rand.Intn(n))
 		tree.Update(index, value)
 	}
 
@@ -53,15 +53,15 @@ func TestSegmentTree_Query(t *testing.T) {
 		}
 		var result1 = tree.Query(left, right)
 
-		var result2 = Schema[int]{
-			MaxValue: arr[left],
-			MinValue: arr[left],
+		var result2 = Int64Schema{
+			MaxValue: arr[left].Value(),
+			MinValue: arr[left].Value(),
 			Sum:      0,
 		}
 		for j := left; j <= right; j++ {
-			result2.Sum += arr[j]
-			result2.MaxValue = algorithm.Max(result2.MaxValue, arr[j])
-			result2.MinValue = algorithm.Min(result2.MinValue, arr[j])
+			result2.Sum += arr[j].Value()
+			result2.MaxValue = algorithm.Max(result2.MaxValue, arr[j].Value())
+			result2.MinValue = algorithm.Min(result2.MinValue, arr[j].Value())
 		}
 
 		if result1.Sum != result2.Sum || result1.MinValue != result2.MinValue || result1.MaxValue != result2.MaxValue {

@@ -1,8 +1,7 @@
 package rbtree
 
 import (
-	"github.com/lxzan/dao"
-	"testing"
+	"cmp"
 )
 
 type Color uint8
@@ -12,31 +11,21 @@ const (
 	RED   Color = 1
 )
 
-type Iterator[K dao.Comparable, V any] struct {
-	Key    K // unique
-	Val    V
-	broken bool
-}
-
-func (c *Iterator[K, V]) Break() {
-	c.broken = true
-}
-
-type Element[K dao.Comparable, V any] struct {
+type Pair[K cmp.Ordered, V any] struct {
 	Key K
 	Val V
 }
 
-type rbtree_node[K dao.Comparable, V any] struct {
+type rbtree_node[K cmp.Ordered, V any] struct {
 	left   *rbtree_node[K, V]
 	right  *rbtree_node[K, V]
 	parent *rbtree_node[K, V]
 	color  Color
-	data   *Element[K, V]
+	data   *Pair[K, V]
 }
 
 func (c *rbtree_node[K, V]) resert_key() {
-	var data Element[K, V]
+	var data Pair[K, V]
 	c.data = &data
 }
 
@@ -56,35 +45,36 @@ func (c *rbtree_node[K, V]) is_red() bool {
 	return c.color == RED
 }
 
-func rbt_copy_color[K dao.Comparable, V any](n1, n2 *rbtree_node[K, V]) {
+func rbt_copy_color[K cmp.Ordered, V any](n1, n2 *rbtree_node[K, V]) {
 	n1.color = n2.color
 }
 
-func rbtree_min[K dao.Comparable, V any](node *rbtree_node[K, V], sentinel *rbtree_node[K, V]) *rbtree_node[K, V] {
+func rbtree_min[K cmp.Ordered, V any](node *rbtree_node[K, V], sentinel *rbtree_node[K, V]) *rbtree_node[K, V] {
 	for node.left != sentinel {
 		node = node.left
 	}
 	return node
 }
 
-type RBTree[K dao.Comparable, V any] struct {
+type RBTree[K cmp.Ordered, V any] struct {
 	length   int
 	root     *rbtree_node[K, V]
 	sentinel *rbtree_node[K, V]
 }
 
-func New[K dao.Comparable, V any]() *RBTree[K, V] {
+func New[K cmp.Ordered, V any]() *RBTree[K, V] {
 	var node rbtree_node[K, V]
 	return &RBTree[K, V]{root: &node, sentinel: &node, length: 0}
 }
 
+// Len 获取元素数量
 func (c *RBTree[K, V]) Len() int {
 	return c.length
 }
 
-func (c *RBTree[K, V]) is_key_empty(d *Element[K, V]) bool {
-	return d == nil
-}
+//func (c *RBTree[K, V]) is_key_empty(d *Pair[K, V]) bool {
+//	return d == nil
+//}
 
 func (c *RBTree[K, V]) begin() *rbtree_node[K, V] {
 	return c.root
@@ -296,26 +286,7 @@ func (c *RBTree[K, V]) do_delete(node *rbtree_node[K, V]) {
 	temp.set_black()
 }
 
-func (c *RBTree[K, V]) validate(t *testing.T, node *rbtree_node[K, V]) {
-	if node == nil {
-		return
-	}
-	if node.left != nil {
-		if !c.is_key_empty(node.left.data) && node.data.Key < node.left.data.Key {
-			t.Error("left node error!")
-		}
-		c.validate(t, node.left)
-	}
-
-	if node.right != nil {
-		if !c.is_key_empty(node.right.data) && node.data.Key > node.right.data.Key {
-			t.Error("right node error!")
-		}
-		c.validate(t, node.right)
-	}
-}
-
-// insert with unique check
+// Set 新增或替换键值对
 func (c *RBTree[K, V]) Set(key K, val V) {
 	for i := c.begin(); !c.end(i); i = c.next(i, key) {
 		if key == i.data.Key {
@@ -325,7 +296,7 @@ func (c *RBTree[K, V]) Set(key K, val V) {
 	}
 
 	c.length++
-	var data = &Element[K, V]{Key: key, Val: val}
+	var data = &Pair[K, V]{Key: key, Val: val}
 	var node = &rbtree_node[K, V]{data: data}
 	var root = &c.root
 	var temp, sentinel *rbtree_node[K, V]
@@ -384,13 +355,13 @@ func (c *RBTree[K, V]) Set(key K, val V) {
 	(*root).set_black()
 }
 
-func (c *RBTree[K, V]) Delete(key K) (success bool) {
+// Delete 删除一个key
+func (c *RBTree[K, V]) Delete(key K) {
 	for i := c.begin(); !c.end(i); i = c.next(i, key) {
 		if key == i.data.Key {
 			c.length--
 			c.do_delete(i)
-			return true
+			return
 		}
 	}
-	return false
 }
