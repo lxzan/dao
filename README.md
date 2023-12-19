@@ -284,28 +284,28 @@ goos: windows
 goarch: amd64
 pkg: github.com/lxzan/dao/benchmark
 cpu: AMD Ryzen 5 PRO 4650G with Radeon Graphics
-BenchmarkDict_Set-12                         423           2449370 ns/op          517811 B/op      10645 allocs/op
-BenchmarkDict_Get-12                         499           2419686 ns/op          480001 B/op      10000 allocs/op
-BenchmarkDict_Match-12                       265           4561133 ns/op          480000 B/op      10000 allocs/op
-BenchmarkHeap_Push_Binary-12                4455            287363 ns/op          507905 B/op          4 allocs/op
-BenchmarkHeap_Push_Quadratic-12             5960            264085 ns/op          507906 B/op          4 allocs/op
-BenchmarkHeap_Push_Octal-12                 5793            225979 ns/op          507907 B/op          4 allocs/op
-BenchmarkHeap_Pop_Binary-12                  808           1497473 ns/op          163840 B/op          1 allocs/op
-BenchmarkHeap_Pop_Quadratic-12               846           1454926 ns/op          163840 B/op          1 allocs/op
-BenchmarkHeap_Pop_Octal-12                   673           1788673 ns/op          163840 B/op          1 allocs/op
-BenchmarkStdList_Push-12                    1958            596811 ns/op          558002 B/op      19745 allocs/op
-BenchmarkStdList_PushAndPop-12              1729            652220 ns/op          558001 B/op      19745 allocs/op
-BenchmarkLinkedList_Push-12                 3770            319706 ns/op          240001 B/op      10000 allocs/op
-BenchmarkLinkedList_PushAndPop-12           2539            465386 ns/op          240002 B/op      10000 allocs/op
-BenchmarkDeque_Push-12                      8560            122805 ns/op          245761 B/op          1 allocs/op
-BenchmarkDeque_PushAndPop-12                5599            378346 ns/op          386937 B/op         18 allocs/op
-BenchmarkRBTree_Set-12                       540           2194732 ns/op          720051 B/op      20001 allocs/op
-BenchmarkRBTree_Get-12                      3272            365139 ns/op               0 B/op          0 allocs/op
-BenchmarkRBTree_Query-12                      60          18096230 ns/op         3680048 B/op      60000 allocs/op
-BenchmarkSegmentTree_Query-12                418           2734015 ns/op            3917 B/op         47 allocs/op
-BenchmarkSegmentTree_Update-12               686           1745124 ns/op            2387 B/op         29 allocs/op
-BenchmarkSort_Quick-12                      1588            758722 ns/op           81920 B/op          1 allocs/op
-BenchmarkSort_Std-12                        1377            862120 ns/op           81944 B/op          2 allocs/op
+BenchmarkDict_Set-12                         423           244.9 ns/op          517811 B/op      10645 allocs/op
+BenchmarkDict_Get-12                         499           241.9 ns/op          480001 B/op      10000 allocs/op
+BenchmarkDict_Match-12                       265           456.1 ns/op          480000 B/op      10000 allocs/op
+BenchmarkHeap_Push_Binary-12                4455            28.7 ns/op          507905 B/op          4 allocs/op
+BenchmarkHeap_Push_Quadratic-12             5960            26.4 ns/op          507906 B/op          4 allocs/op
+BenchmarkHeap_Push_Octal-12                 5793            22.5 ns/op          507907 B/op          4 allocs/op
+BenchmarkHeap_Pop_Binary-12                  808           149.7 ns/op          163840 B/op          1 allocs/op
+BenchmarkHeap_Pop_Quadratic-12               846           145.4 ns/op          163840 B/op          1 allocs/op
+BenchmarkHeap_Pop_Octal-12                   673           178.8 ns/op          163840 B/op          1 allocs/op
+BenchmarkStdList_Push-12                    1958            59.6 ns/op          558002 B/op      19745 allocs/op
+BenchmarkStdList_PushAndPop-12              1729            65.2 ns/op          558001 B/op      19745 allocs/op
+BenchmarkLinkedList_Push-12                 3770            31.9 ns/op          240001 B/op      10000 allocs/op
+BenchmarkLinkedList_PushAndPop-12           2539            46.5 ns/op          240002 B/op      10000 allocs/op
+BenchmarkDeque_Push-12                      8560            12.2 ns/op          245761 B/op          1 allocs/op
+BenchmarkDeque_PushAndPop-12                5599            37.8 ns/op          386937 B/op         18 allocs/op
+BenchmarkRBTree_Set-12                       540           219.4 ns/op          720051 B/op      20001 allocs/op
+BenchmarkRBTree_Get-12                      3272            36.5 ns/op               0 B/op          0 allocs/op
+BenchmarkRBTree_Query-12                      60          1809.6 ns/op         3680048 B/op      60000 allocs/op
+BenchmarkSegmentTree_Query-12                418           273.4 ns/op            3917 B/op         47 allocs/op
+BenchmarkSegmentTree_Update-12               686           174.5 ns/op            2387 B/op         29 allocs/op
+BenchmarkSort_Quick-12                      1588            75.8 ns/op           81920 B/op          1 allocs/op
+BenchmarkSort_Std-12                        1377            86.2 ns/op           81944 B/op          2 allocs/op
 PASS
 ok      github.com/lxzan/dao/benchmark  32.279s
 ```
