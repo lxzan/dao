@@ -127,3 +127,10 @@ func (c *Heap[T]) Range(f func(index int, value T) bool) {
 		}
 	}
 }
+
+func (c *Heap[T]) Clone() *Heap[T] {
+	var v = *c
+	v.data = make([]T, len(c.data))
+	copy(v.data, c.data)
+	return &v
+}

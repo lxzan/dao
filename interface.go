@@ -2,16 +2,20 @@ package dao
 
 import "cmp"
 
-type CompareResult int8
-
 const (
-	Less    CompareResult = -1
-	Equal   CompareResult = 0
-	Greater CompareResult = 1
+	Less    = -1
+	Equal   = 0
+	Greater = 1
 )
 
-// LessFunc 比大小
-type LessFunc[T any] func(a, b T) bool
+type (
+	// LessFunc 比大小
+	LessFunc[T any] func(a, b T) bool
+
+	// CompareFunc 比较函数
+	// a>b, 返回1; a<b, 返回-1; a==b, 返回0
+	CompareFunc[T any] func(a, b T) int
+)
 
 // AscFunc 升序函数
 func AscFunc[T cmp.Ordered](a, b T) bool { return a < b }
@@ -46,5 +50,10 @@ type (
 
 	Resetter interface {
 		Reset()
+	}
+
+	Cloner[T any] interface {
+		// Clone 深拷贝
+		Clone() T
 	}
 )

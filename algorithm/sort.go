@@ -1,8 +1,11 @@
 package algorithm
 
-import "github.com/lxzan/dao"
+import (
+	"cmp"
+	"github.com/lxzan/dao"
+)
 
-func IsSorted[T any](arr []T, cmp func(a, b T) dao.CompareResult) bool {
+func IsSorted[T any](arr []T, cmp dao.CompareFunc[T]) bool {
 	var n = len(arr)
 	if n <= 1 {
 		return true
@@ -15,14 +18,22 @@ func IsSorted[T any](arr []T, cmp func(a, b T) dao.CompareResult) bool {
 	return true
 }
 
-func Sort[T any](arr []T, cmp func(a, b T) dao.CompareResult) {
+func Sort[T cmp.Ordered](arr []T) {
+	var f = cmp.Compare[T]
+	if IsSorted(arr, f) {
+		return
+	}
+	QuickSort(arr, 0, len(arr)-1, f)
+}
+
+func SortBy[T any](arr []T, cmp dao.CompareFunc[T]) {
 	if IsSorted(arr, cmp) {
 		return
 	}
 	QuickSort(arr, 0, len(arr)-1, cmp)
 }
 
-func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.CompareResult) int {
+func getMedium[T any](arr []T, begin int, end int, cmp dao.CompareFunc[T]) int {
 	var mid = (begin + end) / 2
 	var x = cmp(arr[begin], arr[mid])
 	var y = cmp(arr[mid], arr[end])
@@ -38,7 +49,7 @@ func getMedium[T any](arr []T, begin int, end int, cmp func(a, b T) dao.CompareR
 	return begin
 }
 
-func insertionSort[T any](arr []T, a, b int, cmp func(a, b T) dao.CompareResult) {
+func insertionSort[T any](arr []T, a, b int, cmp dao.CompareFunc[T]) {
 	for i := a + 1; i <= b; i++ {
 		for j := i; j > a && cmp(arr[j], arr[j-1]) == dao.Less; j-- {
 			arr[j], arr[j-1] = arr[j-1], arr[j]
@@ -46,7 +57,9 @@ func insertionSort[T any](arr []T, a, b int, cmp func(a, b T) dao.CompareResult)
 	}
 }
 
-func QuickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.CompareResult) {
+// QuickSort 快速排序 begin <= x <= end 区间
+// 对于随机数据, 此算法比标准库稍快; 对于本身比较有序的数据, 标准库表现更佳.
+func QuickSort[T any](arr []T, begin int, end int, cmp dao.CompareFunc[T]) {
 	if begin >= end {
 		return
 	}
@@ -73,7 +86,7 @@ func QuickSort[T any](arr []T, begin int, end int, cmp func(a, b T) dao.CompareR
 
 // BinarySearch 二分搜索
 // @return 数组下标 如果不存在, 返回-1
-func BinarySearch[T any](arr []T, target T, cmp func(a, b T) dao.CompareResult) int {
+func BinarySearch[T any](arr []T, target T, cmp dao.CompareFunc[T]) int {
 	var n = len(arr)
 	if n == 0 {
 		return -1

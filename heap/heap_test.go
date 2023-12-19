@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"sort"
 	"testing"
+	"unsafe"
 )
 
 func TestNew(t *testing.T) {
@@ -134,4 +135,22 @@ func TestHeap_SetForkNumber(t *testing.T) {
 		h.SetForkNumber(4)
 	})
 	assert.Nil(t, err2)
+}
+
+func TestHeap_Clone(t *testing.T) {
+	var h = New(dao.AscFunc[int])
+	h.SetForkNumber(4)
+	h.Push(1)
+	h.Push(3)
+	h.Push(2)
+	h.Push(4)
+
+	var h1 = h.Clone()
+	var h2 = h
+	assert.True(t, utils.IsSameSlice(h.data, h1.data))
+	var addr = (uintptr)(unsafe.Pointer(&h.data[0]))
+	var addr1 = (uintptr)(unsafe.Pointer(&h1.data[0]))
+	var addr2 = (uintptr)(unsafe.Pointer(&h2.data[0]))
+	assert.NotEqual(t, addr, addr1)
+	assert.Equal(t, addr, addr2)
 }

@@ -110,21 +110,27 @@ func Contains[T comparable](arr []T, target T) bool {
 }
 
 // Map 转换器 将A数组转换为B数组
-func Map[A any, B any](arr []A, transfer func(item A) B) []B {
+func Map[A any, B any](arr []A, transfer func(i int, v A) B) []B {
 	var results = make([]B, 0, len(arr))
-	for i := range arr {
-		results = append(results, transfer(arr[i]))
+	for index, value := range arr {
+		results = append(results, transfer(index, value))
 	}
 	return results
 }
 
 // Filter 过滤器
-func Filter[T any](arr []T, check func(item T) bool) []T {
+func Filter[T any](arr []T, check func(i int, v T) bool) []T {
 	var results = make([]T, 0, len(arr))
 	for i, v := range arr {
-		if check(v) {
+		if check(i, v) {
 			results = append(results, arr[i])
 		}
 	}
 	return results
+}
+
+// IsZero 零值判断
+func IsZero[T comparable](v T) bool {
+	var zero T
+	return v == zero
 }
