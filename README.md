@@ -37,12 +37,11 @@ Go 数据结构与算法库
 package main
 
 import (
-	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/heap"
 )
 
 func main() {
-	var h = heap.New(dao.AscFunc[int]).SetForkNumber(heap.Binary)
+	var h = heap.New[int]().SetForkNumber(heap.Binary)
 	h.Push(1)
 	h.Push(3)
 	h.Push(5)
@@ -62,12 +61,11 @@ func main() {
 package main
 
 import (
-	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/heap"
 )
 
 func main() {
-	var h = heap.New(dao.AscFunc[int]).SetForkNumber(heap.Quadratic)
+	var h = heap.New[int]().SetForkNumber(heap.Quadratic)
 	h.Push(1)
 	h.Push(3)
 	h.Push(5)

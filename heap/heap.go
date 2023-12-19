@@ -1,6 +1,9 @@
 package heap
 
-import "github.com/lxzan/dao"
+import (
+	"cmp"
+	"github.com/lxzan/dao"
+)
 
 const (
 	Binary = 2
@@ -10,14 +13,20 @@ const (
 	Octal = 8
 )
 
-// New 新建一个堆
+// New 新建一个最小堆
+// Create a new minimum heap
+func New[T cmp.Ordered]() *Heap[T] { return NewHeap(cmp.Less[T]) }
+
+// NewHeap 新建一个堆
 // Create a new heap
-func New[T any](less dao.LessFunc[T]) *Heap[T] {
+func NewHeap[T any](less dao.LessFunc[T]) *Heap[T] {
 	h := &Heap[T]{cmp: less}
 	h.SetForkNumber(Quadratic)
 	return h
 }
 
+// Heap 可以不使用New函数, 声明为值类型自动初始化
+// 如果使用值类型, 需要设置比较函数和分叉数
 type Heap[T any] struct {
 	bits  uint32
 	forks int
@@ -42,6 +51,12 @@ func (c *Heap[T]) SetForkNumber(n uint32) *Heap[T] {
 	default:
 		panic("incorrect number of forks")
 	}
+	return c
+}
+
+// SetLessFunc 设置比较函数
+func (c *Heap[T]) SetLessFunc(less dao.LessFunc[T]) *Heap[T] {
+	c.cmp = less
 	return c
 }
 

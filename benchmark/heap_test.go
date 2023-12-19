@@ -1,14 +1,13 @@
 package benchmark
 
 import (
-	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/heap"
 	"math/rand"
 	"testing"
 )
 
 func BenchmarkHeap_Push_Binary(b *testing.B) {
-	var tpl = heap.New(dao.AscFunc[int]).SetForkNumber(heap.Binary)
+	var tpl = heap.New[int]().SetForkNumber(heap.Binary)
 	for j := 0; j < bench_count; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -24,7 +23,7 @@ func BenchmarkHeap_Push_Binary(b *testing.B) {
 }
 
 func BenchmarkHeap_Push_Quadratic(b *testing.B) {
-	var tpl = heap.New(dao.AscFunc[int]).SetForkNumber(heap.Quadratic)
+	var tpl = heap.New[int]().SetForkNumber(heap.Quadratic)
 	for j := 0; j < bench_count; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -39,7 +38,7 @@ func BenchmarkHeap_Push_Quadratic(b *testing.B) {
 	}
 }
 func BenchmarkHeap_Push_Octal(b *testing.B) {
-	var tpl = heap.New(dao.AscFunc[int]).SetForkNumber(heap.Octal)
+	var tpl = heap.New[int]().SetForkNumber(heap.Octal)
 	for j := 0; j < bench_count; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -55,7 +54,7 @@ func BenchmarkHeap_Push_Octal(b *testing.B) {
 }
 
 func BenchmarkHeap_Pop_Binary(b *testing.B) {
-	var tpl = heap.New(dao.AscFunc[int]).SetForkNumber(heap.Binary)
+	var tpl = heap.New[int]().SetForkNumber(heap.Binary)
 	for j := 0; j < bench_count*2; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -70,7 +69,7 @@ func BenchmarkHeap_Pop_Binary(b *testing.B) {
 }
 
 func BenchmarkHeap_Pop_Quadratic(b *testing.B) {
-	var tpl = heap.New(dao.AscFunc[int]).SetForkNumber(heap.Quadratic)
+	var tpl = heap.New[int]().SetForkNumber(heap.Quadratic)
 	for j := 0; j < bench_count*2; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -85,7 +84,7 @@ func BenchmarkHeap_Pop_Quadratic(b *testing.B) {
 }
 
 func BenchmarkHeap_Pop_Octal(b *testing.B) {
-	var tpl = heap.New(dao.AscFunc[int]).SetForkNumber(heap.Octal)
+	var tpl = heap.New[int]().SetForkNumber(heap.Octal)
 	for j := 0; j < bench_count*2; j++ {
 		tpl.Push(rand.Int())
 	}
