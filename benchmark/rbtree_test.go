@@ -1,6 +1,7 @@
 package benchmark
 
 import (
+	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/algorithm"
 	"github.com/lxzan/dao/rbtree"
 	"math/rand"
@@ -47,6 +48,8 @@ func BenchmarkRBTree_Query(b *testing.B) {
 				NewQuery().
 				Left(func(key int) bool { return key >= x }).
 				Right(func(key int) bool { return key <= y }).
+				Order(dao.DESC).
+				Limit(10).
 				Do()
 		}
 	}

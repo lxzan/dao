@@ -236,11 +236,15 @@ func TestRBTree_LessEqual(t *testing.T) {
 	var limit = 10
 	for i := 0; i < 100; i++ {
 		var target = utils.Numeric.Generate(4)
-		var keys1 = tree.
+		var results = tree.
 			NewQuery().
 			Right(func(key string) bool { return key <= target }).
 			Order(dao.DESC).
+			Limit(limit).
 			Do()
+		var keys1 = algorithm.Map[Pair[string, int], string](results, func(i int, v Pair[string, int]) string {
+			return v.Key
+		})
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k <= target {
@@ -253,11 +257,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.IsSameSlice(keys2, algorithm.Map(keys1, func(i int, x Pair[string, int]) string {
-			return x.Key
-		})) {
-			t.Fatal("error!")
-		}
+		assert.True(t, utils.IsSameSlice(keys1, keys2))
 	}
 }
 
