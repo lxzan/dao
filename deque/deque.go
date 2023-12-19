@@ -14,6 +14,7 @@ type (
 		value            T
 	}
 
+	// Deque 可以不使用New函数, 声明为值类型自动初始化
 	Deque[T any] struct {
 		head, tail Pointer              // 头尾指针
 		length     int                  // 长度
@@ -44,7 +45,6 @@ func (c *Element[T]) Value() T {
 }
 
 // New 创建双端队列
-// 可以声明值类型自动初始化
 func New[T any](capacity uint32) *Deque[T] {
 	return &Deque[T]{elements: make([]Element[T], 1, 1+capacity)}
 }
@@ -81,10 +81,15 @@ func (c *Deque[T]) putElement(ele *Element[T]) {
 	*ele = c.template
 }
 
+// Reset 重置
 func (c *Deque[T]) Reset() {
+	clear(c.elements)
+	c.autoReset()
+}
+
+func (c *Deque[T]) autoReset() {
 	c.head, c.tail, c.length = Nil, Nil, 0
 	c.stack = c.stack[:0]
-	clear(c.elements)
 	c.elements = c.elements[:1]
 }
 
@@ -148,7 +153,7 @@ func (c *Deque[T]) PopFront() (value T) {
 		c.doRemove(ele)
 		c.putElement(ele)
 		if c.length == 0 {
-			c.Reset()
+			c.autoReset()
 		}
 	}
 	return value
@@ -160,7 +165,7 @@ func (c *Deque[T]) PopBack() (value T) {
 		c.doRemove(ele)
 		c.putElement(ele)
 		if c.length == 0 {
-			c.Reset()
+			c.autoReset()
 		}
 	}
 	return value
@@ -238,7 +243,7 @@ func (c *Deque[T]) Remove(addr Pointer) {
 		c.doRemove(ele)
 		c.putElement(ele)
 		if c.length == 0 {
-			c.Reset()
+			c.autoReset()
 		}
 	}
 }
@@ -278,4 +283,13 @@ func (c *Deque[T]) Range(f func(ele *Element[T]) bool) {
 			break
 		}
 	}
+}
+
+func (c *Deque[T]) Clone() *Deque[T] {
+	var v = *c
+	v.elements = make([]Element[T], len(c.elements))
+	v.stack = make([]Pointer, len(c.stack))
+	copy(v.elements, c.elements)
+	copy(v.stack, c.stack)
+	return &v
 }

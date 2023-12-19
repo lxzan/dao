@@ -7,12 +7,13 @@ import (
 	"github.com/stretchr/testify/assert"
 	"sort"
 	"testing"
+	"unsafe"
 )
 
 func TestNew(t *testing.T) {
 	const count = 1000
 	{
-		var h = New[string](func(a, b string) bool {
+		var h = NewHeap[string](func(a, b string) bool {
 			return a < b
 		})
 		var arr1 = make([]string, 0)
@@ -33,7 +34,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestDesc(t *testing.T) {
-	var h = New(dao.DescFunc[int])
+	var h = NewHeap(dao.DescFunc[int])
 	h.SetCap(8)
 	h.SetForkNumber(Octal)
 	h.Push(1)
@@ -51,7 +52,7 @@ func TestDesc(t *testing.T) {
 }
 
 func TestAsc(t *testing.T) {
-	var h = New(dao.AscFunc[int])
+	var h = New[int]()
 	h.SetCap(8)
 	h.SetForkNumber(Binary)
 	h.Push(1)
@@ -68,8 +69,8 @@ func TestAsc(t *testing.T) {
 }
 
 func TestHeap_Range(t *testing.T) {
-	var h = New(dao.AscFunc[int])
-	h.SetCap(8)
+	var h Heap[int]
+	h.SetForkNumber(Quadratic).SetLessFunc(dao.AscFunc[int]).SetCap(8)
 	h.Push(1)
 	h.Push(3)
 	h.Push(2)
@@ -96,7 +97,7 @@ func TestHeap_Range(t *testing.T) {
 }
 
 func TestHeap_Reset(t *testing.T) {
-	var h = New(dao.AscFunc[int])
+	var h = New[int]()
 	h.Push(1)
 	h.Push(3)
 	h.Push(2)
@@ -107,14 +108,14 @@ func TestHeap_Reset(t *testing.T) {
 }
 
 func TestHeap_Pop(t *testing.T) {
-	var h = New(dao.AscFunc[int])
+	var h = NewHeap(dao.AscFunc[int])
 	assert.Equal(t, h.Pop(), 0)
 	h.Push(1)
 	assert.Equal(t, h.Pop(), 1)
 }
 
 func TestHeap_SetForkNumber(t *testing.T) {
-	var h = New(dao.AscFunc[int])
+	var h = NewHeap(dao.AscFunc[int])
 	var catch = func(f func()) (err error) {
 		defer func() {
 			if excp := recover(); excp != nil {
@@ -134,4 +135,22 @@ func TestHeap_SetForkNumber(t *testing.T) {
 		h.SetForkNumber(4)
 	})
 	assert.Nil(t, err2)
+}
+
+func TestHeap_Clone(t *testing.T) {
+	var h = NewHeap(dao.AscFunc[int])
+	h.SetForkNumber(4)
+	h.Push(1)
+	h.Push(3)
+	h.Push(2)
+	h.Push(4)
+
+	var h1 = h.Clone()
+	var h2 = h
+	assert.True(t, utils.IsSameSlice(h.data, h1.data))
+	var addr = (uintptr)(unsafe.Pointer(&h.data[0]))
+	var addr1 = (uintptr)(unsafe.Pointer(&h1.data[0]))
+	var addr2 = (uintptr)(unsafe.Pointer(&h2.data[0]))
+	assert.NotEqual(t, addr, addr1)
+	assert.Equal(t, addr, addr2)
 }

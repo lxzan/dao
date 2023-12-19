@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"
+	"unsafe"
 )
 
 func validate[T cmp.Ordered](q *Deque[T]) bool {
@@ -439,4 +440,21 @@ func BenchmarkQueue_PushAndPop(b *testing.B) {
 			q.PopFront()
 		}
 	}
+}
+
+func TestDeque_Clone(t *testing.T) {
+	var h = New[int](8)
+	h.PushBack(1)
+	h.PushBack(3)
+	h.PushBack(2)
+	h.PushBack(4)
+
+	var h1 = h.Clone()
+	var h2 = h
+	assert.True(t, utils.IsSameSlice(h.elements, h1.elements))
+	var addr = (uintptr)(unsafe.Pointer(&h.elements[0]))
+	var addr1 = (uintptr)(unsafe.Pointer(&h1.elements[0]))
+	var addr2 = (uintptr)(unsafe.Pointer(&h2.elements[0]))
+	assert.NotEqual(t, addr, addr1)
+	assert.Equal(t, addr, addr2)
 }

@@ -6,6 +6,7 @@ type (
 		Value      T
 	}
 
+	// LinkedList 可以不使用New函数, 声明为值类型自动初始化
 	LinkedList[T any] struct {
 		head, tail *Element[T] // 头尾指针
 		length     int         // 长度
@@ -21,7 +22,6 @@ func (c *Element[T]) Prev() *Element[T] {
 }
 
 // New 创建双向链表
-// 可以声明值类型自动初始化
 func New[T any]() *LinkedList[T] {
 	return &LinkedList[T]{}
 }

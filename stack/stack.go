@@ -1,5 +1,6 @@
 package stack
 
+// Stack 可以不使用New函数, 声明为值类型自动初始化
 type Stack[T any] []T
 
 func New[T any](capacity uint32) *Stack[T] {
@@ -8,6 +9,7 @@ func New[T any](capacity uint32) *Stack[T] {
 }
 
 func (c *Stack[T]) Reset() {
+	clear(*c)
 	*c = (*c)[:0]
 }
 

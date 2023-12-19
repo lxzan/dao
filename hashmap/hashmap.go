@@ -8,6 +8,11 @@ func New[K comparable, V any](capacity uint32) HashMap[K, V] {
 	return make(map[K]V, capacity)
 }
 
+// Reset clear contents
+func (c HashMap[K, V]) Reset() {
+	clear(c)
+}
+
 // Len get the length of hashmap
 func (c HashMap[K, V]) Len() int {
 	return len(c)
