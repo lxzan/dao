@@ -35,7 +35,6 @@ func NewMList[K comparable, V any](size uint32) *MList[K, V] {
 
 func (c *MList[K, V]) Reset() {
 	c.length, c.serial = 0, 0
-	clear(c.Buckets)
 	c.recyclable = c.recyclable[:0]
 	c.Buckets = c.Buckets[:1]
 }

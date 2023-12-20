@@ -45,7 +45,7 @@ func (c *Element[T]) Value() T {
 }
 
 // New 创建双端队列
-func New[T any](capacity uint32) *Deque[T] {
+func New[T any](capacity int) *Deque[T] {
 	return &Deque[T]{elements: make([]Element[T], 1, 1+capacity)}
 }
 
@@ -83,7 +83,6 @@ func (c *Deque[T]) putElement(ele *Element[T]) {
 
 // Reset 重置
 func (c *Deque[T]) Reset() {
-	clear(c.elements)
 	c.autoReset()
 }
 

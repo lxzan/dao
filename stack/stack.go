@@ -3,13 +3,19 @@ package stack
 // Stack 可以不使用New函数, 声明为值类型自动初始化
 type Stack[T any] []T
 
-func New[T any](capacity uint32) *Stack[T] {
+// New 创建栈
+func New[T any](capacity int) *Stack[T] {
 	s := Stack[T](make([]T, 0, capacity))
 	return &s
 }
 
+// NewFrom 从可变参数切片创建栈
+func NewFrom[T any](values ...T) *Stack[T] {
+	c := Stack[T](values)
+	return &c
+}
+
 func (c *Stack[T]) Reset() {
-	clear(*c)
 	*c = (*c)[:0]
 }
 
@@ -39,4 +45,9 @@ func (c *Stack[T]) Range(f func(value T) bool) {
 			return
 		}
 	}
+}
+
+// UnWrap 解包为切片
+func (c *Stack[T]) UnWrap() []T {
+	return *(*[]T)(c)
 }

@@ -1,10 +1,11 @@
 package algorithm
 
 import (
-	"cmp"
 	"github.com/lxzan/dao/internal/utils"
+	"github.com/lxzan/dao/types/cmp"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
+	"sort"
 	"testing"
 )
 
@@ -64,9 +65,9 @@ func TestSort(t *testing.T) {
 	}
 
 	t.Run("", func(t *testing.T) {
-		var a = []int{1, 2, 3}
+		var a = []int{2, 1}
 		SortBy(a, cmp.Compare[int])
-		assert.True(t, utils.IsSameSlice(a, []int{1, 2, 3}))
+		assert.True(t, utils.IsSameSlice(a, []int{1, 2}))
 	})
 
 	t.Run("", func(t *testing.T) {
@@ -79,6 +80,42 @@ func TestSort(t *testing.T) {
 		var a = []int{1, 2, 3, 4}
 		Sort(a)
 		assert.True(t, utils.IsSameSlice(a, []int{1, 2, 3, 4}))
+	})
+
+	t.Run("", func(t *testing.T) {
+		Sort([]int{})
+		Sort([]int{1})
+	})
+
+	t.Run("", func(t *testing.T) {
+		for j := 0; j < 100; j++ {
+			var count = rand.Intn(100)
+			var arr0 []int
+			for i := 0; i < count; i++ {
+				arr0 = append(arr0, rand.Intn(count))
+			}
+			var arr1 = utils.Clone(arr0)
+
+			Sort(arr0)
+			sort.Ints(arr1)
+			assert.True(t, utils.IsSameSlice(arr0, arr1))
+		}
+
+		for j := 0; j < 100; j++ {
+			var count = rand.Intn(100)
+			var arr0 []int
+			for i := 0; i < count; i++ {
+				arr0 = append(arr0, rand.Intn(count))
+			}
+			var arr1 = utils.Clone(arr0)
+
+			SortBy(arr0, func(a, b int) int {
+				return -1 * cmp.Compare(a, b)
+			})
+			sort.Ints(arr1)
+			Reverse(arr1)
+			assert.True(t, utils.IsSameSlice(arr0, arr1))
+		}
 	})
 }
 

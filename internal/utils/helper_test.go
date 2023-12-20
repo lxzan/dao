@@ -62,3 +62,17 @@ func TestIsBinaryNumber(t *testing.T) {
 	assert.False(t, IsBinaryNumber(7))
 	assert.False(t, IsBinaryNumber(21))
 }
+
+func TestClone(t *testing.T) {
+	{
+		var a []int
+		var b = Clone(a)
+		assert.True(t, len(b) == 0)
+	}
+
+	{
+		var a = []int{1, 2, 3}
+		var b = Clone(a)
+		assert.ElementsMatch(t, b, a)
+	}
+}

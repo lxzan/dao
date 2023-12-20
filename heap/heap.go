@@ -1,8 +1,7 @@
 package heap
 
 import (
-	"cmp"
-	"github.com/lxzan/dao"
+	"github.com/lxzan/dao/types/cmp"
 )
 
 const (
@@ -13,35 +12,34 @@ const (
 	Octal = 8
 )
 
-// New 新建一个最小堆
-// Create a new minimum heap
-func New[T cmp.Ordered]() *Heap[T] { return NewHeap(cmp.Less[T]) }
+// New 新建一个最小四叉堆
+// Create a new minimum quadratic heap
+func New[T cmp.Ordered]() *Heap[T] { return NewWithFunc(Quadratic, cmp.Less[T]) }
 
-// NewHeap 新建一个堆
-// Create a new heap
-func NewHeap[T any](less dao.LessFunc[T]) *Heap[T] {
-	h := &Heap[T]{cmp: less}
-	h.SetForkNumber(Quadratic)
+// NewWithFunc 新建堆
+// @forks 分叉数, 可选值为: 2,4,6
+// @lessFunc 比较函数
+func NewWithFunc[T any](forks uint32, lessFunc cmp.LessFunc[T]) *Heap[T] {
+	h := &Heap[T]{lessFunc: lessFunc}
+	h.setForkNumber(forks)
 	return h
 }
 
-// Heap 可以不使用New函数, 声明为值类型自动初始化
-// 如果使用值类型, 需要设置比较函数和分叉数
 type Heap[T any] struct {
-	bits  uint32
-	forks int
-	data  []T
-	cmp   func(a, b T) bool
+	bits     uint32
+	forks    int
+	data     []T
+	lessFunc func(a, b T) bool
 }
 
 // SetCap 设置预分配容量
-func (c *Heap[T]) SetCap(n uint32) *Heap[T] {
+func (c *Heap[T]) SetCap(n int) *Heap[T] {
 	c.data = make([]T, 0, n)
 	return c
 }
 
-// SetForkNumber 设置分叉数
-func (c *Heap[T]) SetForkNumber(n uint32) *Heap[T] {
+// setForkNumber 设置分叉数
+func (c *Heap[T]) setForkNumber(n uint32) *Heap[T] {
 	c.forks = int(n)
 	switch n {
 	case Quadratic, Binary:
@@ -54,19 +52,13 @@ func (c *Heap[T]) SetForkNumber(n uint32) *Heap[T] {
 	return c
 }
 
-// SetLessFunc 设置比较函数
-func (c *Heap[T]) SetLessFunc(less dao.LessFunc[T]) *Heap[T] {
-	c.cmp = less
-	return c
-}
-
 // Len 获取元素数量
 func (c *Heap[T]) Len() int {
 	return len(c.data)
 }
 
 func (c *Heap[T]) less(i, j int) bool {
-	return c.cmp(c.data[i], c.data[j])
+	return c.lessFunc(c.data[i], c.data[j])
 }
 
 func (c *Heap[T]) swap(i, j int) {
@@ -102,7 +94,6 @@ func (c *Heap[T]) down(i, n int) {
 
 // Reset 重置堆
 func (c *Heap[T]) Reset() {
-	clear(c.data)
 	c.data = c.data[:0]
 }
 
