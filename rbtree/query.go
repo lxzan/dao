@@ -158,7 +158,7 @@ func (c *QueryBuilder[K, V]) rangeAsc(node *rbtree_node[K, V]) {
 }
 
 func (c *QueryBuilder[K, V]) FindOne() (p Pair[K, V], exist bool) {
-	c.init()
+	c.Limit(1).Offset(0).init()
 
 	switch c.order {
 	case DESC:

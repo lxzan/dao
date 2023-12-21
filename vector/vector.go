@@ -79,8 +79,8 @@ func (c *Vector[D, K]) Exists(id K) (v D, exist bool) {
 	return v, exist
 }
 
-// Uniq 排序并根据id去重
-func (c *Vector[D, K]) Uniq() *Vector[D, K] {
+// Unique 排序并根据id去重
+func (c *Vector[D, K]) Unique() *Vector[D, K] {
 	*c = algorithm.UniqueBy(*c, func(item D) K {
 		return item.GetID()
 	})

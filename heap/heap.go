@@ -14,12 +14,12 @@ const (
 
 // New 新建一个最小四叉堆
 // Create a new minimum quadratic heap
-func New[T cmp.Ordered]() *Heap[T] { return NewWithFunc(Quadratic, cmp.Less[T]) }
+func New[T cmp.Ordered]() *Heap[T] { return NewWithForks(Quadratic, cmp.Less[T]) }
 
-// NewWithFunc 新建堆
+// NewWithForks 新建堆
 // @forks 分叉数, 可选值为: 2,4,6
 // @lessFunc 比较函数
-func NewWithFunc[T any](forks uint32, lessFunc cmp.LessFunc[T]) *Heap[T] {
+func NewWithForks[T any](forks uint32, lessFunc cmp.LessFunc[T]) *Heap[T] {
 	h := &Heap[T]{lessFunc: lessFunc}
 	h.setForkNumber(forks)
 	return h
@@ -139,4 +139,9 @@ func (c *Heap[T]) Clone() *Heap[T] {
 	v.data = make([]T, len(c.data))
 	copy(v.data, c.data)
 	return &v
+}
+
+// UnWrap 解包, 返回底层数组
+func (c *Heap[T]) UnWrap() []T {
+	return c.data
 }

@@ -17,7 +17,10 @@ func (c *iterator) hit() bool {
 }
 
 func (c *Dict[T]) getIndex(iter *iterator) int {
-	return int(iter.Key[iter.Cursor]) & int(c.indexes[iter.Cursor]-1)
+	if c.binaryIndex {
+		return int(iter.Key[iter.Cursor]) & int(c.indexes[iter.Cursor]-1)
+	}
+	return int(iter.Key[iter.Cursor]) % int(c.indexes[iter.Cursor])
 }
 
 func (c *Dict[T]) begin(key string, initialize bool) *iterator {

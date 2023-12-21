@@ -36,7 +36,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestDesc(t *testing.T) {
-	var h = NewWithFunc(Octal, desc[int])
+	var h = NewWithForks(Octal, desc[int])
 	h.SetCap(8)
 	h.Push(1)
 	assert.Equal(t, h.Top(), 1)
@@ -53,7 +53,7 @@ func TestDesc(t *testing.T) {
 }
 
 func TestAsc(t *testing.T) {
-	var h = NewWithFunc(Binary, cmp.Less[int])
+	var h = NewWithForks(Binary, cmp.Less[int])
 	h.SetCap(8)
 	h.Push(1)
 	h.Push(3)
@@ -69,7 +69,7 @@ func TestAsc(t *testing.T) {
 }
 
 func TestHeap_Range(t *testing.T) {
-	var h = NewWithFunc(Quadratic, cmp.Less[int])
+	var h = NewWithForks(Quadratic, cmp.Less[int])
 	h.SetCap(8)
 	h.Push(1)
 	h.Push(3)
@@ -126,12 +126,12 @@ func TestHeap_SetForkNumber(t *testing.T) {
 	}
 
 	var err1 = catch(func() {
-		NewWithFunc(3, cmp.Less[int])
+		NewWithForks(3, cmp.Less[int])
 	})
 	assert.Error(t, err1)
 
 	var err2 = catch(func() {
-		NewWithFunc(4, cmp.Less[int])
+		NewWithForks(4, cmp.Less[int])
 	})
 	assert.Nil(t, err2)
 }
@@ -151,4 +151,12 @@ func TestHeap_Clone(t *testing.T) {
 	var addr2 = (uintptr)(unsafe.Pointer(&h2.data[0]))
 	assert.NotEqual(t, addr, addr1)
 	assert.Equal(t, addr, addr2)
+}
+
+func TestHeap_UnWrap(t *testing.T) {
+	var h = NewWithForks(2, cmp.Less[int])
+	h.Push(1)
+	h.Push(2)
+	h.Push(3)
+	assert.True(t, utils.IsSameSlice(h.UnWrap(), []int{1, 2, 3}))
 }

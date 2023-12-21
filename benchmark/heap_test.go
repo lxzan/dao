@@ -8,7 +8,7 @@ import (
 )
 
 func BenchmarkHeap_Push_Binary(b *testing.B) {
-	var tpl = heap.NewWithFunc(heap.Binary, cmp.Less[int])
+	var tpl = heap.NewWithForks(heap.Binary, cmp.Less[int])
 	for j := 0; j < bench_count; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -24,7 +24,7 @@ func BenchmarkHeap_Push_Binary(b *testing.B) {
 }
 
 func BenchmarkHeap_Push_Quadratic(b *testing.B) {
-	var tpl = heap.NewWithFunc(heap.Quadratic, cmp.Less[int])
+	var tpl = heap.NewWithForks(heap.Quadratic, cmp.Less[int])
 	for j := 0; j < bench_count; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -39,7 +39,7 @@ func BenchmarkHeap_Push_Quadratic(b *testing.B) {
 	}
 }
 func BenchmarkHeap_Push_Octal(b *testing.B) {
-	var tpl = heap.NewWithFunc(heap.Octal, cmp.Less[int])
+	var tpl = heap.NewWithForks(heap.Octal, cmp.Less[int])
 	for j := 0; j < bench_count; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -55,7 +55,7 @@ func BenchmarkHeap_Push_Octal(b *testing.B) {
 }
 
 func BenchmarkHeap_Pop_Binary(b *testing.B) {
-	var tpl = heap.NewWithFunc(heap.Binary, cmp.Less[int])
+	var tpl = heap.NewWithForks(heap.Binary, cmp.Less[int])
 	for j := 0; j < bench_count*2; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -70,7 +70,7 @@ func BenchmarkHeap_Pop_Binary(b *testing.B) {
 }
 
 func BenchmarkHeap_Pop_Quadratic(b *testing.B) {
-	var tpl = heap.NewWithFunc(heap.Quadratic, cmp.Less[int])
+	var tpl = heap.NewWithForks(heap.Quadratic, cmp.Less[int])
 	for j := 0; j < bench_count*2; j++ {
 		tpl.Push(rand.Int())
 	}
@@ -85,7 +85,7 @@ func BenchmarkHeap_Pop_Quadratic(b *testing.B) {
 }
 
 func BenchmarkHeap_Pop_Octal(b *testing.B) {
-	var tpl = heap.NewWithFunc(heap.Octal, cmp.Less[int])
+	var tpl = heap.NewWithForks(heap.Octal, cmp.Less[int])
 	for j := 0; j < bench_count*2; j++ {
 		tpl.Push(rand.Int())
 	}

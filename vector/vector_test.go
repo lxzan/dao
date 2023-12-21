@@ -13,7 +13,7 @@ func TestUser_GetID(t *testing.T) {
 	docs = append(docs, user{ID: "c"})
 	docs = append(docs, user{ID: "c"})
 	docs = append(docs, user{ID: "b"})
-	docs.Uniq()
+	docs.Unique()
 	docs.Sort()
 	docs.Filter(func(i int, v user) bool {
 		return v.ID == "b"

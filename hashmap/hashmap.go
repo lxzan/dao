@@ -8,13 +8,13 @@ func New[K comparable, V any](capacity int) HashMap[K, V] {
 	return make(map[K]V, capacity)
 }
 
-// Reset clear contents
-func (c HashMap[K, V]) Reset() {
-	keys := c.Keys()
-	for _, key := range keys {
-		delete(c, key)
-	}
-}
+//Reset clear contents
+//func (c HashMap[K, V]) Reset() {
+//	keys := c.Keys()
+//	for _, key := range keys {
+//		delete(c, key)
+//	}
+//}
 
 // Len get the length of hashmap
 func (c HashMap[K, V]) Len() int {

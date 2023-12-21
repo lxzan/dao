@@ -118,11 +118,3 @@ func TestHashMap_Range(t *testing.T) {
 	})
 	assert.Equal(t, len(keys), 2)
 }
-
-func TestHashMap_Reset(t *testing.T) {
-	var m = New[string, int](8)
-	m.Set("a", 1)
-	assert.Equal(t, m.Len(), 1)
-	m.Reset()
-	assert.Equal(t, m.Len(), 0)
-}
