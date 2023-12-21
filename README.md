@@ -4,8 +4,12 @@
     <h5>道生一, 一生二, 二生三, 三生万物; 万物负阴而抱阳, 冲气以为和</h5>
 </div>
 
+<div align="center">
 
 [![Build Status](https://github.com/lxzan/dao/workflows/Go%20Test/badge.svg?branch=main)](https://github.com/lxzan/dao/actions?query=branch%3Amain) [![codecov](https://codecov.io/gh/lxzan/dao/graph/badge.svg?token=BQM1JHCDEE)](https://codecov.io/gh/lxzan/dao) [![go-version](https://img.shields.io/badge/go-%3E%3D1.18-30dff3?style=flat-square&logo=go)](https://github.com/lxzan/dao) [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+</div>
+
 ### 简介
 
 `DAO` 是一个基于泛型的数据结构与算法库
@@ -15,13 +19,13 @@
 - [简介](#简介)
 - [目录](#目录)
 - [动态数组](#动态数组)
-	- [去重](#去重)
-	- [排序](#排序)
-	- [过滤](#过滤)
+    - [去重](#去重)
+    - [排序](#排序)
+    - [过滤](#过滤)
 - [堆](#堆)
-	- [二叉堆](#二叉堆)
-	- [四叉堆](#四叉堆)
-	- [八叉堆](#八叉堆)
+    - [二叉堆](#二叉堆)
+    - [四叉堆](#四叉堆)
+    - [八叉堆](#八叉堆)
 - [栈](#栈)
 - [队列](#队列)
 - [双端队列](#双端队列)
