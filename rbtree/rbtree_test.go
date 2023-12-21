@@ -1,14 +1,13 @@
 package rbtree
 
 import (
-	"cmp"
 	"fmt"
-	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/internal/validator"
+	"github.com/lxzan/dao/types/cmp"
 	"github.com/stretchr/testify/assert"
-	"math/rand"
 	"sort"
 	"strconv"
 	"testing"
@@ -141,49 +140,131 @@ func TestRBTree_ForEach(t *testing.T) {
 }
 
 func TestRBTree_Between(t *testing.T) {
-	var tree = New[string, int]()
-	var m = make(map[string]int)
-	for i := 0; i < 10000; i++ {
-		var length = utils.Rand.Intn(16) + 1
-		var key = utils.Numeric.Generate(4)
-		m[key] = length
-		tree.Set(key, length)
-	}
-
-	var limit = 100
-	for i := 0; i < 100; i++ {
-		var left = utils.Numeric.Generate(4)
-		x, _ := strconv.Atoi(left)
-
-		var right = fmt.Sprintf("%04d", x+limit)
-		if left > right {
-			right, left = left, right
+	t.Run("desc", func(t *testing.T) {
+		var tree = New[string, int]()
+		var m = make(map[string]int)
+		for i := 0; i < 10000; i++ {
+			var length = utils.Rand.Intn(16) + 1
+			var key = utils.Numeric.Generate(4)
+			m[key] = length
+			tree.Set(key, length)
 		}
-		var keys1 = tree.
-			NewQuery().
-			Left(func(key string) bool { return key >= left }).
-			Right(func(key string) bool { return key <= right }).
-			Order(dao.DESC).
-			Limit(limit).
-			Do()
-		var keys2 = make([]string, 0)
-		for k := range m {
-			if k >= left && k <= right {
-				keys2 = append(keys2, k)
+
+		var limit = 100
+		for i := 0; i < 100; i++ {
+			var left = utils.Numeric.Generate(4)
+			x, _ := strconv.Atoi(left)
+
+			var right = fmt.Sprintf("%04d", x+limit)
+			if left > right {
+				right, left = left, right
 			}
+			var values = tree.
+				NewQuery().
+				Left(func(key string) bool { return key >= left }).
+				Right(func(key string) bool { return key <= right }).
+				Order(DESC).
+				Limit(limit).
+				FindAll()
+			var keys1 = algorithm.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
+				return v.Key
+			})
+
+			var keys2 = make([]string, 0)
+			for k := range m {
+				if k >= left && k <= right {
+					keys2 = append(keys2, k)
+				}
+			}
+			sort.Strings(keys2)
+			algorithm.Reverse(keys2)
+			if len(keys2) > limit {
+				keys2 = keys2[:limit]
+			}
+
+			assert.True(t, utils.IsSameSlice(keys1, keys2))
 		}
-		sort.Strings(keys2)
-		algorithm.Reverse(keys2)
-		if len(keys2) > limit {
-			keys2 = keys2[:limit]
+	})
+
+	t.Run("asc", func(t *testing.T) {
+		var tree = New[string, int]()
+		var m = make(map[string]int)
+		for i := 0; i < 10000; i++ {
+			var length = utils.Rand.Intn(16) + 1
+			var key = utils.Numeric.Generate(4)
+			m[key] = length
+			tree.Set(key, length)
 		}
 
-		if !utils.IsSameSlice(keys2, algorithm.Map(keys1, func(i int, x Pair[string, int]) string {
-			return x.Key
-		})) {
-			t.Fatal("error!")
+		var limit = 100
+		for i := 0; i < 100; i++ {
+			var left = utils.Numeric.Generate(4)
+			x, _ := strconv.Atoi(left)
+
+			var right = fmt.Sprintf("%04d", x+limit)
+			if left > right {
+				right, left = left, right
+			}
+			var values = tree.
+				NewQuery().
+				Left(func(key string) bool { return key >= left }).
+				Right(func(key string) bool { return key <= right }).
+				Order(ASC).
+				Limit(limit).
+				Offset(10).
+				FindAll()
+			var keys1 = algorithm.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
+				return v.Key
+			})
+
+			var keys2 = make([]string, 0)
+			for k := range m {
+				if k >= left && k <= right {
+					keys2 = append(keys2, k)
+				}
+			}
+			sort.Strings(keys2)
+			if len(keys2) > 10 {
+				keys2 = keys2[10:]
+			} else {
+				keys2 = keys2[:0]
+			}
+			if len(keys2) > limit {
+				keys2 = keys2[:limit]
+			}
+
+			assert.True(t, utils.IsSameSlice(keys1, keys2))
 		}
-	}
+	})
+
+	t.Run("", func(t *testing.T) {
+		var tree = New[int, uint8]()
+		tree.Set(1, 1)
+		tree.Set(2, 1)
+		tree.Set(3, 1)
+		tree.Set(4, 1)
+		tree.Set(5, 1)
+
+		var values0 = tree.
+			NewQuery().
+			Left(func(key int) bool { return key >= 1 }).
+			Right(func(key int) bool { return key <= 3 }).
+			Order(ASC).
+			Limit(10).
+			Offset(5).
+			FindAll()
+		assert.Equal(t, len(values0), 0)
+
+		var values1 = tree.
+			NewQuery().
+			Left(func(key int) bool { return key >= 1 }).
+			Right(func(key int) bool { return key <= 3 }).
+			Order(ASC).
+			Limit(10).
+			FindAll()
+		var keys1 = algorithm.Map(values1, func(i int, v Pair[int, uint8]) int { return v.Key })
+		assert.True(t, utils.IsSameSlice(keys1, []int{1, 2, 3}))
+	})
 }
 
 func TestRBTree_GreaterEqual(t *testing.T) {
@@ -199,11 +280,14 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 	var limit = 100
 	for i := 0; i < 100; i++ {
 		var left = utils.Numeric.Generate(4)
-		var keys1 = tree.
+		var values = tree.
 			NewQuery().
 			Left(func(key string) bool { return key >= left }).
 			Limit(limit).
-			Do()
+			FindAll()
+		var keys1 = algorithm.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
+			return v.Key
+		})
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k >= left {
@@ -215,11 +299,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.IsSameSlice(keys2, algorithm.Map(keys1, func(i int, x Pair[string, int]) string {
-			return x.Key
-		})) {
-			t.Fatal("error!")
-		}
+		assert.True(t, utils.IsSameSlice(keys1, keys2))
 	}
 }
 
@@ -236,11 +316,15 @@ func TestRBTree_LessEqual(t *testing.T) {
 	var limit = 10
 	for i := 0; i < 100; i++ {
 		var target = utils.Numeric.Generate(4)
-		var keys1 = tree.
+		var results = tree.
 			NewQuery().
 			Right(func(key string) bool { return key <= target }).
-			Order(dao.DESC).
-			Do()
+			Order(DESC).
+			Limit(limit).
+			FindAll()
+		var keys1 = algorithm.Map[Pair[string, int], string](results, func(i int, v Pair[string, int]) string {
+			return v.Key
+		})
 		var keys2 = make([]string, 0)
 		for k := range m {
 			if k <= target {
@@ -253,78 +337,85 @@ func TestRBTree_LessEqual(t *testing.T) {
 			keys2 = keys2[:limit]
 		}
 
-		if !utils.IsSameSlice(keys2, algorithm.Map(keys1, func(i int, x Pair[string, int]) string {
-			return x.Key
-		})) {
-			t.Fatal("error!")
-		}
+		assert.True(t, utils.IsSameSlice(keys1, keys2))
 	}
 }
 
-func TestRBTree_GetMinKey(t *testing.T) {
-	var tree = New[string, int]()
-
-	const test_count = 100
-	for i := 0; i < test_count; i++ {
-		var v = rand.Intn(10000)
-		tree.Set(strconv.Itoa(v), v)
-	}
-
-	for i := 0; i < test_count; i++ {
-		var k = strconv.Itoa(rand.Intn(10000))
-		result, exist := tree.GetMinKey(func(key string) bool {
-			return key >= k
-		})
-
-		if !exist {
-			tree.Range(func(key string, value int) bool {
-				if key >= k {
-					t.Fatal("error!")
-				}
-				return true
-			})
-		} else {
-			tree.Range(func(key string, value int) bool {
-				if key < result.Key && key >= k {
-					t.Fatal("error!")
-				}
-				return true
-			})
+func TestRBTree_FindOne(t *testing.T) {
+	t.Run("desc", func(t *testing.T) {
+		var tree = New[string, int]()
+		var m = hashmap.New[string, int](0)
+		for i := 0; i < 10000; i++ {
+			var length = utils.Rand.Intn(16) + 1
+			var key = utils.Numeric.Generate(4)
+			m.Set(key, length)
+			tree.Set(key, length)
 		}
-	}
-}
 
-func TestRBTree_GetMaxKey(t *testing.T) {
-	var tree = New[string, int]()
+		for i := 0; i < 100; i++ {
+			var target = utils.Numeric.Generate(4)
+			v0, ok0 := tree.
+				NewQuery().
+				Right(func(key string) bool { return key <= target }).
+				Order(DESC).
+				FindOne()
 
-	const test_count = 100
-	for i := 0; i < test_count; i++ {
-		var v = rand.Intn(10000)
-		tree.Set(strconv.Itoa(v), v)
-	}
-
-	for i := 0; i < test_count; i++ {
-		var k = strconv.Itoa(rand.Intn(10000))
-		result, exist := tree.GetMaxKey(func(key string) bool {
-			return key <= k
-		})
-
-		if !exist {
-			tree.Range(func(key string, value int) bool {
-				if key <= k {
-					t.Fatal("error!")
+			var v1, ok1 = "", false
+			m.Range(func(key string, val int) bool {
+				if key <= target && (v1 == "" || key > v1) {
+					v1 = key
+					ok1 = true
 				}
 				return true
 			})
-		} else {
-			tree.Range(func(key string, value int) bool {
-				if key > result.Key && key <= k {
-					t.Fatal("error!")
-				}
-				return true
-			})
+
+			assert.Equal(t, ok0, ok1)
+			if ok0 {
+				assert.Equal(t, v0.Key, v1)
+			}
 		}
-	}
+	})
+
+	t.Run("asc", func(t *testing.T) {
+		var tree = New[string, int]()
+		var m = hashmap.New[string, int](0)
+		for i := 0; i < 10000; i++ {
+			var length = utils.Rand.Intn(16) + 1
+			var key = utils.Numeric.Generate(4)
+			m.Set(key, length)
+			tree.Set(key, length)
+		}
+
+		for i := 0; i < 100; i++ {
+			var target = utils.Numeric.Generate(4)
+			v0, ok0 := tree.
+				NewQuery().
+				Left(func(key string) bool { return key >= target }).
+				Order(ASC).
+				FindOne()
+
+			var v1, ok1 = "", false
+			m.Range(func(key string, val int) bool {
+				if key >= target && (v1 == "" || key < v1) {
+					v1 = key
+					ok1 = true
+				}
+				return true
+			})
+
+			assert.Equal(t, ok0, ok1)
+			if ok0 {
+				assert.Equal(t, v0.Key, v1)
+			}
+		}
+	})
+
+	t.Run("", func(t *testing.T) {
+		var tree = New[string, int]()
+		var qb = QueryBuilder[string, int]{tree: tree}
+		_, ok := qb.FindOne()
+		assert.False(t, ok)
+	})
 }
 
 func TestDict_Map(t *testing.T) {
@@ -344,7 +435,7 @@ func TestRBTree_NewQuery(t *testing.T) {
 		var results = tree.
 			NewQuery().
 			Left(func(key int) bool { return key > 10 }).
-			Do()
+			FindAll()
 		assert.Equal(t, len(results), 0)
 	})
 
@@ -352,8 +443,8 @@ func TestRBTree_NewQuery(t *testing.T) {
 		var results = tree.
 			NewQuery().
 			Left(func(key int) bool { return key > 10 }).
-			Order(dao.DESC).
-			Do()
+			Order(DESC).
+			FindAll()
 		assert.Equal(t, len(results), 0)
 	})
 }

@@ -12,30 +12,33 @@ type element struct {
 }
 
 type Dict[T any] struct {
-	indexes []uint8                 // 索引
-	root    *element                // 根节点
-	storage *mlist.MList[string, T] // 存储
+	indexes     []uint8                 // 索引
+	binaryIndex bool                    // 是否使用2进制索引
+	root        *element                // 根节点
+	storage     *mlist.MList[string, T] // 存储
 }
 
 // New 新建字典树
 // 注意: key不能重复
 func New[T any]() *Dict[T] {
 	return &Dict[T]{
-		indexes: defaultIndexes,
-		root:    &element{Children: make([]*element, defaultIndexes[0])},
-		storage: mlist.NewMList[string, T](8),
+		indexes:     defaultIndexes,
+		binaryIndex: true,
+		root:        &element{Children: make([]*element, defaultIndexes[0])},
+		storage:     mlist.NewMList[string, T](8),
 	}
 }
 
 // WithIndexes 设置索引
-// 索引元素必须满足 y=2^x
+// 索引长度至少为2; 如果每个数字都满足y=pow(2,x), 索引效率更高.
 func (c *Dict[T]) WithIndexes(indexes []uint8) *Dict[T] {
 	if len(indexes) < 2 {
 		panic("indexes length at least 2")
 	}
 	for _, item := range indexes {
 		if !utils.IsBinaryNumber(item) {
-			panic("indexes contains elements that must satisfy y=2^x")
+			c.binaryIndex = false
+			break
 		}
 	}
 	c.indexes = indexes

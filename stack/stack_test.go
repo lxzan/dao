@@ -22,10 +22,7 @@ func TestStack_Pop(t *testing.T) {
 
 func TestStack_Range(t *testing.T) {
 	t.Run("", func(t *testing.T) {
-		var s = New[int](8)
-		s.Push(1)
-		s.Push(3)
-		s.Push(5)
+		var s = NewFrom(1, 3, 5)
 
 		var arr []int
 		s.Range(func(value int) bool {
@@ -51,4 +48,10 @@ func TestStack_Range(t *testing.T) {
 		})
 		assert.True(t, utils.IsSameSlice(arr, []int{1, 3}))
 	})
+}
+
+func TestStack_UnWrap(t *testing.T) {
+	var s = NewFrom(1, 3, 5)
+	var a = s.UnWrap()
+	assert.ElementsMatch(t, a, []int{1, 3, 5})
 }

@@ -15,6 +15,8 @@ func TestToString(t *testing.T) {
 }
 
 func TestUnique(t *testing.T) {
+	Unique[int, []int](nil)
+
 	t.Run("", func(t *testing.T) {
 		arr := Unique([]int{})
 		assert.ElementsMatch(t, arr, []int{})
@@ -133,6 +135,8 @@ func TestSwap(t *testing.T) {
 }
 
 func TestReverse(t *testing.T) {
+	Reverse[int, []int](nil)
+
 	t.Run("", func(t *testing.T) {
 		var list = []int{1, 2, 3, 4}
 		Reverse(list)

@@ -63,3 +63,10 @@ type Integer interface {
 func IsBinaryNumber[T Integer](x T) bool {
 	return x&(x-1) == 0
 }
+
+func Clone[S ~[]E, E any](s S) S {
+	if s == nil {
+		return nil
+	}
+	return append(S([]E{}), s...)
+}

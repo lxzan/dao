@@ -63,11 +63,11 @@ func (c *SegmentTree[S, T]) build(cur *Element[S, T]) {
 	cur.data = cur.son.data.Merge(cur.daughter.data)
 }
 
-// Query 查询 left <= index <= right 区间
-func (c *SegmentTree[S, T]) Query(left int, right int) S {
+// Query 查询 begin <= index < end 区间
+func (c *SegmentTree[S, T]) Query(begin int, end int) S {
 	var result S
-	result = c.arr[left].Init(OperateQuery)
-	c.doQuery(c.root, left, right, &result)
+	result = c.arr[begin].Init(OperateQuery)
+	c.doQuery(c.root, begin, end-1, &result)
 	return result
 }
 

@@ -4,14 +4,17 @@ type HashMap[K comparable, V any] map[K]V
 
 // New instantiates a hashmap
 // at most one param, means initial capacity
-func New[K comparable, V any](capacity uint32) HashMap[K, V] {
+func New[K comparable, V any](capacity int) HashMap[K, V] {
 	return make(map[K]V, capacity)
 }
 
-// Reset clear contents
-func (c HashMap[K, V]) Reset() {
-	clear(c)
-}
+//Reset clear contents
+//func (c HashMap[K, V]) Reset() {
+//	keys := c.Keys()
+//	for _, key := range keys {
+//		delete(c, key)
+//	}
+//}
 
 // Len get the length of hashmap
 func (c HashMap[K, V]) Len() int {

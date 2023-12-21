@@ -186,7 +186,7 @@ func TestDict_WithIndexes(t *testing.T) {
 		err := f(func() {
 			New[uint8]().WithIndexes([]uint8{1, 2, 3, 4})
 		})
-		assert.Error(t, err)
+		assert.NoError(t, err)
 	})
 
 	t.Run("", func(t *testing.T) {
@@ -199,7 +199,9 @@ func TestDict_WithIndexes(t *testing.T) {
 
 func TestDict_Random(t *testing.T) {
 	var count = 1000000
-	var d = New[int]()
+	var d = New[int]().WithIndexes(
+		[]uint8{16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1},
+	)
 	var m = make(map[string]int)
 	for i := 0; i < count; i++ {
 		key := strconv.Itoa(i)

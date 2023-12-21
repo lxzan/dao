@@ -2,20 +2,22 @@ package heap
 
 import (
 	"fmt"
-	"github.com/lxzan/dao"
 	"github.com/lxzan/dao/internal/utils"
+	"github.com/lxzan/dao/types/cmp"
 	"github.com/stretchr/testify/assert"
 	"sort"
 	"testing"
 	"unsafe"
 )
 
+func desc[T cmp.Ordered](a, b T) bool {
+	return a > b
+}
+
 func TestNew(t *testing.T) {
 	const count = 1000
 	{
-		var h = NewHeap[string](func(a, b string) bool {
-			return a < b
-		})
+		var h = New[string]()
 		var arr1 = make([]string, 0)
 		var arr2 = make([]string, 0)
 		for i := 0; i < count; i++ {
@@ -34,9 +36,8 @@ func TestNew(t *testing.T) {
 }
 
 func TestDesc(t *testing.T) {
-	var h = NewHeap(dao.DescFunc[int])
+	var h = NewWithForks(Octal, desc[int])
 	h.SetCap(8)
-	h.SetForkNumber(Octal)
 	h.Push(1)
 	assert.Equal(t, h.Top(), 1)
 	h.Push(3)
@@ -52,9 +53,8 @@ func TestDesc(t *testing.T) {
 }
 
 func TestAsc(t *testing.T) {
-	var h = New[int]()
+	var h = NewWithForks(Binary, cmp.Less[int])
 	h.SetCap(8)
-	h.SetForkNumber(Binary)
 	h.Push(1)
 	h.Push(3)
 	h.Push(2)
@@ -69,8 +69,8 @@ func TestAsc(t *testing.T) {
 }
 
 func TestHeap_Range(t *testing.T) {
-	var h Heap[int]
-	h.SetForkNumber(Quadratic).SetLessFunc(dao.AscFunc[int]).SetCap(8)
+	var h = NewWithForks(Quadratic, cmp.Less[int])
+	h.SetCap(8)
 	h.Push(1)
 	h.Push(3)
 	h.Push(2)
@@ -108,14 +108,13 @@ func TestHeap_Reset(t *testing.T) {
 }
 
 func TestHeap_Pop(t *testing.T) {
-	var h = NewHeap(dao.AscFunc[int])
+	var h = New[int]()
 	assert.Equal(t, h.Pop(), 0)
 	h.Push(1)
 	assert.Equal(t, h.Pop(), 1)
 }
 
 func TestHeap_SetForkNumber(t *testing.T) {
-	var h = NewHeap(dao.AscFunc[int])
 	var catch = func(f func()) (err error) {
 		defer func() {
 			if excp := recover(); excp != nil {
@@ -127,19 +126,18 @@ func TestHeap_SetForkNumber(t *testing.T) {
 	}
 
 	var err1 = catch(func() {
-		h.SetForkNumber(3)
+		NewWithForks(3, cmp.Less[int])
 	})
 	assert.Error(t, err1)
 
 	var err2 = catch(func() {
-		h.SetForkNumber(4)
+		NewWithForks(4, cmp.Less[int])
 	})
 	assert.Nil(t, err2)
 }
 
 func TestHeap_Clone(t *testing.T) {
-	var h = NewHeap(dao.AscFunc[int])
-	h.SetForkNumber(4)
+	var h = New[int]()
 	h.Push(1)
 	h.Push(3)
 	h.Push(2)
@@ -153,4 +151,12 @@ func TestHeap_Clone(t *testing.T) {
 	var addr2 = (uintptr)(unsafe.Pointer(&h2.data[0]))
 	assert.NotEqual(t, addr, addr1)
 	assert.Equal(t, addr, addr2)
+}
+
+func TestHeap_UnWrap(t *testing.T) {
+	var h = NewWithForks(2, cmp.Less[int])
+	h.Push(1)
+	h.Push(2)
+	h.Push(3)
+	assert.True(t, utils.IsSameSlice(h.UnWrap(), []int{1, 2, 3}))
 }

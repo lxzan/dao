@@ -1,7 +1,7 @@
 package rbtree
 
 import (
-	"cmp"
+	"github.com/lxzan/dao/types/cmp"
 )
 
 type Color uint8

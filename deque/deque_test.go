@@ -1,9 +1,9 @@
 package deque
 
 import (
-	"cmp"
 	"container/list"
 	"github.com/lxzan/dao/internal/utils"
+	"github.com/lxzan/dao/types/cmp"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"testing"

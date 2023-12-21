@@ -21,7 +21,7 @@ func TestSegmentTree_Query(t *testing.T) {
 		if left > right {
 			left, right = right, left
 		}
-		var result1 = tree.Query(left, right)
+		var result1 = tree.Query(left, right+1)
 
 		var result2 = Int64Schema{
 			MaxValue: arr[left].Value(),
@@ -51,7 +51,7 @@ func TestSegmentTree_Query(t *testing.T) {
 		if left > right {
 			left, right = right, left
 		}
-		var result1 = tree.Query(left, right)
+		var result1 = tree.Query(left, right+1)
 
 		var result2 = Int64Schema{
 			MaxValue: arr[left].Value(),

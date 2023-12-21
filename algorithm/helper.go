@@ -1,14 +1,12 @@
 package algorithm
 
 import (
-	"cmp"
-	"github.com/lxzan/dao"
-	"slices"
+	"github.com/lxzan/dao/types/cmp"
 	"strconv"
 )
 
 // ToString 数字转字符串
-func ToString[T dao.Integer](x T) string {
+func ToString[T cmp.Integer](x T) string {
 	return strconv.Itoa(int(x))
 }
 
@@ -35,12 +33,12 @@ func Swap[T any](a, b *T) {
 	*b = temp
 }
 
-func Unique[T cmp.Ordered](arr []T) []T {
+func Unique[T cmp.Ordered, A ~[]T](arr A) A {
 	if len(arr) == 0 {
 		return arr
 	}
 
-	slices.Sort(arr)
+	Sort(arr)
 
 	var n = len(arr)
 	var j = 1
@@ -54,21 +52,13 @@ func Unique[T cmp.Ordered](arr []T) []T {
 	return arr
 }
 
-func UniqueBy[T any, K cmp.Ordered](arr []T, getKey func(item T) K) []T {
+func UniqueBy[T any, K cmp.Ordered, A ~[]T](arr A, getKey func(item T) K) A {
 	if len(arr) == 0 {
 		return arr
 	}
 
-	slices.SortFunc(arr, func(a, b T) int {
-		x := getKey(a)
-		y := getKey(b)
-		if x < y {
-			return -1
-		} else if x > y {
-			return 1
-		} else {
-			return 0
-		}
+	SortBy(arr, func(a, b T) int {
+		return cmp.Compare(getKey(a), getKey(b))
 	})
 
 	var n = len(arr)
@@ -84,11 +74,12 @@ func UniqueBy[T any, K cmp.Ordered](arr []T, getKey func(item T) K) []T {
 }
 
 // Reverse 反转数组
-func Reverse[T any](arr []T) {
+func Reverse[T any, A ~[]T](arr A) A {
 	var n = len(arr)
 	for i := 0; i < n/2; i++ {
 		arr[i], arr[n-1-i] = arr[n-1-i], arr[i]
 	}
+	return arr
 }
 
 // SelectValue 选择一个值 三元操作符替代品
@@ -119,7 +110,7 @@ func Map[A any, B any](arr []A, transfer func(i int, v A) B) []B {
 }
 
 // Filter 过滤器
-func Filter[T any](arr []T, check func(i int, v T) bool) []T {
+func Filter[T any, A ~[]T](arr A, check func(i int, v T) bool) A {
 	var results = make([]T, 0, len(arr))
 	for i, v := range arr {
 		if check(i, v) {
