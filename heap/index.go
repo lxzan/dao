@@ -81,31 +81,39 @@ func (c *IndexedHeap[K, V]) less(i, j int) bool {
 }
 
 func (c *IndexedHeap[K, V]) up(i int) {
-	if i > 0 {
-		if j := (i - 1) >> c.bits; c.less(i, j) {
-			c.swap(i, j)
-			c.up(j)
+	for i > 0 {
+		var j = (i - 1) >> c.bits
+		if !c.less(i, j) {
+			return
 		}
+
+		c.swap(i, j)
+		i = j
 	}
 }
 
-func (c *IndexedHeap[K, V]) down(i, n int) {
-	var base = i << c.bits
-	var index = base + 1
-	if index >= n {
-		return
-	}
-
-	var end = algorithm.Min(base+c.forks, n-1)
-	for j := base + 2; j <= end; j++ {
-		if c.less(j, index) {
-			index = j
+func (c *IndexedHeap[K, V]) down(i int) {
+	var n = c.Len()
+	for {
+		var base = i << c.bits
+		var index = base + 1
+		if index >= n {
+			return
 		}
-	}
 
-	if c.less(index, i) {
+		var end = algorithm.Min(base+c.forks, n-1)
+		for j := base + 2; j <= end; j++ {
+			if c.less(j, index) {
+				index = j
+			}
+		}
+
+		if !c.less(index, i) {
+			return
+		}
+
 		c.swap(i, index)
-		c.down(index, n)
+		i = index
 	}
 }
 
@@ -129,7 +137,7 @@ func (c *IndexedHeap[K, V]) Pop() (ele *Element[K, V]) {
 		ele = c.data[0]
 		c.swap(0, n-1)
 		c.data = c.data[:n-1]
-		c.down(0, n-1)
+		c.down(0)
 	}
 	return
 }
@@ -140,7 +148,7 @@ func (c *IndexedHeap[K, V]) UpdateKeyByIndex(index int, key K) {
 	var down = c.lessFunc(ele.key, key)
 	ele.key = key
 	if down {
-		c.down(ele.index, c.Len())
+		c.down(ele.index)
 	} else {
 		c.up(ele.index)
 	}
@@ -164,7 +172,7 @@ func (c *IndexedHeap[K, V]) DeleteByIndex(index int) {
 	c.data = c.data[:n-1]
 	if index < n-1 {
 		if down {
-			c.down(index, n-1)
+			c.down(index)
 		} else {
 			c.up(index)
 		}

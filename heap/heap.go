@@ -65,30 +65,39 @@ func (c *Heap[T]) swap(i, j int) {
 }
 
 func (c *Heap[T]) up(i int) {
-	var j = (i - 1) >> c.bits
-	if i >= 1 && c.less(i, j) {
+	for i > 0 {
+		var j = (i - 1) >> c.bits
+		if !c.less(i, j) {
+			return
+		}
+
 		c.swap(i, j)
-		c.up(j)
+		i = j
 	}
 }
 
-func (c *Heap[T]) down(i, n int) {
-	var base = i << c.bits
-	var index = base + 1
-	if index >= n {
-		return
-	}
-
-	var end = algorithm.Min(base+c.forks, n-1)
-	for j := base + 2; j <= end; j++ {
-		if c.less(j, index) {
-			index = j
+func (c *Heap[T]) down(i int) {
+	var n = c.Len()
+	for {
+		var base = i << c.bits
+		var index = base + 1
+		if index >= n {
+			return
 		}
-	}
 
-	if c.less(index, i) {
+		var end = algorithm.Min(base+c.forks, n-1)
+		for j := base + 2; j <= end; j++ {
+			if c.less(j, index) {
+				index = j
+			}
+		}
+
+		if !c.less(index, i) {
+			return
+		}
+
 		c.swap(i, index)
-		c.down(index, n)
+		i = index
 	}
 }
 
@@ -115,7 +124,7 @@ func (c *Heap[T]) Pop() (ele T) {
 		ele = c.data[0]
 		c.data[0] = c.data[n-1]
 		c.data = c.data[:n-1]
-		c.down(0, n-1)
+		c.down(0)
 	}
 	return
 }
