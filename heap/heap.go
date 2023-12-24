@@ -42,7 +42,8 @@ func (c *Heap[T]) SetCap(n int) *Heap[T] {
 
 // setForkNumber 设置分叉数
 func (c *Heap[T]) setForkNumber(n uint32) *Heap[T] {
-	if n == 0 || !utils.IsBinaryNumber(n) {
+	n = algorithm.SelectValue(n == 0, Quadratic, n)
+	if !utils.IsBinaryNumber(n) {
 		panic("incorrect number of forks")
 	}
 	c.forks = int(n)

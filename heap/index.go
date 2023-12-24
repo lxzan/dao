@@ -33,7 +33,7 @@ func (c *Element[K, V]) Index() int {
 
 // NewIndexedHeap 新建索引堆
 // @forks 分叉数, forks=pow(2,n)
-// @lessFunc 比较函数
+// @lessFunc 比较函数, 可以传空指针, 默认为最小堆
 func NewIndexedHeap[K cmp.Ordered, V any](forks uint32, lessFunc cmp.LessFunc[K]) *IndexedHeap[K, V] {
 	var c = new(IndexedHeap[K, V])
 	c.setForkNumber(forks)
@@ -46,7 +46,8 @@ func NewIndexedHeap[K cmp.Ordered, V any](forks uint32, lessFunc cmp.LessFunc[K]
 
 // SetForkNumber 设置分叉数
 func (c *IndexedHeap[K, V]) setForkNumber(n uint32) *IndexedHeap[K, V] {
-	if n == 0 || !utils.IsBinaryNumber(n) {
+	n = algorithm.SelectValue(n == 0, Quadratic, n)
+	if !utils.IsBinaryNumber(n) {
 		panic("incorrect number of forks")
 	}
 	c.forks = int(n)
