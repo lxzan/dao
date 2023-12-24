@@ -64,6 +64,16 @@ func IsBinaryNumber[T Integer](x T) bool {
 	return x&(x-1) == 0
 }
 
+// GetBinaryExponential 获取指数
+func GetBinaryExponential(n int) int {
+	sum := 0
+	for n > 1 {
+		n >>= 1
+		sum++
+	}
+	return sum
+}
+
 func Clone[S ~[]E, E any](s S) S {
 	if s == nil {
 		return nil

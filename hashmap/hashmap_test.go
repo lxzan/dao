@@ -103,6 +103,8 @@ func TestHashMap_Range(t *testing.T) {
 	m.Set("a", 1)
 	m.Set("b", 2)
 	m.Set("c", 3)
+	assert.True(t, m.Exists("a"))
+	assert.False(t, m.Exists("d"))
 
 	var keys []string
 	m.Range(func(key string, val int) bool {

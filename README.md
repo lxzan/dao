@@ -6,9 +6,10 @@
 
 
 [![Build Status](https://github.com/lxzan/dao/workflows/Go%20Test/badge.svg?branch=main)](https://github.com/lxzan/dao/actions?query=branch%3Amain) [![codecov](https://codecov.io/gh/lxzan/dao/graph/badge.svg?token=BQM1JHCDEE)](https://codecov.io/gh/lxzan/dao) [![go-version](https://img.shields.io/badge/go-%3E%3D1.18-30dff3?style=flat-square&logo=go)](https://github.com/lxzan/dao) [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 ### 简介
 
-`DAO` 是一个基于泛型的数据结构与算法库
+`DAO` 是一个基于泛型的数据结构与算法库, 补充标准库在数据容器和算法方面的不足, 简化业务开发.
 
 ### 目录
 
@@ -19,9 +20,8 @@
 	- [排序](#排序)
 	- [过滤](#过滤)
 - [堆](#堆)
-	- [二叉堆](#二叉堆)
-	- [四叉堆](#四叉堆)
-	- [八叉堆](#八叉堆)
+	- [N叉堆](#n叉堆)
+	- [N叉索引堆](#n叉索引堆)
 - [栈](#栈)
 - [队列](#队列)
 - [双端队列](#双端队列)
@@ -46,7 +46,7 @@ import (
 
 func main() {
 	var v = vector.NewFromInts(1, 3, 5, 3)
-	v.Uniq()
+	v.Unique()
 	fmt.Printf("%v", v.Elem())
 }
 
@@ -92,9 +92,10 @@ func main() {
 
 ### 堆
 
-**堆** 又称之为优先队列, 堆顶元素总是最大或最小的. 常用的是四叉堆, `Push/Pop` 性能较为均衡.
+**堆** 又称之为优先队列, 堆顶元素总是最大或最小的. 常用的是四叉堆, `Push/Pop` 性能较为均衡. 使用 `y=pow(2,x)` 作为分叉数,
+加快计算父子节点速度.
 
-#### 二叉堆
+#### N叉堆
 
 ```go
 package main
@@ -119,51 +120,29 @@ func main() {
 
 ```
 
-#### 四叉堆
+#### N叉索引堆
+
+在普通堆的基础上拓展了更新和删除功能, 常用于时间堆算法.
 
 ```go
 package main
 
 import (
 	"github.com/lxzan/dao/heap"
-	"github.com/lxzan/dao/types/cmp"
 )
 
 func main() {
-	var h = heap.NewWithForks(heap.Quadratic, cmp.Less[int])
-	h.Push(1)
-	h.Push(3)
-	h.Push(5)
-	h.Push(2)
-	h.Push(4)
-	h.Push(6)
+	var h = heap.NewIndexedHeap[int, struct{}](heap.Quadratic, func(a, b int) bool { return a > b })
+	h.Push(1, struct{}{})
+	h.Push(3, struct{}{})
+	h.Push(5, struct{}{})
+	h.Push(2, struct{}{})
+	h.Push(4, struct{}{})
+	h.Push(6, struct{}{})
+	h.DeleteByIndex(5)
+	h.UpdateKeyByIndex(3, 7)
 	for h.Len() > 0 {
-		println(h.Pop())
-	}
-}
-
-```
-
-#### 八叉堆
-
-```go
-package main
-
-import (
-	"github.com/lxzan/dao/heap"
-	"github.com/lxzan/dao/types/cmp"
-)
-
-func main() {
-	var h = heap.NewWithForks(heap.Octal, cmp.Less[int])
-	h.Push(1)
-	h.Push(3)
-	h.Push(5)
-	h.Push(2)
-	h.Push(4)
-	h.Push(6)
-	for h.Len() > 0 {
-		println(h.Pop())
+		println(h.Pop().Key())
 	}
 }
 
@@ -171,7 +150,7 @@ func main() {
 
 ### 栈
 
-**栈** 先进后出 (`LIFO`) 的数据结构
+**栈** 后进先出 (`LIFO`) 的数据结构
 
 ```go
 package main
@@ -334,6 +313,8 @@ func main() {
 ```
 
 ### 哈希表
+
+`Runtime Map` 的别名, 拓展了 `Keys`, `Values`, `Range` 等实用方法.
 
 ```go
 package main

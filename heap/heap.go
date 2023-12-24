@@ -1,6 +1,8 @@
 package heap
 
 import (
+	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/types/cmp"
 )
 
@@ -17,7 +19,7 @@ const (
 func New[T cmp.Ordered]() *Heap[T] { return NewWithForks(Quadratic, cmp.Less[T]) }
 
 // NewWithForks 新建堆
-// @forks 分叉数, 可选值为: 2,4,6
+// @forks 分叉数, forks=pow(2,n)
 // @lessFunc 比较函数
 func NewWithForks[T any](forks uint32, lessFunc cmp.LessFunc[T]) *Heap[T] {
 	h := &Heap[T]{lessFunc: lessFunc}
@@ -26,7 +28,7 @@ func NewWithForks[T any](forks uint32, lessFunc cmp.LessFunc[T]) *Heap[T] {
 }
 
 type Heap[T any] struct {
-	bits     uint32
+	bits     int
 	forks    int
 	data     []T
 	lessFunc func(a, b T) bool
@@ -40,15 +42,11 @@ func (c *Heap[T]) SetCap(n int) *Heap[T] {
 
 // setForkNumber 设置分叉数
 func (c *Heap[T]) setForkNumber(n uint32) *Heap[T] {
-	c.forks = int(n)
-	switch n {
-	case Quadratic, Binary:
-		c.bits = n / 2
-	case Octal:
-		c.bits = 3
-	default:
+	if n == 0 || !utils.IsBinaryNumber(n) {
 		panic("incorrect number of forks")
 	}
+	c.forks = int(n)
+	c.bits = utils.GetBinaryExponential(c.forks)
 	return c
 }
 
@@ -80,7 +78,8 @@ func (c *Heap[T]) down(i, n int) {
 		return
 	}
 
-	for j := base + 2; j <= base+c.forks && j < n; j++ {
+	var end = algorithm.Min(base+c.forks, n-1)
+	for j := base + 2; j <= end; j++ {
 		if c.less(j, index) {
 			index = j
 		}
@@ -136,8 +135,7 @@ func (c *Heap[T]) Range(f func(index int, value T) bool) {
 
 func (c *Heap[T]) Clone() *Heap[T] {
 	var v = *c
-	v.data = make([]T, len(c.data))
-	copy(v.data, c.data)
+	v.data = utils.Clone(c.data)
 	return &v
 }
 
