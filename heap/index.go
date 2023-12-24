@@ -15,7 +15,7 @@ type (
 
 	IndexedHeap[K cmp.Ordered, V any] struct {
 		bits     int
-		forks    int
+		ways     int
 		data     []*Element[K, V]
 		lessFunc func(a, b K) bool
 	}
@@ -27,16 +27,21 @@ func (c *Element[K, V]) Key() K {
 }
 
 // Index 获取索引
+// index==-1 表示元素已被删除, 不允许做更新或删除操作
 func (c *Element[K, V]) Index() int {
 	return c.index
 }
 
+func (c *Element[K, V]) delete() {
+	c.index = -1
+}
+
 // NewIndexedHeap 新建索引堆
-// @forks 分叉数, forks=pow(2,n)
+// @ways 分叉数, ways=pow(2,n)
 // @lessFunc 比较函数, 可以传空指针, 默认为最小堆
-func NewIndexedHeap[K cmp.Ordered, V any](forks uint32, lessFunc cmp.LessFunc[K]) *IndexedHeap[K, V] {
+func NewIndexedHeap[K cmp.Ordered, V any](ways uint32, lessFunc cmp.LessFunc[K]) *IndexedHeap[K, V] {
 	var c = new(IndexedHeap[K, V])
-	c.setForkNumber(forks)
+	c.setWays(ways)
 	c.lessFunc = lessFunc
 	if c.lessFunc == nil {
 		c.lessFunc = cmp.Less[K]
@@ -45,13 +50,13 @@ func NewIndexedHeap[K cmp.Ordered, V any](forks uint32, lessFunc cmp.LessFunc[K]
 }
 
 // SetForkNumber 设置分叉数
-func (c *IndexedHeap[K, V]) setForkNumber(n uint32) *IndexedHeap[K, V] {
+func (c *IndexedHeap[K, V]) setWays(n uint32) *IndexedHeap[K, V] {
 	n = algorithm.SelectValue(n == 0, Quadratic, n)
 	if !utils.IsBinaryNumber(n) {
-		panic("incorrect number of forks")
+		panic("incorrect number of ways")
 	}
-	c.forks = int(n)
-	c.bits = utils.GetBinaryExponential(c.forks)
+	c.ways = int(n)
+	c.bits = utils.GetBinaryExponential(c.ways)
 	return c
 }
 
@@ -101,7 +106,7 @@ func (c *IndexedHeap[K, V]) down(i int) {
 			return
 		}
 
-		var end = algorithm.Min(base+c.forks, n-1)
+		var end = algorithm.Min(base+c.ways, n-1)
 		for j := base + 2; j <= end; j++ {
 			if c.less(j, index) {
 				index = j
@@ -118,11 +123,12 @@ func (c *IndexedHeap[K, V]) down(i int) {
 }
 
 // Push 追加元素
-func (c *IndexedHeap[K, V]) Push(key K, value V) {
+func (c *IndexedHeap[K, V]) Push(key K, value V) *Element[K, V] {
 	ele := &Element[K, V]{key: key, Value: value}
 	ele.index = c.Len()
 	c.data = append(c.data, ele)
 	c.up(c.Len() - 1)
+	return ele
 }
 
 // Pop 弹出堆顶元素
@@ -130,6 +136,7 @@ func (c *IndexedHeap[K, V]) Pop() (ele *Element[K, V]) {
 	var n = c.Len()
 	switch n {
 	case 0:
+		return ele
 	case 1:
 		ele = c.data[0]
 		c.data = c.data[:0]
@@ -139,7 +146,8 @@ func (c *IndexedHeap[K, V]) Pop() (ele *Element[K, V]) {
 		c.data = c.data[:n-1]
 		c.down(0)
 	}
-	return
+	ele.delete()
+	return ele
 }
 
 // UpdateKeyByIndex 通过索引更新排序Key
@@ -169,6 +177,7 @@ func (c *IndexedHeap[K, V]) DeleteByIndex(index int) {
 	var n = c.Len()
 	var down = c.less(index, n-1)
 	c.swap(index, n-1)
+	c.data[n-1].delete()
 	c.data = c.data[:n-1]
 	if index < n-1 {
 		if down {

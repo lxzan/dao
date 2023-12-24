@@ -16,20 +16,20 @@ const (
 
 // New 新建一个最小四叉堆
 // Create a new minimum quadratic heap
-func New[T cmp.Ordered]() *Heap[T] { return NewWithForks(Quadratic, cmp.Less[T]) }
+func New[T cmp.Ordered]() *Heap[T] { return NewWithWays(Quadratic, cmp.Less[T]) }
 
-// NewWithForks 新建堆
-// @forks 分叉数, forks=pow(2,n)
+// NewWithWays 新建堆
+// @ways 分叉数, ways=pow(2,n)
 // @lessFunc 比较函数
-func NewWithForks[T any](forks uint32, lessFunc cmp.LessFunc[T]) *Heap[T] {
+func NewWithWays[T any](ways uint32, lessFunc cmp.LessFunc[T]) *Heap[T] {
 	h := &Heap[T]{lessFunc: lessFunc}
-	h.setForkNumber(forks)
+	h.setWays(ways)
 	return h
 }
 
 type Heap[T any] struct {
 	bits     int
-	forks    int
+	ways     int
 	data     []T
 	lessFunc func(a, b T) bool
 }
@@ -40,14 +40,14 @@ func (c *Heap[T]) SetCap(n int) *Heap[T] {
 	return c
 }
 
-// setForkNumber 设置分叉数
-func (c *Heap[T]) setForkNumber(n uint32) *Heap[T] {
+// setWays 设置分叉数
+func (c *Heap[T]) setWays(n uint32) *Heap[T] {
 	n = algorithm.SelectValue(n == 0, Quadratic, n)
 	if !utils.IsBinaryNumber(n) {
-		panic("incorrect number of forks")
+		panic("incorrect number of ways")
 	}
-	c.forks = int(n)
-	c.bits = utils.GetBinaryExponential(c.forks)
+	c.ways = int(n)
+	c.bits = utils.GetBinaryExponential(c.ways)
 	return c
 }
 
@@ -85,7 +85,7 @@ func (c *Heap[T]) down(i int) {
 			return
 		}
 
-		var end = algorithm.Min(base+c.forks, n-1)
+		var end = algorithm.Min(base+c.ways, n-1)
 		for j := base + 2; j <= end; j++ {
 			if c.less(j, index) {
 				index = j

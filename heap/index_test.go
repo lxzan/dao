@@ -67,7 +67,7 @@ func TestHeap_Random(t *testing.T) {
 			}
 			var n = h.Len()
 			var base = i << h.bits
-			var end = algorithm.Min(base+h.forks, n-1)
+			var end = algorithm.Min(base+h.ways, n-1)
 			for j := base + 1; j <= end; j++ {
 				assert.True(t, h.lessFunc(item.Key(), h.GetByIndex(j).Key()))
 			}
@@ -111,7 +111,7 @@ func TestHeap_Random(t *testing.T) {
 			}
 			var n = h.Len()
 			var base = i << h.bits
-			var end = algorithm.Min(base+h.forks, n-1)
+			var end = algorithm.Min(base+h.ways, n-1)
 			for j := base + 1; j <= end; j++ {
 				assert.True(t, h.lessFunc(item.Key(), h.GetByIndex(j).Key()))
 			}
@@ -164,7 +164,7 @@ func TestIndexedHeap_SetForkNumber(t *testing.T) {
 	assert.Error(t, err1)
 
 	var err2 = catch(func() {
-		NewWithForks(4, cmp.Less[int])
+		NewWithWays(4, cmp.Less[int])
 	})
 	assert.Nil(t, err2)
 }
@@ -188,4 +188,39 @@ func TestIndexedHeap_Clone(t *testing.T) {
 	h1.Reset()
 	assert.Equal(t, h1.Len(), 0)
 	assert.NotEqual(t, h2.Len(), 0)
+}
+
+func TestIndexedHeap_DeleteByIndex(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var h = NewIndexedHeap[int, string](Quadratic, cmp.Less[int])
+		h.Push(1, "")
+		h.Push(2, "")
+		var ele = h.Push(3, "")
+		h.Push(4, "")
+		h.DeleteByIndex(ele.Index())
+		assert.Equal(t, ele.Index(), -1)
+		var arr []int
+		h.Range(func(ele *Element[int, string]) bool {
+			arr = append(arr, ele.Key())
+			return true
+		})
+		assert.ElementsMatch(t, arr, []int{1, 2, 4})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var h = NewIndexedHeap[int, string](Quadratic, cmp.Less[int])
+		h.Push(1, "")
+		h.Push(2, "")
+		h.Push(3, "")
+		h.Push(4, "")
+		var ele = h.Pop()
+		assert.Equal(t, ele.Index(), -1)
+
+		var arr []int
+		h.Range(func(ele *Element[int, string]) bool {
+			arr = append(arr, ele.Key())
+			return true
+		})
+		assert.ElementsMatch(t, arr, []int{2, 3, 4})
+	})
 }
