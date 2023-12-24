@@ -54,6 +54,7 @@ func TestReverseStrings(t *testing.T) {
 }
 
 func TestIsBinaryNumber(t *testing.T) {
+	assert.True(t, IsBinaryNumber(0))
 	assert.True(t, IsBinaryNumber(1))
 	assert.True(t, IsBinaryNumber(2))
 	assert.True(t, IsBinaryNumber(16))
@@ -75,4 +76,13 @@ func TestClone(t *testing.T) {
 		var b = Clone(a)
 		assert.ElementsMatch(t, b, a)
 	}
+}
+
+func TestGetBinaryExponential(t *testing.T) {
+	assert.Equal(t, GetBinaryExponential(1), 0)
+	assert.Equal(t, GetBinaryExponential(2), 1)
+	assert.Equal(t, GetBinaryExponential(4), 2)
+	assert.Equal(t, GetBinaryExponential(8), 3)
+	assert.Equal(t, GetBinaryExponential(512), 9)
+	assert.Equal(t, GetBinaryExponential(1024), 10)
 }

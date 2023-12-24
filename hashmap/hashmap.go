@@ -33,6 +33,12 @@ func (c HashMap[K, V]) Get(key K) (val V, exist bool) {
 	return
 }
 
+// Exists if key exists, return true
+func (c HashMap[K, V]) Exists(key K) bool {
+	_, ok := c[key]
+	return ok
+}
+
 // Delete delete a element if the key exists
 func (c HashMap[K, V]) Delete(key K) {
 	delete(c, key)

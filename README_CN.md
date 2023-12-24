@@ -1,5 +1,3 @@
-[中文](README_CN.md)
-
 <div align="center">
     <h1>DAO</h1>
     <img src="assets/logo.png" alt="logo" width="300px">
@@ -12,36 +10,34 @@
 
 </div>
 
-### Description
+### 简介
 
-`DAO` is a library of generic-based data structures and algorithms that complements the standard library in terms of
-data containers and algorithms to simplify business development.
+`DAO` 是一个基于泛型的数据结构与算法库, 补充标准库在数据容器和算法方面的不足, 简化业务开发.
 
-### Index
+### 目录
 
-- [Description](#description)
-- [Index](#index)
-- [Vector](#vector)
-  - [Unique](#unique)
-  - [Sort](#sort)
-  - [Filter](#filter)
-- [Heap](#heap)
-  - [N-Way Heap](#n-way-heap)
-  - [N-Way Indexed Heap](#n-way-indexed-heap)
-- [Stack](#stack)
-- [Queue](#queue)
-- [Deque](#deque)
-- [LinkedList](#linkedlist)
-- [RBTree](#rbtree)
-- [Dict](#dict)
-- [HashMap](#hashmap)
-- [Segment Tree](#segment-tree)
-- [Benchmark](#benchmark)
+- [简介](#简介)
+- [目录](#目录)
+- [动态数组](#动态数组)
+    - [去重](#去重)
+    - [排序](#排序)
+    - [过滤](#过滤)
+- [堆](#堆)
+    - [N叉堆](#n叉堆)
+    - [N叉索引堆](#n叉索引堆)
+- [栈](#栈)
+- [队列](#队列)
+- [双端队列](#双端队列)
+- [双向链表](#双向链表)
+- [红黑树](#红黑树)
+- [字典树](#字典树)
+- [哈希表](#哈希表)
+- [线段树](#线段树)
+- [基准测试](#基准测试)
 
+### 动态数组
 
-### Vector
-
-#### Unique
+#### 去重
 
 ```go
 package main
@@ -59,7 +55,7 @@ func main() {
 
 ```
 
-#### Sort
+#### 排序
 
 ```go
 package main
@@ -77,7 +73,7 @@ func main() {
 
 ```
 
-#### Filter
+#### 过滤
 
 ```go
 package main
@@ -97,13 +93,12 @@ func main() {
 
 ```
 
-### Heap
+### 堆
 
-**Heap**, also known as a priority queue, where the top element of the heap is always the largest or smallest. Commonly
-used is the quadruple heap, `Push/Pop` is more balanced. Using `y=pow(2,x)` as the number of forks, to speed up
-parent-child computation.
+**堆** 又称之为优先队列, 堆顶元素总是最大或最小的. 常用的是四叉堆, `Push/Pop` 性能较为均衡. 使用 `y=pow(2,x)` 作为分叉数,
+加快计算父子节点速度.
 
-#### N-Way Heap
+#### N叉堆
 
 ```go
 package main
@@ -128,9 +123,9 @@ func main() {
 
 ```
 
-#### N-Way Indexed Heap
+#### N叉索引堆
 
-Extends the normal heap with update and delete functions, often used in time heap algorithms.
+在普通堆的基础上拓展了更新和删除功能, 常用于时间堆算法.
 
 ```go
 package main
@@ -156,9 +151,9 @@ func main() {
 
 ```
 
-### Stack
+### 栈
 
-**Stack** Last in first out (`LIFO`) data structure
+**栈** 后进先出 (`LIFO`) 的数据结构
 
 ```go
 package main
@@ -178,10 +173,9 @@ func main() {
 }
 ```
 
-### Queue
+### 队列
 
-**Queue** First in first out (`FIFO`) data structure. The `dao/queue` is automatically reset when all elements are
-ejected, reusing memory space.
+**队列** 先进先出 (`FIFO`) 的数据结构. `dao/queue` 在全部元素弹出后会自动重置, 复用内存空间
 
 ```go
 package main
@@ -202,13 +196,11 @@ func main() {
 
 ```
 
-### Deque
+### 双端队列
 
-**Deque** are similar to doubly linked list, where insertion and deletion operations can be
-performed efficiently at both ends.
+**双端队列** 类似于双向链表, 两端均可高效执行插入删除操作.
 
-`dao/deque` is based on array subscripts to emulate pointers, the deleted space can still be reused later, and does not
-depend on `sync.Pool`.
+`dao/deque` 基于数组下标模拟指针实现, 删除后的空间后续仍可复用, 且不依赖 `sync.Pool`
 
 ```go
 package main
@@ -236,7 +228,7 @@ func main() {
 }
 ```
 
-### LinkedList
+### 双向链表
 
 ```go
 package main
@@ -264,9 +256,9 @@ func main() {
 }
 ```
 
-### RBTree
+### 红黑树
 
-A high-performance red-black tree implementation that can be used as an in-memory database.
+高性能红黑树实现, 可作为内存数据库使用.
 
 ```go
 package main
@@ -294,12 +286,11 @@ func main() {
 
 ```
 
-### Dict
+### 字典树
 
-**Dict** aka prefix tree, efficiently matches string prefixes. `dao/dict` can dynamically configure the width
-of slots (controlled by the index).
+**字典树** 又叫前缀树, 可以高效匹配字符串前缀. `dao/dict` 可以动态配置槽位宽度(由索引控制).
 
-Note: Set the index reasonably, characters beyond the index length can not be optimized for indexing.
+注意: 合理设置索引, 超出索引长度的字符不能被索引优化
 
 ```go
 package main
@@ -324,9 +315,9 @@ func main() {
 }
 ```
 
-### HashMap
+### 哈希表
 
-An alias for `Runtime Map`, extending `Keys`, `Values`, `Range` and other utility methods.
+`Runtime Map` 的别名, 拓展了 `Keys`, `Values`, `Range` 等实用方法.
 
 ```go
 package main
@@ -347,10 +338,9 @@ func main() {
 }
 ```
 
-### Segment Tree
+### 线段树
 
-**Segment Tree** is a binary tree in which each node represents an interval. Line segment trees are characterized by the
-ability to perform interval queries and interval updates in `O(logn)` time.
+**线段树** 是一种二叉树，它的每个节点都表示一个区间。 线段树的特点是可以在`O(logn)`的时间内进行区间查询和区间更新。
 
 ```go
 package main
@@ -368,7 +358,7 @@ func main() {
 
 ```
 
-### Benchmark
+### 基准测试
 
 - 1,000 elements
 
