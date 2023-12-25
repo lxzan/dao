@@ -9,68 +9,68 @@ import (
 )
 
 // New 创建动态数组
-func New[D Document[K], K cmp.Ordered](capacity int) *Vector[D, K] {
-	c := Vector[D, K](make([]D, 0, capacity))
+func New[K cmp.Ordered, V Document[K]](capacity int) *Vector[K, V] {
+	c := Vector[K, V](make([]V, 0, capacity))
 	return &c
 }
 
 // NewFromDocs 从可变参数创建动态数组
-func NewFromDocs[D Document[K], K cmp.Ordered](values ...D) *Vector[D, K] {
-	c := Vector[D, K](values)
+func NewFromDocs[K cmp.Ordered, V Document[K]](values ...V) *Vector[K, V] {
+	c := Vector[K, V](values)
 	return &c
 }
 
 // NewFromInts 创建动态数组
-func NewFromInts(values ...int) *Vector[Int, int] {
+func NewFromInts(values ...int) *Vector[int, Int] {
 	var b = *(*[]Int)(unsafe.Pointer(&values))
-	v := Vector[Int, int](b)
+	v := Vector[int, Int](b)
 	return &v
 }
 
 // NewFromInt64s 创建动态数组
-func NewFromInt64s(values ...int64) *Vector[Int64, int64] {
+func NewFromInt64s(values ...int64) *Vector[int64, Int64] {
 	var b = *(*[]Int64)(unsafe.Pointer(&values))
-	v := Vector[Int64, int64](b)
+	v := Vector[int64, Int64](b)
 	return &v
 }
 
 // NewFromStrings 创建动态数组
-func NewFromStrings(values ...string) *Vector[String, string] {
+func NewFromStrings(values ...string) *Vector[string, String] {
 	var b = *(*[]String)(unsafe.Pointer(&values))
-	v := Vector[String, string](b)
+	v := Vector[string, String](b)
 	return &v
 }
 
 // Vector 动态数组
-type Vector[D Document[K], K cmp.Ordered] []D
+type Vector[K cmp.Ordered, V Document[K]] []V
 
 // Reset 重置
-func (c *Vector[D, K]) Reset() {
+func (c *Vector[K, V]) Reset() {
 	*c = (*c)[:0]
 }
 
 // Len 获取元素数量
-func (c *Vector[D, K]) Len() int {
+func (c *Vector[K, V]) Len() int {
 	return len(*c)
 }
 
 // Get 根据下标取值
-func (c *Vector[D, K]) Get(index int) D {
+func (c *Vector[K, V]) Get(index int) V {
 	return (*c)[index]
 }
 
 // Update 根据下标修改值
-func (c *Vector[D, K]) Update(index int, value D) {
+func (c *Vector[K, V]) Update(index int, value V) {
 	(*c)[index] = value
 }
 
 // Elem 取值
-func (c *Vector[D, K]) Elem() []D {
+func (c *Vector[K, V]) Elem() []V {
 	return *c
 }
 
 // Exists 根据id判断某条数据是否存在
-func (c *Vector[D, K]) Exists(id K) (v D, exist bool) {
+func (c *Vector[K, V]) Exists(id K) (v V, exist bool) {
 	for _, item := range *c {
 		if item.GetID() == id {
 			return item, true
@@ -80,31 +80,31 @@ func (c *Vector[D, K]) Exists(id K) (v D, exist bool) {
 }
 
 // Unique 排序并根据id去重
-func (c *Vector[D, K]) Unique() *Vector[D, K] {
-	*c = algorithm.UniqueBy(*c, func(item D) K {
+func (c *Vector[K, V]) Unique() *Vector[K, V] {
+	*c = algorithm.UniqueBy(*c, func(item V) K {
 		return item.GetID()
 	})
 	return c
 }
 
 // Filter 过滤
-func (c *Vector[D, K]) Filter(f func(i int, v D) bool) *Vector[D, K] {
+func (c *Vector[K, V]) Filter(f func(i int, v V) bool) *Vector[K, V] {
 	*c = algorithm.Filter(*c, f)
 	return c
 }
 
 // Sort 排序
-func (c *Vector[D, K]) Sort() *Vector[D, K] {
-	algorithm.SortBy(*c, func(a, b D) int {
+func (c *Vector[K, V]) Sort() *Vector[K, V] {
+	algorithm.SortBy(*c, func(a, b V) int {
 		return cmp.Compare(a.GetID(), b.GetID())
 	})
 	return c
 }
 
-// IdList 获取id数组
-func (c *Vector[D, K]) IdList() []K {
-	var d D
-	switch any(d).(type) {
+// GetIdList 获取id数组
+func (c *Vector[K, V]) GetIdList() []K {
+	var v V
+	switch any(v).(type) {
 	case Int, Int64, String:
 		var keys = *(*[]K)(unsafe.Pointer(c))
 		return keys
@@ -118,8 +118,8 @@ func (c *Vector[D, K]) IdList() []K {
 }
 
 // ToMap 生成map[K]D
-func (c *Vector[D, K]) ToMap() hashmap.HashMap[K, D] {
-	var m = hashmap.New[K, D](c.Len())
+func (c *Vector[K, V]) ToMap() hashmap.HashMap[K, V] {
+	var m = hashmap.New[K, V](c.Len())
 	for _, item := range *c {
 		m.Set(item.GetID(), item)
 	}
@@ -127,12 +127,12 @@ func (c *Vector[D, K]) ToMap() hashmap.HashMap[K, D] {
 }
 
 // PushBack 向尾部追加元素
-func (c *Vector[D, K]) PushBack(v D) {
+func (c *Vector[K, V]) PushBack(v V) {
 	*c = append(*c, v)
 }
 
 // PopFront 从头部弹出元素
-func (c *Vector[D, K]) PopFront() (value D) {
+func (c *Vector[K, V]) PopFront() (value V) {
 	switch c.Len() {
 	case 0:
 		return value
@@ -144,7 +144,7 @@ func (c *Vector[D, K]) PopFront() (value D) {
 }
 
 // PopBack 从尾部弹出元素
-func (c *Vector[D, K]) PopBack() (value D) {
+func (c *Vector[K, V]) PopBack() (value V) {
 	n := c.Len()
 	switch n {
 	case 0:
@@ -157,7 +157,7 @@ func (c *Vector[D, K]) PopBack() (value D) {
 }
 
 // Range 遍历
-func (c *Vector[D, K]) Range(f func(i int, v D) bool) {
+func (c *Vector[K, V]) Range(f func(i int, v V) bool) {
 	for index, value := range *c {
 		if !f(index, value) {
 			return
@@ -166,18 +166,18 @@ func (c *Vector[D, K]) Range(f func(i int, v D) bool) {
 }
 
 // Clone 拷贝
-func (c *Vector[D, K]) Clone() *Vector[D, K] {
+func (c *Vector[K, V]) Clone() *Vector[K, V] {
 	var d = utils.Clone(*c)
 	return &d
 }
 
 // Slice 截取子数组
-func (c *Vector[D, K]) Slice(start, end int) *Vector[D, K] {
+func (c *Vector[K, V]) Slice(start, end int) *Vector[K, V] {
 	var children = (*c)[start:end]
 	return &children
 }
 
-func (c *Vector[D, K]) Reverse() *Vector[D, K] {
+func (c *Vector[K, V]) Reverse() *Vector[K, V] {
 	*c = algorithm.Reverse(*c)
 	return c
 }

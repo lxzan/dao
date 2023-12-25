@@ -8,7 +8,7 @@ import (
 )
 
 func TestUser_GetID(t *testing.T) {
-	var docs Vector[user, string]
+	var docs Vector[string, user]
 	docs = append(docs, user{ID: "a"})
 	docs = append(docs, user{ID: "c"})
 	docs = append(docs, user{ID: "c"})
@@ -30,20 +30,20 @@ func (u user) GetID() string {
 
 func TestNewFromInts(t *testing.T) {
 	var a = NewFromInts(1, 3, 5)
-	var b = a.IdList()
+	var b = a.GetIdList()
 	assert.ElementsMatch(t, b, []int{1, 3, 5})
 }
 
 func TestNewFromInt64s(t *testing.T) {
 	var a = NewFromInt64s(1, 3, 5)
-	var b = a.IdList()
+	var b = a.GetIdList()
 	assert.ElementsMatch(t, b, []int64{1, 3, 5})
 }
 
 func TestVector_Keys(t *testing.T) {
 	t.Run("", func(t *testing.T) {
 		var a = NewFromStrings("a", "b", "c")
-		var b = a.IdList()
+		var b = a.GetIdList()
 		assert.ElementsMatch(t, b, []string{"a", "b", "c"})
 		assert.Equal(t, a.Get(0).GetID(), "a")
 
@@ -56,17 +56,17 @@ func TestVector_Keys(t *testing.T) {
 	})
 
 	t.Run("", func(t *testing.T) {
-		var docs = NewFromDocs[user, string](
+		var docs = NewFromDocs[string, user](
 			user{ID: "a"},
 			user{ID: "b"},
 			user{ID: "c"},
 		)
-		assert.ElementsMatch(t, docs.IdList(), []string{"a", "b", "c"})
+		assert.ElementsMatch(t, docs.GetIdList(), []string{"a", "b", "c"})
 	})
 }
 
 func TestVector_Exists(t *testing.T) {
-	var v = New[Int, int](8)
+	var v = New[int, Int](8)
 	v.PushBack(1)
 	v.PushBack(3)
 	v.PushBack(5)
@@ -88,7 +88,7 @@ func TestVector_Exists(t *testing.T) {
 }
 
 func TestVector_PushBack(t *testing.T) {
-	var v = New[Int, int](8)
+	var v = New[int, Int](8)
 	v.PushBack(1)
 	v.PushBack(3)
 	v.PushBack(5)
@@ -102,7 +102,7 @@ func TestVector_PushBack(t *testing.T) {
 }
 
 func TestVector_PopFront(t *testing.T) {
-	var v = New[Int, int](8)
+	var v = New[int, Int](8)
 	v.PushBack(1)
 	v.PushBack(3)
 	v.PushBack(5)
@@ -139,7 +139,7 @@ func TestVector_Range(t *testing.T) {
 }
 
 func TestVector_ToMap(t *testing.T) {
-	var a = NewFromDocs[user, string](
+	var a = NewFromDocs[string, user](
 		user{ID: "a"},
 		user{ID: "b"},
 		user{ID: "c"},
@@ -151,7 +151,7 @@ func TestVector_ToMap(t *testing.T) {
 func TestVector_Slice(t *testing.T) {
 	var a = NewFromStrings("a", "b", "c", "d")
 	var b = a.Slice(1, 3)
-	var values = b.IdList()
+	var values = b.GetIdList()
 	assert.ElementsMatch(t, values, []string{"b", "c"})
 
 	assert.Equal(t, a.Len(), 4)
@@ -160,7 +160,7 @@ func TestVector_Slice(t *testing.T) {
 }
 
 func TestVector_Sort(t *testing.T) {
-	var a = NewFromInts(1, 3, 5, 2, 4, 6).Sort().IdList()
+	var a = NewFromInts(1, 3, 5, 2, 4, 6).Sort().GetIdList()
 	assert.True(t, utils.IsSameSlice(a, []int{1, 2, 3, 4, 5, 6}))
 }
 
