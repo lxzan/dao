@@ -71,13 +71,13 @@ func TestIndexedHeap_Random(t *testing.T) {
 	}
 
 	f(2, cmp.Less[int], cmp.Compare[int])
-	f(2, cmp.Great[int], cmp.CompareDesc[int])
+	f(2, cmp.Great[int], compareDesc[int])
 	f(4, cmp.Less[int], cmp.Compare[int])
-	f(4, cmp.Great[int], cmp.CompareDesc[int])
+	f(4, cmp.Great[int], compareDesc[int])
 	f(8, cmp.Less[int], cmp.Compare[int])
-	f(8, cmp.Great[int], cmp.CompareDesc[int])
+	f(8, cmp.Great[int], compareDesc[int])
 	f(16, cmp.Less[int], cmp.Compare[int])
-	f(16, cmp.Great[int], cmp.CompareDesc[int])
+	f(16, cmp.Great[int], compareDesc[int])
 }
 
 func TestIndexedHeap_Sort(t *testing.T) {

@@ -12,9 +12,7 @@ import (
 	"unsafe"
 )
 
-func desc[T cmp.Ordered](a, b T) bool {
-	return a > b
-}
+func compareDesc[T cmp.Ordered](x, y T) int { return -1 * cmp.Compare(x, y) }
 
 func validateHeap[T cmp.Ordered](t *testing.T, h *Heap[T], compare cmp.CompareFunc[T]) {
 	var n = h.Len()
@@ -63,13 +61,13 @@ func TestHeap_Random(t *testing.T) {
 	}
 
 	f(2, cmp.Less[int], cmp.Compare[int])
-	f(2, cmp.Great[int], cmp.CompareDesc[int])
+	f(2, cmp.Great[int], compareDesc[int])
 	f(4, cmp.Less[int], cmp.Compare[int])
-	f(4, cmp.Great[int], cmp.CompareDesc[int])
+	f(4, cmp.Great[int], compareDesc[int])
 	f(8, cmp.Less[int], cmp.Compare[int])
-	f(8, cmp.Great[int], cmp.CompareDesc[int])
+	f(8, cmp.Great[int], compareDesc[int])
 	f(16, cmp.Less[int], cmp.Compare[int])
-	f(16, cmp.Great[int], cmp.CompareDesc[int])
+	f(16, cmp.Great[int], compareDesc[int])
 }
 
 func TestNew(t *testing.T) {
@@ -94,7 +92,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestDesc(t *testing.T) {
-	var h = NewWithWays(Octal, desc[int])
+	var h = NewWithWays(Octal, cmp.Great[int])
 	h.SetCap(8)
 	h.Push(1)
 	assert.Equal(t, h.Top(), 1)

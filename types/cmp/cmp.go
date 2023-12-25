@@ -48,14 +48,3 @@ func Compare[T Ordered](x, y T) int {
 	}
 	return 0
 }
-
-// CompareDesc 比较函数(降序)
-func CompareDesc[T Ordered](x, y T) int {
-	if x < y {
-		return +1
-	}
-	if x > y {
-		return -1
-	}
-	return 0
-}
