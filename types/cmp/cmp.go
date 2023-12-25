@@ -32,8 +32,11 @@ type (
 	CompareFunc[T any] func(a, b T) int
 )
 
-// Less 比大小函数(升序)
+// Less 小于
 func Less[T Ordered](x, y T) bool { return x < y }
+
+// Great 大于
+func Great[T Ordered](x, y T) bool { return x > y }
 
 // Compare 比较函数(升序)
 func Compare[T Ordered](x, y T) int {

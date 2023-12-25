@@ -1,6 +1,7 @@
 package algorithm
 
 import (
+	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
@@ -181,4 +182,30 @@ func TestIsZero(t *testing.T) {
 	assert.True(t, IsZero(struct{}{}))
 	assert.False(t, IsZero(1))
 	assert.False(t, IsZero(" "))
+}
+
+func TestReduce(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+		var sum = Reduce(arr, 0, func(summarize int, item int) int {
+			return summarize + item
+		})
+		assert.Equal(t, sum, 55)
+	})
+
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+		var m = hashmap.New[int, struct{}](10)
+		Reduce(arr, m, func(s hashmap.HashMap[int, struct{}], item int) hashmap.HashMap[int, struct{}] {
+			s.Set(item, struct{}{})
+			return s
+		})
+		assert.ElementsMatch(t, m.Keys(), []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+	})
+}
+
+func TestSum(t *testing.T) {
+	assert.Equal(t, Sum([]int{}), 0)
+	assert.Equal(t, Sum([]int{1, 3, 5, 7, 9}), 25)
+	assert.Equal(t, Sum([]uint32{1, 3, 5, 7, 9}), uint32(25))
 }

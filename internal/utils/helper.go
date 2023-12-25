@@ -37,6 +37,13 @@ func (c *RandomString) Generate(n int) string {
 	return string(b)
 }
 
+func (c *RandomString) Intn(n int) int {
+	c.mu.Lock()
+	v := c.rand.Intn(n)
+	c.mu.Unlock()
+	return v
+}
+
 func IsSameSlice[T comparable](a, b []T) bool {
 	if len(a) != len(b) {
 		return false

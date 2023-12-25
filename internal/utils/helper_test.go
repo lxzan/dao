@@ -27,6 +27,12 @@ func TestRandomString_Generate(t *testing.T) {
 	assert.Equal(t, len(s), 6)
 }
 
+func TestRandomString_Intn(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		v := Alphabet.Intn(i + 10)
+		assert.True(t, v < i+10)
+	}
+}
 func TestReverseStrings(t *testing.T) {
 	{
 		var arr = []string{"a", "b", "c"}

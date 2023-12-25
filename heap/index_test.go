@@ -11,6 +11,75 @@ import (
 	"unsafe"
 )
 
+func validateIndexedHeap[K cmp.Ordered, V any](t *testing.T, h *IndexedHeap[K, V], compare cmp.CompareFunc[K]) {
+	var n = h.Len()
+	if n > 0 {
+		assert.Equal(t, h.data[0].Key(), h.Top().Key())
+	}
+
+	var i = 0
+	h.Range(func(ele *Element[K, V]) bool {
+		assert.Equal(t, ele.Index(), i)
+		i++
+
+		var base = ele.Index() << h.bits
+		var end = algorithm.Min(base+h.ways, n-1)
+		for j := base + 1; j <= end; j++ {
+			child := h.GetByIndex(j)
+			assert.True(t, compare(ele.Key(), child.Key()) <= 0)
+		}
+		return true
+	})
+
+	var keys = make([]K, 0, n)
+	for h.Len() > 0 {
+		keys = append(keys, h.Pop().Key())
+	}
+	assert.True(t, algorithm.IsSorted(keys, compare))
+}
+
+func TestIndexedHeap_Random(t *testing.T) {
+	const count = 10000
+
+	var f = func(ways uint32, lessFunc cmp.LessFunc[int], compareFunc cmp.CompareFunc[int]) {
+		var h = NewIndexedHeap[int, struct{}](ways, lessFunc)
+		h.SetCap(count)
+		for i := 0; i < count; i++ {
+			flag := utils.Alphabet.Intn(6)
+			key := rand.Intn(count)
+			switch flag {
+			case 0, 1, 2:
+				h.Push(key, struct{}{})
+			case 3:
+				h.Pop()
+			case 4:
+				n := h.Len()
+				if n > 0 {
+					index := rand.Intn(n)
+					h.UpdateKeyByIndex(index, key)
+				}
+			case 5:
+				n := h.Len()
+				if n > 0 {
+					index := rand.Intn(n)
+					h.DeleteByIndex(index)
+				}
+			}
+		}
+
+		validateIndexedHeap(t, h, compareFunc)
+	}
+
+	f(2, cmp.Less[int], cmp.Compare[int])
+	f(2, cmp.Great[int], compareDesc[int])
+	f(4, cmp.Less[int], cmp.Compare[int])
+	f(4, cmp.Great[int], compareDesc[int])
+	f(8, cmp.Less[int], cmp.Compare[int])
+	f(8, cmp.Great[int], compareDesc[int])
+	f(16, cmp.Less[int], cmp.Compare[int])
+	f(16, cmp.Great[int], compareDesc[int])
+}
+
 func TestIndexedHeap_Sort(t *testing.T) {
 	var h = NewIndexedHeap[int, struct{}](Quadratic, nil)
 	for i := 0; i < 1000; i++ {
@@ -29,94 +98,6 @@ func TestIndexedHeap_Sort(t *testing.T) {
 			return 0
 		}
 	}))
-}
-
-func TestHeap_Random(t *testing.T) {
-	t.Run("asc", func(t *testing.T) {
-		const count = 10000
-		var h = NewIndexedHeap[int, struct{}](Quadratic, cmp.Less[int])
-		h.SetCap(count)
-		for i := 0; i < count; i++ {
-			flag := rand.Intn(5)
-			key := rand.Intn(count)
-			switch flag {
-			case 0, 1:
-				h.Push(key, struct{}{})
-			case 2:
-				h.Pop()
-			case 3:
-				n := h.Len()
-				if n > 0 {
-					index := rand.Intn(n)
-					h.UpdateKeyByIndex(index, key)
-				}
-			case 4:
-				n := h.Len()
-				if n > 0 {
-					index := rand.Intn(n)
-					h.DeleteByIndex(index)
-				}
-			}
-		}
-
-		for i, item := range h.data {
-			assert.Equal(t, item.Index(), i)
-
-			if item.Index() == 0 {
-				item = h.Top()
-			}
-			var n = h.Len()
-			var base = i << h.bits
-			var end = algorithm.Min(base+h.ways, n-1)
-			for j := base + 1; j <= end; j++ {
-				assert.True(t, h.lessFunc(item.Key(), h.GetByIndex(j).Key()))
-			}
-		}
-	})
-
-	t.Run("desc", func(t *testing.T) {
-		const count = 10000
-		var h = NewIndexedHeap[int, struct{}](Quadratic, func(a, b int) bool {
-			return a > b
-		})
-		h.SetCap(count)
-		for i := 0; i < count; i++ {
-			flag := rand.Intn(5)
-			key := rand.Intn(count)
-			switch flag {
-			case 0, 1:
-				h.Push(key, struct{}{})
-			case 2:
-				h.Pop()
-			case 3:
-				n := h.Len()
-				if n > 0 {
-					index := rand.Intn(n)
-					h.UpdateKeyByIndex(index, key)
-				}
-			case 4:
-				n := h.Len()
-				if n > 0 {
-					index := rand.Intn(n)
-					h.DeleteByIndex(index)
-				}
-			}
-		}
-
-		for i, item := range h.data {
-			assert.Equal(t, item.Index(), i)
-
-			if item.Index() == 0 {
-				item = h.Top()
-			}
-			var n = h.Len()
-			var base = i << h.bits
-			var end = algorithm.Min(base+h.ways, n-1)
-			for j := base + 1; j <= end; j++ {
-				assert.True(t, h.lessFunc(item.Key(), h.GetByIndex(j).Key()))
-			}
-		}
-	})
 }
 
 func TestIndexedHeap_Range(t *testing.T) {
