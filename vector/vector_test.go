@@ -21,7 +21,10 @@ func TestUser_GetID(t *testing.T) {
 }
 
 type user struct {
-	ID string
+	ID        string
+	Name      string
+	Age       int
+	Timestamp int64
 }
 
 func (u user) GetID() string {
@@ -177,4 +180,77 @@ func TestVector_Reverse(t *testing.T) {
 	var v = NewFromInts(1, 2, 3)
 	v.Reverse()
 	assert.True(t, utils.IsSameSlice(v.Elem(), []Int{3, 2, 1}))
+}
+
+func TestVector_Map(t *testing.T) {
+	t.Run("string", func(t *testing.T) {
+		var a = NewFromDocs[string, user](
+			user{ID: "a", Name: "ming"},
+			user{ID: "b", Name: "hong"},
+			user{ID: "c", Name: "hong"},
+		)
+		var b = a.
+			MapString(func(i int, v user) string { return v.Name }).
+			UniqueByString(func(v String) string { return v.GetID() }).
+			GetIdList()
+		assert.ElementsMatch(t, b, []string{"ming", "hong"})
+	})
+
+	t.Run("int", func(t *testing.T) {
+		var a = NewFromDocs[string, user](
+			user{ID: "a", Name: "ming", Age: 1},
+			user{ID: "b", Name: "hong", Age: 2},
+			user{ID: "c", Name: "hong", Age: 3},
+			user{ID: "d", Name: "mei", Age: 2},
+		)
+		var b = a.
+			MapInt(func(i int, v user) int { return v.Age }).
+			UniqueByInt(func(v Int) int { return v.GetID() }).
+			Elem()
+		assert.ElementsMatch(t, b, []Int{1, 2, 3})
+	})
+
+	t.Run("int64", func(t *testing.T) {
+		var a = NewFromDocs[string, user](
+			user{ID: "a", Name: "ming", Timestamp: 1},
+			user{ID: "b", Name: "hong", Timestamp: 2},
+			user{ID: "c", Name: "hong", Timestamp: 3},
+			user{ID: "d", Name: "mei", Timestamp: 2},
+		)
+		var b = a.
+			MapInt64(func(i int, v user) int64 { return v.Timestamp }).
+			UniqueByInt64(func(v Int64) int64 { return v.GetID() }).
+			Elem()
+		assert.ElementsMatch(t, b, []Int64{1, 2, 3})
+	})
+}
+
+func TestVector_PushFront(t *testing.T) {
+	var v Vector[int, Int]
+	v.PushFront(1)
+	assert.ElementsMatch(t, v.Elem(), []Int{1})
+	v.PushBack(3)
+	v.PushBack(5)
+	v.PushFront(7)
+	assert.True(t, utils.IsSameSlice(v.Elem(), []Int{7, 1, 3, 5}))
+}
+
+func TestVector_Delete(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var v = NewFromInts(1, 3, 5, 7)
+		v.Delete(0)
+		assert.True(t, utils.IsSameSlice(v.Elem(), []Int{3, 5, 7}))
+	})
+
+	t.Run("", func(t *testing.T) {
+		var v = NewFromInts(1, 3, 5, 7)
+		v.Delete(3)
+		assert.True(t, utils.IsSameSlice(v.Elem(), []Int{1, 3, 5}))
+	})
+
+	t.Run("", func(t *testing.T) {
+		var v = NewFromInts(1, 3, 5, 7)
+		v.Delete(1)
+		assert.True(t, utils.IsSameSlice(v.Elem(), []Int{1, 5, 7}))
+	})
 }

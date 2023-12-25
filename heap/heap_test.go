@@ -2,9 +2,11 @@ package heap
 
 import (
 	"fmt"
+	"github.com/lxzan/dao/algorithm"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/types/cmp"
 	"github.com/stretchr/testify/assert"
+	"math/rand"
 	"sort"
 	"testing"
 	"unsafe"
@@ -12,6 +14,62 @@ import (
 
 func desc[T cmp.Ordered](a, b T) bool {
 	return a > b
+}
+
+func validateHeap[T cmp.Ordered](t *testing.T, h *Heap[T], compare cmp.CompareFunc[T]) {
+	var n = h.Len()
+	if n > 0 {
+		assert.Equal(t, h.data[0], h.Top())
+	}
+
+	var i = 0
+	h.Range(func(index int, value T) bool {
+		i++
+
+		var base = index << h.bits
+		var end = algorithm.Min(base+h.ways, n-1)
+		for j := base + 1; j <= end; j++ {
+			child := h.data[j]
+			assert.True(t, compare(value, child) <= 0)
+		}
+		return true
+	})
+
+	var keys = make([]T, 0, n)
+	for h.Len() > 0 {
+		keys = append(keys, h.Pop())
+	}
+	assert.True(t, algorithm.IsSorted(keys, compare))
+}
+
+func TestHeap_Random(t *testing.T) {
+	const count = 10000
+
+	var f = func(ways uint32, lessFunc cmp.LessFunc[int], compareFunc cmp.CompareFunc[int]) {
+		var h = NewWithWays[int](ways, lessFunc)
+		h.SetCap(count)
+		for i := 0; i < count; i++ {
+			flag := rand.Intn(3)
+			key := rand.Intn(count)
+			switch flag {
+			case 0, 1:
+				h.Push(key)
+			case 2:
+				h.Pop()
+			}
+		}
+
+		validateHeap(t, h, compareFunc)
+	}
+
+	f(2, cmp.Less[int], cmp.Compare[int])
+	f(2, cmp.Great[int], cmp.CompareDesc[int])
+	f(4, cmp.Less[int], cmp.Compare[int])
+	f(4, cmp.Great[int], cmp.CompareDesc[int])
+	f(8, cmp.Less[int], cmp.Compare[int])
+	f(8, cmp.Great[int], cmp.CompareDesc[int])
+	f(16, cmp.Less[int], cmp.Compare[int])
+	f(16, cmp.Great[int], cmp.CompareDesc[int])
 }
 
 func TestNew(t *testing.T) {

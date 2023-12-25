@@ -1,6 +1,7 @@
 package algorithm
 
 import (
+	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
@@ -181,4 +182,24 @@ func TestIsZero(t *testing.T) {
 	assert.True(t, IsZero(struct{}{}))
 	assert.False(t, IsZero(1))
 	assert.False(t, IsZero(" "))
+}
+
+func TestReduce(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+		var sum = Reduce(0, arr, func(summarize int, item int) int {
+			return summarize + item
+		})
+		assert.Equal(t, sum, 55)
+	})
+
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+		var m = hashmap.New[int, struct{}](10)
+		Reduce(m, arr, func(s hashmap.HashMap[int, struct{}], item int) hashmap.HashMap[int, struct{}] {
+			s.Set(item, struct{}{})
+			return s
+		})
+		assert.ElementsMatch(t, m.Keys(), []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
+	})
 }
