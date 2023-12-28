@@ -187,7 +187,7 @@ func TestIsZero(t *testing.T) {
 func TestReduce(t *testing.T) {
 	t.Run("", func(t *testing.T) {
 		var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-		var sum = Reduce(arr, 0, func(summarize int, item int) int {
+		var sum = Reduce(arr, 0, func(summarize int, i int, item int) int {
 			return summarize + item
 		})
 		assert.Equal(t, sum, 55)
@@ -196,7 +196,7 @@ func TestReduce(t *testing.T) {
 	t.Run("", func(t *testing.T) {
 		var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 		var m = hashmap.New[int, struct{}](10)
-		Reduce(arr, m, func(s hashmap.HashMap[int, struct{}], item int) hashmap.HashMap[int, struct{}] {
+		Reduce(arr, m, func(s hashmap.HashMap[int, struct{}], i int, item int) hashmap.HashMap[int, struct{}] {
 			s.Set(item, struct{}{})
 			return s
 		})

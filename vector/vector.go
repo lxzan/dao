@@ -27,9 +27,25 @@ func (c *Vector[K, V]) Len() int {
 	return len(*c)
 }
 
+func (c *Vector[K, V]) Cap() int {
+	return cap(*c)
+}
+
 // Get 根据下标取值
 func (c *Vector[K, V]) Get(index int) V {
 	return (*c)[index]
+}
+
+// Front 获取头部元素
+// 注意: 未作越界检查
+func (c *Vector[K, V]) Front() V {
+	return c.Get(0)
+}
+
+// Back 获取尾部元素
+// 注意: 未作越界检查
+func (c *Vector[K, V]) Back() V {
+	return c.Get(c.Len() - 1)
 }
 
 // Delete 根据下标删除某个元素

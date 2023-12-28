@@ -254,3 +254,9 @@ func TestVector_Delete(t *testing.T) {
 		assert.True(t, utils.IsSameSlice(v.Elem(), []Int{1, 5, 7}))
 	})
 }
+
+func TestVector_Get(t *testing.T) {
+	var v = NewFromInts(1, 3, 5)
+	assert.Equal(t, v.Front(), Int(1))
+	assert.Equal(t, v.Back(), Int(5))
+}
