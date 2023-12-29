@@ -76,14 +76,14 @@ func UniqueBy[T any, K cmp.Ordered, A ~[]T](arr A, getKey func(item T) K) A {
 // Sum 求和
 func Sum[T cmp.Number](arr []T) T {
 	var sum T
-	return Reduce(arr, sum, func(s T, item T) T { return s + item })
+	return Reduce(arr, sum, func(s T, i int, v T) T { return s + v })
 }
 
 // Reduce 对数组中的每个元素按序执行一个提供的 reducer 函数，每一次运行 reducer 会将先前元素的计算结果作为参数传入，
 // 最后将其结果汇总为单个返回值。
-func Reduce[T any, S any](arr []T, initialValue S, reducer func(s S, item T) S) S {
-	for _, item := range arr {
-		initialValue = reducer(initialValue, item)
+func Reduce[T any, S any](arr []T, initialValue S, reducer func(s S, i int, v T) S) S {
+	for index, value := range arr {
+		initialValue = reducer(initialValue, index, value)
 	}
 	return initialValue
 }
