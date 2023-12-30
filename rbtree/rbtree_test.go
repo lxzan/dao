@@ -2,7 +2,7 @@ package rbtree
 
 import (
 	"fmt"
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/internal/validator"
@@ -166,7 +166,7 @@ func TestRBTree_Between(t *testing.T) {
 				Order(DESC).
 				Limit(limit).
 				FindAll()
-			var keys1 = algorithm.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
+			var keys1 = algo.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
 				return v.Key
 			})
 
@@ -177,7 +177,7 @@ func TestRBTree_Between(t *testing.T) {
 				}
 			}
 			sort.Strings(keys2)
-			algorithm.Reverse(keys2)
+			algo.Reverse(keys2)
 			if len(keys2) > limit {
 				keys2 = keys2[:limit]
 			}
@@ -213,7 +213,7 @@ func TestRBTree_Between(t *testing.T) {
 				Limit(limit).
 				Offset(10).
 				FindAll()
-			var keys1 = algorithm.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
+			var keys1 = algo.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
 				return v.Key
 			})
 
@@ -262,7 +262,7 @@ func TestRBTree_Between(t *testing.T) {
 			Order(ASC).
 			Limit(10).
 			FindAll()
-		var keys1 = algorithm.Map(values1, func(i int, v Pair[int, uint8]) int { return v.Key })
+		var keys1 = algo.Map(values1, func(i int, v Pair[int, uint8]) int { return v.Key })
 		assert.True(t, utils.IsSameSlice(keys1, []int{1, 2, 3}))
 	})
 }
@@ -285,7 +285,7 @@ func TestRBTree_GreaterEqual(t *testing.T) {
 			Left(func(key string) bool { return key >= left }).
 			Limit(limit).
 			FindAll()
-		var keys1 = algorithm.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
+		var keys1 = algo.Map[Pair[string, int], string](values, func(i int, v Pair[string, int]) string {
 			return v.Key
 		})
 		var keys2 = make([]string, 0)
@@ -322,7 +322,7 @@ func TestRBTree_LessEqual(t *testing.T) {
 			Order(DESC).
 			Limit(limit).
 			FindAll()
-		var keys1 = algorithm.Map[Pair[string, int], string](results, func(i int, v Pair[string, int]) string {
+		var keys1 = algo.Map[Pair[string, int], string](results, func(i int, v Pair[string, int]) string {
 			return v.Key
 		})
 		var keys2 = make([]string, 0)

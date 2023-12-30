@@ -1,7 +1,7 @@
 package benchmark
 
 import (
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/rbtree"
 	"math/rand"
 	"testing"
@@ -41,7 +41,7 @@ func BenchmarkRBTree_FindAll(b *testing.B) {
 		for j := 0; j < bench_count; j++ {
 			x, y := rand.Intn(bench_count), rand.Intn(bench_count)
 			if x > y {
-				algorithm.Swap(&x, &y)
+				algo.Swap(&x, &y)
 			}
 			tree.
 				NewQuery().
@@ -65,7 +65,7 @@ func BenchmarkRBTree_FindAOne(b *testing.B) {
 		for j := 0; j < bench_count; j++ {
 			x, y := rand.Intn(bench_count), rand.Intn(bench_count)
 			if x > y {
-				algorithm.Swap(&x, &y)
+				algo.Swap(&x, &y)
 			}
 			tree.
 				NewQuery().

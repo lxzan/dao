@@ -1,7 +1,7 @@
 package segment_tree
 
 import (
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/internal/utils"
 	"testing"
 )
@@ -30,8 +30,8 @@ func TestSegmentTree_Query(t *testing.T) {
 		}
 		for j := left; j <= right; j++ {
 			result2.Sum += arr[j].Value()
-			result2.MaxValue = algorithm.Max(result2.MaxValue, arr[j].Value())
-			result2.MinValue = algorithm.Min(result2.MinValue, arr[j].Value())
+			result2.MaxValue = algo.Max(result2.MaxValue, arr[j].Value())
+			result2.MinValue = algo.Min(result2.MinValue, arr[j].Value())
 		}
 
 		if result1.Sum != result2.Sum || result1.MinValue != result2.MinValue || result1.MaxValue != result2.MaxValue {
@@ -60,8 +60,8 @@ func TestSegmentTree_Query(t *testing.T) {
 		}
 		for j := left; j <= right; j++ {
 			result2.Sum += arr[j].Value()
-			result2.MaxValue = algorithm.Max(result2.MaxValue, arr[j].Value())
-			result2.MinValue = algorithm.Min(result2.MinValue, arr[j].Value())
+			result2.MaxValue = algo.Max(result2.MaxValue, arr[j].Value())
+			result2.MinValue = algo.Min(result2.MinValue, arr[j].Value())
 		}
 
 		if result1.Sum != result2.Sum || result1.MinValue != result2.MinValue || result1.MaxValue != result2.MaxValue {

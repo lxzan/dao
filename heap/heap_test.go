@@ -2,7 +2,7 @@ package heap
 
 import (
 	"fmt"
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/types/cmp"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,7 @@ func validateHeap[T cmp.Ordered](t *testing.T, h *Heap[T], compare cmp.CompareFu
 		i++
 
 		var base = index << h.bits
-		var end = algorithm.Min(base+h.ways, n-1)
+		var end = algo.Min(base+h.ways, n-1)
 		for j := base + 1; j <= end; j++ {
 			child := h.data[j]
 			assert.True(t, compare(value, child) <= 0)
@@ -37,7 +37,7 @@ func validateHeap[T cmp.Ordered](t *testing.T, h *Heap[T], compare cmp.CompareFu
 	for h.Len() > 0 {
 		keys = append(keys, h.Pop())
 	}
-	assert.True(t, algorithm.IsSorted(keys, compare))
+	assert.True(t, algo.IsSorted(keys, compare))
 }
 
 func TestHeap_Random(t *testing.T) {

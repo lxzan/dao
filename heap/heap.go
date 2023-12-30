@@ -1,7 +1,7 @@
 package heap
 
 import (
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/types/cmp"
 )
@@ -42,7 +42,7 @@ func (c *Heap[T]) SetCap(n int) *Heap[T] {
 
 // setWays 设置分叉数
 func (c *Heap[T]) setWays(n uint32) *Heap[T] {
-	n = algorithm.SelectValue(n == 0, Quadratic, n)
+	n = algo.SelectValue(n == 0, Quadratic, n)
 	if !utils.IsBinaryNumber(n) {
 		panic("incorrect number of ways")
 	}
@@ -85,7 +85,7 @@ func (c *Heap[T]) down(i int) {
 			return
 		}
 
-		var end = algorithm.Min(base+c.ways, n-1)
+		var end = algo.Min(base+c.ways, n-1)
 		for j := base + 2; j <= end; j++ {
 			if c.less(j, index) {
 				index = j
