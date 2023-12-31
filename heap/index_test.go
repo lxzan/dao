@@ -2,7 +2,7 @@ package heap
 
 import (
 	"fmt"
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/types/cmp"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +23,7 @@ func validateIndexedHeap[K cmp.Ordered, V any](t *testing.T, h *IndexedHeap[K, V
 		i++
 
 		var base = ele.Index() << h.bits
-		var end = algorithm.Min(base+h.ways, n-1)
+		var end = algo.Min(base+h.ways, n-1)
 		for j := base + 1; j <= end; j++ {
 			child := h.GetByIndex(j)
 			assert.True(t, compare(ele.Key(), child.Key()) <= 0)
@@ -35,7 +35,7 @@ func validateIndexedHeap[K cmp.Ordered, V any](t *testing.T, h *IndexedHeap[K, V
 	for h.Len() > 0 {
 		keys = append(keys, h.Pop().Key())
 	}
-	assert.True(t, algorithm.IsSorted(keys, compare))
+	assert.True(t, algo.IsSorted(keys, compare))
 }
 
 func TestIndexedHeap_Random(t *testing.T) {
@@ -89,7 +89,7 @@ func TestIndexedHeap_Sort(t *testing.T) {
 	for h.Len() > 0 {
 		arr = append(arr, h.Pop().Key())
 	}
-	assert.True(t, algorithm.IsSorted(arr, func(a, b int) int {
+	assert.True(t, algo.IsSorted(arr, func(a, b int) int {
 		if a > b {
 			return 1
 		} else if a < b {

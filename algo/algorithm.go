@@ -1,4 +1,4 @@
-package algorithm
+package algo
 
 import (
 	"github.com/lxzan/dao/types/cmp"

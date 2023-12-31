@@ -2,7 +2,7 @@ package dict
 
 import (
 	"fmt"
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/internal/validator"
 	"github.com/stretchr/testify/assert"
@@ -40,8 +40,8 @@ func TestNew(t *testing.T) {
 			return true
 		})
 
-		arr1 = algorithm.Unique(arr1)
-		arr2 = algorithm.Unique(arr2)
+		arr1 = algo.Unique(arr1)
+		arr2 = algo.Unique(arr2)
 		if !utils.IsSameSlice(arr1, arr2) {
 			t.Fatal("error!")
 		}

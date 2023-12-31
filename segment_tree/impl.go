@@ -1,7 +1,7 @@
 package segment_tree
 
 import (
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 )
 
 type Int64 int64
@@ -33,8 +33,8 @@ type Int64Schema struct {
 // Merge 合并摘要信息
 func (c Int64Schema) Merge(d Int64Schema) Int64Schema {
 	return Int64Schema{
-		MaxValue: algorithm.Max(c.MaxValue, d.MaxValue),
-		MinValue: algorithm.Min(c.MinValue, d.MinValue),
+		MaxValue: algo.Max(c.MaxValue, d.MaxValue),
+		MinValue: algo.Min(c.MinValue, d.MinValue),
 		Sum:      c.Sum + d.Sum,
 	}
 }

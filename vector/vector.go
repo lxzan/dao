@@ -1,7 +1,7 @@
 package vector
 
 import (
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/types/cmp"
@@ -80,49 +80,49 @@ func (c *Vector[K, V]) Exists(id K) (v V, exist bool) {
 
 // MapString 转换为字符串数组
 func (c *Vector[K, V]) MapString(transfer func(i int, v V) string) *Vector[string, String] {
-	return NewFromStrings(algorithm.Map(*c, transfer)...)
+	return NewFromStrings(algo.Map(*c, transfer)...)
 }
 
 // MapInt 转换为int数组
 func (c *Vector[K, V]) MapInt(transfer func(i int, v V) int) *Vector[int, Int] {
-	return NewFromInts(algorithm.Map(*c, transfer)...)
+	return NewFromInts(algo.Map(*c, transfer)...)
 }
 
 // MapInt64 转换为int64数组
 func (c *Vector[K, V]) MapInt64(transfer func(i int, v V) int64) *Vector[int64, Int64] {
-	return NewFromInt64s(algorithm.Map(*c, transfer)...)
+	return NewFromInt64s(algo.Map(*c, transfer)...)
 }
 
 // Unique 排序并根据id去重
 func (c *Vector[K, V]) Unique() *Vector[K, V] {
-	*c = algorithm.UniqueBy(*c, func(item V) K { return item.GetID() })
+	*c = algo.UniqueBy(*c, func(item V) K { return item.GetID() })
 	return c
 }
 
 func (c *Vector[K, V]) UniqueByString(transfer func(v V) string) *Vector[K, V] {
-	*c = algorithm.UniqueBy(*c, transfer)
+	*c = algo.UniqueBy(*c, transfer)
 	return c
 }
 
 func (c *Vector[K, V]) UniqueByInt(transfer func(v V) int) *Vector[K, V] {
-	*c = algorithm.UniqueBy(*c, transfer)
+	*c = algo.UniqueBy(*c, transfer)
 	return c
 }
 
 func (c *Vector[K, V]) UniqueByInt64(transfer func(v V) int64) *Vector[K, V] {
-	*c = algorithm.UniqueBy(*c, transfer)
+	*c = algo.UniqueBy(*c, transfer)
 	return c
 }
 
 // Filter 过滤
 func (c *Vector[K, V]) Filter(f func(i int, v V) bool) *Vector[K, V] {
-	*c = algorithm.Filter(*c, f)
+	*c = algo.Filter(*c, f)
 	return c
 }
 
 // Sort 排序
 func (c *Vector[K, V]) Sort() *Vector[K, V] {
-	algorithm.SortBy(*c, func(a, b V) int {
+	algo.SortBy(*c, func(a, b V) int {
 		return cmp.Compare(a.GetID(), b.GetID())
 	})
 	return c
@@ -214,6 +214,6 @@ func (c *Vector[K, V]) Slice(start, end int) *Vector[K, V] {
 }
 
 func (c *Vector[K, V]) Reverse() *Vector[K, V] {
-	*c = algorithm.Reverse(*c)
+	*c = algo.Reverse(*c)
 	return c
 }

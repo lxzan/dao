@@ -1,7 +1,7 @@
 package rbtree
 
 import (
-	"github.com/lxzan/dao/algorithm"
+	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/stack"
 	"github.com/lxzan/dao/types/cmp"
 )
@@ -201,7 +201,7 @@ func (c *QueryBuilder[K, V]) getMaxPair(filter func(key K) bool) (result *Pair[K
 
 func (c *QueryBuilder[K, V]) getMinPair(filter func(key K) bool) (result *Pair[K, V], exist bool) {
 	var s = stack.Stack[*rbtree_node[K, V]]{}
-	filter = algorithm.SelectValue(filter == nil, TrueFunc[K], filter)
+	filter = algo.SelectValue(filter == nil, TrueFunc[K], filter)
 	s.Push(c.tree.root)
 	for s.Len() > 0 {
 		var node = s.Pop()
