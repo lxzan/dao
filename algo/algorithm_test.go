@@ -1,10 +1,12 @@
 package algo
 
 import (
+	"errors"
 	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
+	"net"
 	"net/http"
 	"testing"
 )
@@ -208,4 +210,51 @@ func TestSum(t *testing.T) {
 	assert.Equal(t, Sum([]int{}), 0)
 	assert.Equal(t, Sum([]int{1, 3, 5, 7, 9}), 25)
 	assert.Equal(t, Sum([]uint32{1, 3, 5, 7, 9}), uint32(25))
+}
+
+func TestGroupBy(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 3, 5, 7, 2, 4, 6, 8}
+		var m = GroupBy(arr, func(i int, v int) int {
+			return v % 2
+		})
+		assert.ElementsMatch(t, m[0], []int{2, 4, 6, 8})
+		assert.ElementsMatch(t, m[1], []int{1, 3, 5, 7})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 3, 5, 7, 2, 4, 6, 8}
+		var m = GroupBy(arr, func(i int, v int) int {
+			return v % 3
+		})
+		assert.ElementsMatch(t, m[0], []int{3, 6})
+		assert.ElementsMatch(t, m[1], []int{1, 4, 7})
+		assert.ElementsMatch(t, m[2], []int{2, 5, 8})
+	})
+}
+
+func TestIsNil(t *testing.T) {
+	var conn1 *net.TCPConn
+	var conn2 net.Conn = conn1
+	var conn3 = &net.TCPConn{}
+	assert.True(t, IsNil(conn1))
+	assert.True(t, IsNil(conn2))
+	assert.False(t, IsNil(conn3))
+}
+
+func TestErrNotNil(t *testing.T) {
+	assert.True(t, ErrNotNil(errors.New("1")))
+	assert.False(t, ErrNotNil(nil))
+}
+
+func TestErrIsNil(t *testing.T) {
+	assert.False(t, ErrIsNil(errors.New("1")))
+	assert.True(t, ErrIsNil(nil))
+}
+
+func TestWithDefault(t *testing.T) {
+	assert.Equal(t, WithDefault(0, 1), 1)
+	assert.Equal(t, WithDefault(2, 1), 2)
+	assert.Equal(t, WithDefault("", "1"), "1")
+	assert.Equal(t, WithDefault("2", "1"), "2")
 }

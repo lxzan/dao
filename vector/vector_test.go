@@ -260,3 +260,61 @@ func TestVector_Get(t *testing.T) {
 	assert.Equal(t, v.Front(), Int(1))
 	assert.Equal(t, v.Back(), Int(5))
 }
+
+func TestVector_GroupByInt(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var arr = NewFromInts(1, 3, 5, 7, 2, 4, 6, 8)
+		var m = arr.GroupByInt(func(i int, v Int) int {
+			return v.GetID() % 2
+		})
+		assert.ElementsMatch(t, m[0], Vector[int, Int]{2, 4, 6, 8})
+		assert.ElementsMatch(t, m[1], Vector[int, Int]{1, 3, 5, 7})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var arr = NewFromInts(1, 3, 5, 7, 2, 4, 6, 8)
+		var m = arr.GroupByInt(func(i int, v Int) int {
+			return v.GetID() % 3
+		})
+		assert.ElementsMatch(t, m[0], Vector[int, Int]{3, 6})
+		assert.ElementsMatch(t, m[1], Vector[int, Int]{1, 4, 7})
+		assert.ElementsMatch(t, m[2], Vector[int, Int]{2, 5, 8})
+	})
+}
+
+func TestVector_GroupByInt64(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var arr = NewFromInt64s(1, 3, 5, 7, 2, 4, 6, 8)
+		var m = arr.GroupByInt64(func(i int, v Int64) int64 {
+			return v.GetID() % 2
+		})
+		assert.ElementsMatch(t, m[0], Vector[int64, Int64]{2, 4, 6, 8})
+		assert.ElementsMatch(t, m[1], Vector[int64, Int64]{1, 3, 5, 7})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var arr = NewFromInt64s(1, 3, 5, 7, 2, 4, 6, 8)
+		var m = arr.GroupByInt64(func(i int, v Int64) int64 {
+			return v.GetID() % 3
+		})
+		assert.ElementsMatch(t, m[0], Vector[int64, Int64]{3, 6})
+		assert.ElementsMatch(t, m[1], Vector[int64, Int64]{1, 4, 7})
+		assert.ElementsMatch(t, m[2], Vector[int64, Int64]{2, 5, 8})
+	})
+}
+
+func TestVector_GroupByString(t *testing.T) {
+	var arr = NewFromStrings("abc", "abnormal", "oh", "oho", "bank", "bark")
+	var m = arr.GroupByString(func(i int, v String) string {
+		return v.GetID()[:2]
+	})
+	assert.ElementsMatch(t, m["ab"], Vector[string, String]{"abc", "abnormal"})
+	assert.ElementsMatch(t, m["oh"], Vector[string, String]{"oh", "oho"})
+	assert.ElementsMatch(t, m["ba"], Vector[string, String]{"bank", "bark"})
+}
+
+func TestVector_Cap(t *testing.T) {
+	var arr = make([]Int, 0, 3)
+	var v = Vector[int, Int](arr)
+	assert.Equal(t, v.Cap(), 3)
+}

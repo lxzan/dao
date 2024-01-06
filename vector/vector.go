@@ -99,19 +99,37 @@ func (c *Vector[K, V]) Unique() *Vector[K, V] {
 	return c
 }
 
+// UniqueByString 通过string类型字段去重
 func (c *Vector[K, V]) UniqueByString(transfer func(v V) string) *Vector[K, V] {
 	*c = algo.UniqueBy(*c, transfer)
 	return c
 }
 
+// UniqueByInt 通过int类型字段去重
 func (c *Vector[K, V]) UniqueByInt(transfer func(v V) int) *Vector[K, V] {
 	*c = algo.UniqueBy(*c, transfer)
 	return c
 }
 
+// UniqueByInt64 通过int64类型字段去重
 func (c *Vector[K, V]) UniqueByInt64(transfer func(v V) int64) *Vector[K, V] {
 	*c = algo.UniqueBy(*c, transfer)
 	return c
+}
+
+// GroupByString 通过string类型字段分组
+func (c *Vector[K, V]) GroupByString(transfer func(i int, v V) string) map[string]Vector[K, V] {
+	return algo.GroupBy(*c, transfer)
+}
+
+// GroupByInt 通过int类型字段分组
+func (c *Vector[K, V]) GroupByInt(transfer func(i int, v V) int) map[int]Vector[K, V] {
+	return algo.GroupBy(*c, transfer)
+}
+
+// GroupByInt64 通过int64类型字段分组
+func (c *Vector[K, V]) GroupByInt64(transfer func(i int, v V) int64) map[int64]Vector[K, V] {
+	return algo.GroupBy(*c, transfer)
 }
 
 // Filter 过滤
