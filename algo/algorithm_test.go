@@ -242,14 +242,9 @@ func TestIsNil(t *testing.T) {
 	assert.False(t, IsNil(conn3))
 }
 
-func TestErrNotNil(t *testing.T) {
-	assert.True(t, ErrNotNil(errors.New("1")))
-	assert.False(t, ErrNotNil(nil))
-}
-
-func TestErrIsNil(t *testing.T) {
-	assert.False(t, ErrIsNil(errors.New("1")))
-	assert.True(t, ErrIsNil(nil))
+func TestNotNil(t *testing.T) {
+	assert.True(t, NotNil(errors.New("1")))
+	assert.False(t, NotNil(nil))
 }
 
 func TestWithDefault(t *testing.T) {

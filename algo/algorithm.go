@@ -106,7 +106,7 @@ func SelectValue[T any](flag bool, a T, b T) T {
 	return b
 }
 
-// WithDefault 如果原值为零值, 返回新值, 负责返回原值
+// WithDefault 如果原值为零值, 返回新值, 否则返回原值
 func WithDefault[T comparable](rawValue, newValue T) T {
 	if IsZero(rawValue) {
 		return newValue
@@ -158,14 +158,9 @@ func IsNil(v any) bool {
 	return reflect.ValueOf(v).IsNil()
 }
 
-// ErrIsNil 判断错误为空
-func ErrIsNil(err error) bool {
-	return IsNil(err)
-}
-
-// ErrNotNil 判断错误不为空
-func ErrNotNil(err error) bool {
-	return !IsNil(err)
+// NotNil 判断不为空
+func NotNil(v any) bool {
+	return !IsNil(v)
 }
 
 // GroupBy 分组

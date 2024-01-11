@@ -1,6 +1,7 @@
 package vector
 
 import (
+	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -147,7 +148,7 @@ func TestVector_ToMap(t *testing.T) {
 		user{ID: "b"},
 		user{ID: "c"},
 	)
-	var values = a.ToMap().Keys()
+	var values = hashmap.HashMap[string, user](a.ToMap()).Keys()
 	assert.ElementsMatch(t, values, []string{"a", "b", "c"})
 }
 
@@ -317,4 +318,9 @@ func TestVector_Cap(t *testing.T) {
 	var arr = make([]Int, 0, 3)
 	var v = Vector[int, Int](arr)
 	assert.Equal(t, v.Cap(), 3)
+}
+
+func TestVector_Len(t *testing.T) {
+	var v *Vector[string, String]
+	assert.Equal(t, v.Len(), 0)
 }
