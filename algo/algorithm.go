@@ -2,6 +2,7 @@ package algo
 
 import (
 	"github.com/lxzan/dao/types/cmp"
+	"reflect"
 	"strconv"
 )
 
@@ -105,6 +106,14 @@ func SelectValue[T any](flag bool, a T, b T) T {
 	return b
 }
 
+// WithDefault 如果原值为零值, 返回新值, 否则返回原值
+func WithDefault[T comparable](rawValue, newValue T) T {
+	if IsZero(rawValue) {
+		return newValue
+	}
+	return rawValue
+}
+
 // Contains 是否包含
 func Contains[T comparable](arr []T, target T) bool {
 	for i := range arr {
@@ -139,4 +148,27 @@ func Filter[T any, A ~[]T](arr A, check func(i int, v T) bool) A {
 func IsZero[T comparable](v T) bool {
 	var zero T
 	return v == zero
+}
+
+// IsNil 判断空指针
+func IsNil(v any) bool {
+	if v == nil {
+		return true
+	}
+	return reflect.ValueOf(v).IsNil()
+}
+
+// NotNil 判断不为空
+func NotNil(v any) bool {
+	return !IsNil(v)
+}
+
+// GroupBy 分组
+func GroupBy[T any, A ~[]T, K cmp.Ordered](arr A, transfer func(i int, v T) K) map[K]A {
+	var m = make(map[K]A, len(arr))
+	for index, value := range arr {
+		key := transfer(index, value)
+		m[key] = append(m[key], value)
+	}
+	return m
 }

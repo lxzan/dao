@@ -2,7 +2,6 @@ package vector
 
 import (
 	"github.com/lxzan/dao/algo"
-	"github.com/lxzan/dao/hashmap"
 	"github.com/lxzan/dao/internal/utils"
 	"github.com/lxzan/dao/types/cmp"
 	"unsafe"
@@ -24,6 +23,9 @@ func (c *Vector[K, V]) Reset() {
 
 // Len 获取元素数量
 func (c *Vector[K, V]) Len() int {
+	if c == nil {
+		return 0
+	}
 	return len(*c)
 }
 
@@ -99,19 +101,37 @@ func (c *Vector[K, V]) Unique() *Vector[K, V] {
 	return c
 }
 
+// UniqueByString 通过string类型字段去重
 func (c *Vector[K, V]) UniqueByString(transfer func(v V) string) *Vector[K, V] {
 	*c = algo.UniqueBy(*c, transfer)
 	return c
 }
 
+// UniqueByInt 通过int类型字段去重
 func (c *Vector[K, V]) UniqueByInt(transfer func(v V) int) *Vector[K, V] {
 	*c = algo.UniqueBy(*c, transfer)
 	return c
 }
 
+// UniqueByInt64 通过int64类型字段去重
 func (c *Vector[K, V]) UniqueByInt64(transfer func(v V) int64) *Vector[K, V] {
 	*c = algo.UniqueBy(*c, transfer)
 	return c
+}
+
+// GroupByString 通过string类型字段分组
+func (c *Vector[K, V]) GroupByString(transfer func(i int, v V) string) map[string][]V {
+	return algo.GroupBy(c.Elem(), transfer)
+}
+
+// GroupByInt 通过int类型字段分组
+func (c *Vector[K, V]) GroupByInt(transfer func(i int, v V) int) map[int][]V {
+	return algo.GroupBy(c.Elem(), transfer)
+}
+
+// GroupByInt64 通过int64类型字段分组
+func (c *Vector[K, V]) GroupByInt64(transfer func(i int, v V) int64) map[int64][]V {
+	return algo.GroupBy(c.Elem(), transfer)
 }
 
 // Filter 过滤
@@ -144,11 +164,11 @@ func (c *Vector[K, V]) GetIdList() []K {
 	}
 }
 
-// ToMap 生成hashmap.HashMap[K, V]
-func (c *Vector[K, V]) ToMap() hashmap.HashMap[K, V] {
-	var m = hashmap.New[K, V](c.Len())
+// ToMap 转换为map
+func (c *Vector[K, V]) ToMap() map[K]V {
+	var m = make(map[K]V, c.Len())
 	for _, item := range *c {
-		m.Set(item.GetID(), item)
+		m[item.GetID()] = item
 	}
 	return m
 }
