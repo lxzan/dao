@@ -310,9 +310,16 @@ func TestVector_GroupByString(t *testing.T) {
 }
 
 func TestVector_Cap(t *testing.T) {
-	var arr = make([]int, 0, 3)
-	var v = Vector[int](arr)
-	assert.Equal(t, v.Cap(), 3)
+	t.Run("", func(t *testing.T) {
+		var arr = make([]int, 0, 3)
+		var v = Vector[int](arr)
+		assert.Equal(t, v.Cap(), 3)
+	})
+
+	t.Run("", func(t *testing.T) {
+		var v *Vector[int]
+		assert.Equal(t, v.Cap(), 0)
+	})
 }
 
 func TestVector_Len(t *testing.T) {

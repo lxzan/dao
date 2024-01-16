@@ -35,6 +35,9 @@ func (c *Vector[T]) Len() int {
 }
 
 func (c *Vector[T]) Cap() int {
+	if c == nil {
+		return 0
+	}
 	return cap(*c)
 }
 
