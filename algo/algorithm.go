@@ -155,7 +155,14 @@ func IsNil(v any) bool {
 	if v == nil {
 		return true
 	}
-	return reflect.ValueOf(v).IsNil()
+
+	var value = reflect.ValueOf(v)
+	switch value.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.Slice, reflect.Interface:
+		return value.IsNil()
+	default:
+		return v == nil
+	}
 }
 
 // NotNil 判断不为空
