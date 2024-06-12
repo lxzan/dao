@@ -7,11 +7,11 @@ import (
 )
 
 func BenchmarkSegmentTree_Query(b *testing.B) {
-	var arr = make([]tree.Int64, 0)
+	var arr = make([]int, 0)
 	for i := 0; i < bench_count; i++ {
-		arr = append(arr, tree.Int64(testvals[i]))
+		arr = append(arr, testvals[i])
 	}
-	var st = tree.New[tree.Int64Schema, tree.Int64](arr)
+	var st = tree.New(arr, tree.NewIntSummary[int], tree.MergeIntSummary[int])
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
@@ -27,17 +27,17 @@ func BenchmarkSegmentTree_Query(b *testing.B) {
 }
 
 func BenchmarkSegmentTree_Update(b *testing.B) {
-	var arr1 = make([]tree.Int64, 0)
+	var arr1 = make([]int, 0)
 	for i := 0; i < bench_count; i++ {
-		arr1 = append(arr1, tree.Int64(testvals[i]))
+		arr1 = append(arr1, testvals[i])
 	}
-	var st = tree.New[tree.Int64Schema, tree.Int64](arr1)
+	var st = tree.New(arr1, tree.NewIntSummary[int], tree.MergeIntSummary[int])
 
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < bench_count; j++ {
 			var x = rand.Intn(bench_count)
-			st.Update(x, tree.Int64(x))
+			st.Update(x, x)
 		}
 	}
 }

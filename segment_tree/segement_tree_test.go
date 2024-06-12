@@ -3,69 +3,41 @@ package segment_tree
 import (
 	"github.com/lxzan/dao/algo"
 	"github.com/lxzan/dao/internal/utils"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestSegmentTree_Query(t *testing.T) {
 	var n = 10000
-	var arr = make([]Int64, 0)
+	var arr = make([]int, 0)
 	for i := 0; i < n; i++ {
-		arr = append(arr, Int64(utils.Rand.Intn(n)))
+		arr = append(arr, utils.Rand.Intn(n))
 	}
-
-	var tree = New[Int64Schema, Int64](arr)
-
-	for i := 0; i < 1000; i++ {
-		var left = utils.Rand.Intn(n)
-		var right = utils.Rand.Intn(n)
-		if left > right {
-			left, right = right, left
+	var stree = New(arr, NewIntSummary[int], MergeIntSummary[int])
+	for i := 0; i < 100; i++ {
+		var x, y = utils.Alphabet.Intn(n), utils.Alphabet.Intn(n)
+		if x == y {
+			continue
 		}
-		var result1 = tree.Query(left, right+1)
-
-		var result2 = Int64Schema{
-			MaxValue: arr[left].Value(),
-			MinValue: arr[left].Value(),
-			Sum:      0,
-		}
-		for j := left; j <= right; j++ {
-			result2.Sum += arr[j].Value()
-			result2.MaxValue = algo.Max(result2.MaxValue, arr[j].Value())
-			result2.MinValue = algo.Min(result2.MinValue, arr[j].Value())
+		if x > y {
+			x, y = y, x
 		}
 
-		if result1.Sum != result2.Sum || result1.MinValue != result2.MinValue || result1.MaxValue != result2.MaxValue {
-			t.Fatal("error!")
-		}
-	}
-
-	for i := 0; i < 1000; i++ {
-		var index = utils.Rand.Intn(n)
-		var value = Int64(utils.Rand.Intn(n))
-		tree.Update(index, value)
-	}
-
-	for i := 0; i < 1000; i++ {
-		var left = utils.Rand.Intn(n)
-		var right = utils.Rand.Intn(n)
-		if left > right {
-			left, right = right, left
-		}
-		var result1 = tree.Query(left, right+1)
-
-		var result2 = Int64Schema{
-			MaxValue: arr[left].Value(),
-			MinValue: arr[left].Value(),
-			Sum:      0,
-		}
-		for j := left; j <= right; j++ {
-			result2.Sum += arr[j].Value()
-			result2.MaxValue = algo.Max(result2.MaxValue, arr[j].Value())
-			result2.MinValue = algo.Min(result2.MinValue, arr[j].Value())
-		}
-
-		if result1.Sum != result2.Sum || result1.MinValue != result2.MinValue || result1.MaxValue != result2.MaxValue {
-			t.Fatal("error!")
+		var flag = utils.Alphabet.Intn(4)
+		switch flag {
+		case 0:
+			stree.Update(x, y)
+		default:
+			r0 := stree.Query(x, y)
+			r1 := NewIntSummary(arr[x], OperateQuery)
+			for j := x; j < y; j++ {
+				r1.MaxValue = algo.Max(r1.MaxValue, arr[j])
+				r1.MinValue = algo.Min(r1.MinValue, arr[j])
+				r1.Sum += arr[j]
+			}
+			assert.Equal(t, r0.MaxValue, r1.MaxValue)
+			assert.Equal(t, r0.MinValue, r1.MinValue)
+			assert.Equal(t, r0.Sum, r1.Sum)
 		}
 	}
 }
