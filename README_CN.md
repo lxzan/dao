@@ -346,16 +346,16 @@ func main() {
 package main
 
 import (
-    tree "github.com/lxzan/dao/segment_tree"
+    "fmt"
+    st "github.com/lxzan/dao/segment_tree"
 )
 
 func main() {
-    var data = []tree.Int64{1, 3, 5, 7, 9, 2, 4, 6, 8, 10}
-    var lines = tree.New[tree.Int64Schema, tree.Int64](data)
-    var result = lines.Query(0, 10)
-    println(result.MinValue, result.MaxValue, result.Sum)
+    var a = []int{1, 3, 5, 7, 9, 2, 4, 6, 8, 10}
+    var t = st.New(a, st.NewIntSummary[int], st.MergeIntSummary[int])
+    var r = t.Query(3, 6)
+    fmt.Printf("%v\n", r)
 }
-
 ```
 
 ### 基准测试

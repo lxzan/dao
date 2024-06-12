@@ -2,39 +2,33 @@ package segment_tree
 
 import (
 	"github.com/lxzan/dao/algo"
+	"github.com/lxzan/dao/types/cmp"
 )
 
-type Int64 int64
+type (
+	NewSummary[T any, S any] func(T, Operate) S
 
-// Init 初始化摘要结构
-func (c Int64) Init(op Operate) Int64Schema {
-	var val = int64(c)
-	var result = Int64Schema{
-		MaxValue: val,
-		MinValue: val,
-		Sum:      val,
-	}
+	MergeSummary[S any] func(a, b S) S
+)
+
+type IntSummary[T cmp.Integer] struct {
+	MaxValue T
+	MinValue T
+	Sum      T
+}
+
+func NewIntSummary[T cmp.Integer](num T, op Operate) IntSummary[T] {
+	var r = IntSummary[T]{MaxValue: num, MinValue: num, Sum: num}
 	if op == OperateQuery {
-		result.Sum = 0
+		r.Sum = 0
 	}
-	return result
+	return r
 }
 
-func (c Int64) Value() int64 {
-	return int64(c)
-}
-
-type Int64Schema struct {
-	MaxValue int64
-	MinValue int64
-	Sum      int64
-}
-
-// Merge 合并摘要信息
-func (c Int64Schema) Merge(d Int64Schema) Int64Schema {
-	return Int64Schema{
-		MaxValue: algo.Max(c.MaxValue, d.MaxValue),
-		MinValue: algo.Min(c.MinValue, d.MinValue),
-		Sum:      c.Sum + d.Sum,
+func MergeIntSummary[T cmp.Integer](a, b IntSummary[T]) IntSummary[T] {
+	return IntSummary[T]{
+		MaxValue: algo.Max(a.MaxValue, b.MaxValue),
+		MinValue: algo.Min(a.MinValue, b.MinValue),
+		Sum:      a.Sum + b.Sum,
 	}
 }
