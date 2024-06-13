@@ -171,7 +171,7 @@ func NotNil(v any) bool {
 }
 
 // GroupBy 分组
-func GroupBy[T any, A ~[]T, K cmp.Ordered](arr A, transfer func(i int, v T) K) map[K]A {
+func GroupBy[T any, K cmp.Ordered, A ~[]T](arr A, transfer func(i int, v T) K) map[K]A {
 	var m = make(map[K]A, len(arr))
 	for index, value := range arr {
 		key := transfer(index, value)

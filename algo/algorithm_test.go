@@ -240,6 +240,10 @@ func TestIsNil(t *testing.T) {
 	assert.True(t, IsNil(conn1))
 	assert.True(t, IsNil(conn2))
 	assert.False(t, IsNil(conn3))
+
+	assert.False(t, NotNil(conn1))
+	assert.False(t, NotNil(conn2))
+	assert.True(t, NotNil(conn3))
 }
 
 func TestNotNil(t *testing.T) {
