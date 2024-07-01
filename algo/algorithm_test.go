@@ -171,11 +171,23 @@ func TestContains(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
-	var arr = []int{1, 2, 3, 4}
-	arr = Filter(arr, func(i int, item int) bool {
-		return item%2 == 0
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 2, 3, 4}
+		arr = Filter(arr, func(i int, item int) bool { return item%2 == 0 })
+		assert.ElementsMatch(t, arr, []int{2, 4})
 	})
-	assert.ElementsMatch(t, arr, []int{2, 4})
+
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 2, 3, 4}
+		arr = Filter(arr, func(i int, item int) bool { return item%2 == 1 })
+		assert.ElementsMatch(t, arr, []int{1, 3})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var arr = []int{}
+		arr = Filter(arr, func(i int, item int) bool { return item%2 == 0 })
+		assert.ElementsMatch(t, arr, []int{})
+	})
 }
 
 func TestIsZero(t *testing.T) {

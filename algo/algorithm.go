@@ -135,13 +135,14 @@ func Map[A any, B any](arr []A, transfer func(i int, v A) B) []B {
 
 // Filter 过滤器
 func Filter[T any, A ~[]T](arr A, check func(i int, v T) bool) A {
-	var results = make([]T, 0, len(arr))
+	var j = 0
 	for i, v := range arr {
 		if check(i, v) {
-			results = append(results, arr[i])
+			arr[j] = arr[i]
+			j++
 		}
 	}
-	return results
+	return arr[:j]
 }
 
 // IsZero 零值判断
