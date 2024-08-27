@@ -27,7 +27,7 @@ data containers and algorithms to simplify business development.
   - [Filter](#filter)
 - [Heap](#heap)
   - [N-Way Heap](#n-way-heap)
-  - [N-Way Indexed Heap](#n-way-indexed-heap)
+  - [HashHeap](#hashheap)
 - [Stack](#stack)
 - [Queue](#queue)
 - [Deque](#deque)
@@ -128,9 +128,9 @@ func main() {
 
 ```
 
-#### N-Way Indexed Heap
+#### HashHeap
 
-Extends the normal heap with update and delete functions, often used in time heap algorithms.
+Heap structure with hash index.
 
 ```go
 package main
@@ -140,17 +140,20 @@ import (
 )
 
 func main() {
-    var h = heap.NewIndexedHeap[int, struct{}](heap.Quadratic, func(a, b int) bool { return a > b })
-    h.Push(1, struct{}{})
-    h.Push(3, struct{}{})
-    h.Push(5, struct{}{})
-    h.Push(2, struct{}{})
-    h.Push(4, struct{}{})
-    h.Push(6, struct{}{})
-    h.DeleteByIndex(5)
-    h.UpdateKeyByIndex(3, 7)
+    var h = heap.NewHashHeap[string, int](func(a, b int) bool { return a < b })
+    h.Set("a", 1)
+    h.Set("b", 2)
+    h.Set("c", 3)
+    h.Set("d", 4)
+    h.Set("e", 5)
+    h.Set("f", 6)
+
+    h.Delete("c")
+    h.Set("d", 0)
+    h.Set("g", 3)
     for h.Len() > 0 {
-        println(h.Pop().Key())
+        ele := h.Pop()
+        println(ele.Key(), ele.Value())
     }
 }
 

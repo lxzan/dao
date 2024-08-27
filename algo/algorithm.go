@@ -4,6 +4,7 @@ import (
 	"github.com/lxzan/dao/types/cmp"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // ToString 数字转字符串
@@ -135,13 +136,14 @@ func Map[A any, B any](arr []A, transfer func(i int, v A) B) []B {
 
 // Filter 过滤器
 func Filter[T any, A ~[]T](arr A, check func(i int, v T) bool) A {
-	var results = make([]T, 0, len(arr))
+	var j = 0
 	for i, v := range arr {
 		if check(i, v) {
-			results = append(results, arr[i])
+			arr[j] = arr[i]
+			j++
 		}
 	}
-	return results
+	return arr[:j]
 }
 
 // IsZero 零值判断
@@ -171,11 +173,26 @@ func NotNil(v any) bool {
 }
 
 // GroupBy 分组
-func GroupBy[T any, A ~[]T, K cmp.Ordered](arr A, transfer func(i int, v T) K) map[K]A {
+func GroupBy[T any, K cmp.Ordered, A ~[]T](arr A, transfer func(i int, v T) K) map[K]A {
 	var m = make(map[K]A, len(arr))
 	for index, value := range arr {
 		key := transfer(index, value)
 		m[key] = append(m[key], value)
 	}
 	return m
+}
+
+func SplitWithCallback(s string, sep string, cb func(index int, item string) bool) {
+	var n = len(sep)
+	var index = 0
+	for i := strings.Index(s, sep); i != -1; i = strings.Index(s, sep) {
+		if !cb(index, s[:i]) {
+			return
+		}
+		index++
+		if i+n <= len(s) {
+			s = s[i+n:]
+		}
+	}
+	cb(index, s)
 }

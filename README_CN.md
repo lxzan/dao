@@ -19,12 +19,12 @@
 - [简介](#简介)
 - [目录](#目录)
 - [动态数组](#动态数组)
-    - [去重](#去重)
-    - [排序](#排序)
-    - [过滤](#过滤)
+  - [去重](#去重)
+  - [排序](#排序)
+  - [过滤](#过滤)
 - [堆](#堆)
-    - [N叉堆](#n叉堆)
-    - [N叉索引堆](#n叉索引堆)
+  - [N叉堆](#n叉堆)
+  - [哈希堆](#哈希堆)
 - [栈](#栈)
 - [队列](#队列)
 - [双端队列](#双端队列)
@@ -123,9 +123,9 @@ func main() {
 
 ```
 
-#### N叉索引堆
+#### 哈希堆
 
-在普通堆的基础上拓展了更新和删除功能, 常用于时间堆算法.
+带哈希索引的堆结构.
 
 ```go
 package main
@@ -135,17 +135,20 @@ import (
 )
 
 func main() {
-    var h = heap.NewIndexedHeap[int, struct{}](heap.Quadratic, func(a, b int) bool { return a > b })
-    h.Push(1, struct{}{})
-    h.Push(3, struct{}{})
-    h.Push(5, struct{}{})
-    h.Push(2, struct{}{})
-    h.Push(4, struct{}{})
-    h.Push(6, struct{}{})
-    h.DeleteByIndex(5)
-    h.UpdateKeyByIndex(3, 7)
+    var h = heap.NewHashHeap[string, int](func(a, b int) bool { return a < b })
+    h.Set("a", 1)
+    h.Set("b", 2)
+    h.Set("c", 3)
+    h.Set("d", 4)
+    h.Set("e", 5)
+    h.Set("f", 6)
+
+    h.Delete("c")
+    h.Set("d", 0)
+    h.Set("g", 3)
     for h.Len() > 0 {
-        println(h.Pop().Key())
+        ele := h.Pop()
+        println(ele.Key(), ele.Value())
     }
 }
 

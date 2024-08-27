@@ -171,11 +171,23 @@ func TestContains(t *testing.T) {
 }
 
 func TestFilter(t *testing.T) {
-	var arr = []int{1, 2, 3, 4}
-	arr = Filter(arr, func(i int, item int) bool {
-		return item%2 == 0
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 2, 3, 4}
+		arr = Filter(arr, func(i int, item int) bool { return item%2 == 0 })
+		assert.ElementsMatch(t, arr, []int{2, 4})
 	})
-	assert.ElementsMatch(t, arr, []int{2, 4})
+
+	t.Run("", func(t *testing.T) {
+		var arr = []int{1, 2, 3, 4}
+		arr = Filter(arr, func(i int, item int) bool { return item%2 == 1 })
+		assert.ElementsMatch(t, arr, []int{1, 3})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var arr = []int{}
+		arr = Filter(arr, func(i int, item int) bool { return item%2 == 0 })
+		assert.ElementsMatch(t, arr, []int{})
+	})
 }
 
 func TestIsZero(t *testing.T) {
@@ -240,6 +252,10 @@ func TestIsNil(t *testing.T) {
 	assert.True(t, IsNil(conn1))
 	assert.True(t, IsNil(conn2))
 	assert.False(t, IsNil(conn3))
+
+	assert.False(t, NotNil(conn1))
+	assert.False(t, NotNil(conn2))
+	assert.True(t, NotNil(conn3))
 }
 
 func TestNotNil(t *testing.T) {
@@ -252,4 +268,36 @@ func TestWithDefault(t *testing.T) {
 	assert.Equal(t, WithDefault(2, 1), 2)
 	assert.Equal(t, WithDefault("", "1"), "1")
 	assert.Equal(t, WithDefault("2", "1"), "2")
+}
+
+func TestSplitWithCallback(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var path = "/api/v1/greet"
+		var values []string
+		SplitWithCallback(path, "/", func(index int, item string) bool {
+			values = append(values, item)
+			return true
+		})
+		assert.ElementsMatch(t, values, []string{"", "api", "v1", "greet"})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var path = "/api/v1/greet/"
+		var values []string
+		SplitWithCallback(path, "/", func(index int, item string) bool {
+			values = append(values, item)
+			return true
+		})
+		assert.ElementsMatch(t, values, []string{"", "api", "v1", "greet", ""})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var path = "/api/v1/greet"
+		var values []string
+		SplitWithCallback(path, "/", func(index int, item string) bool {
+			values = append(values, item)
+			return len(values) < 2
+		})
+		assert.ElementsMatch(t, values, []string{"", "api"})
+	})
 }
