@@ -269,3 +269,35 @@ func TestWithDefault(t *testing.T) {
 	assert.Equal(t, WithDefault("", "1"), "1")
 	assert.Equal(t, WithDefault("2", "1"), "2")
 }
+
+func TestSplitWithCallback(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		var path = "/api/v1/greet"
+		var values []string
+		SplitWithCallback(path, "/", func(index int, item string) bool {
+			values = append(values, item)
+			return true
+		})
+		assert.ElementsMatch(t, values, []string{"", "api", "v1", "greet"})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var path = "/api/v1/greet/"
+		var values []string
+		SplitWithCallback(path, "/", func(index int, item string) bool {
+			values = append(values, item)
+			return true
+		})
+		assert.ElementsMatch(t, values, []string{"", "api", "v1", "greet", ""})
+	})
+
+	t.Run("", func(t *testing.T) {
+		var path = "/api/v1/greet"
+		var values []string
+		SplitWithCallback(path, "/", func(index int, item string) bool {
+			values = append(values, item)
+			return len(values) < 2
+		})
+		assert.ElementsMatch(t, values, []string{"", "api"})
+	})
+}

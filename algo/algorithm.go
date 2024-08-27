@@ -4,6 +4,7 @@ import (
 	"github.com/lxzan/dao/types/cmp"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 // ToString 数字转字符串
@@ -179,4 +180,19 @@ func GroupBy[T any, K cmp.Ordered, A ~[]T](arr A, transfer func(i int, v T) K) m
 		m[key] = append(m[key], value)
 	}
 	return m
+}
+
+func SplitWithCallback(s string, sep string, cb func(index int, item string) bool) {
+	var n = len(sep)
+	var index = 0
+	for i := strings.Index(s, sep); i != -1; i = strings.Index(s, sep) {
+		if !cb(index, s[:i]) {
+			return
+		}
+		index++
+		if i+n <= len(s) {
+			s = s[i+n:]
+		}
+	}
+	cb(index, s)
 }
