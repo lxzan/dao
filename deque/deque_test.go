@@ -82,7 +82,7 @@ func TestQueue_Range(t *testing.T) {
 		assert.Equal(t, q.Len(), count)
 
 		var b []int
-		q.Range(func(ele *Element[int]) bool {
+		q.Range(func(index int, ele *Element[int]) bool {
 			b = append(b, ele.Value())
 			return len(b) < 100
 		})
@@ -165,7 +165,7 @@ func TestQueue_Pop(t *testing.T) {
 	q.PopFront()
 
 	var arr []int
-	q.Range(func(ele *Element[int]) bool {
+	q.Range(func(index int, ele *Element[int]) bool {
 		arr = append(arr, ele.Value())
 		return true
 	})
@@ -189,7 +189,7 @@ func TestDeque_InsertAfter(t *testing.T) {
 		q.InsertAfter(3, node.Addr())
 
 		var arr []int
-		q.Range(func(ele *Element[int]) bool {
+		q.Range(func(index int, ele *Element[int]) bool {
 			arr = append(arr, ele.Value())
 			return true
 		})
@@ -206,7 +206,7 @@ func TestDeque_InsertAfter(t *testing.T) {
 		q.InsertAfter(3, node.Addr())
 
 		var arr []int
-		q.Range(func(ele *Element[int]) bool {
+		q.Range(func(index int, ele *Element[int]) bool {
 			arr = append(arr, ele.Value())
 			return true
 		})
@@ -229,7 +229,7 @@ func TestDeque_InsertBefore(t *testing.T) {
 		q.InsertBefore(3, node.Addr())
 
 		var arr []int
-		q.Range(func(ele *Element[int]) bool {
+		q.Range(func(index int, ele *Element[int]) bool {
 			arr = append(arr, ele.Value())
 			return true
 		})
@@ -246,7 +246,7 @@ func TestDeque_InsertBefore(t *testing.T) {
 		q.InsertBefore(3, node.Addr())
 
 		var arr []int
-		q.Range(func(ele *Element[int]) bool {
+		q.Range(func(index int, ele *Element[int]) bool {
 			arr = append(arr, ele.Value())
 			return true
 		})
@@ -271,7 +271,7 @@ func TestDeque_Delete(t *testing.T) {
 		q.Remove(node.Addr())
 
 		var arr []int
-		q.Range(func(ele *Element[int]) bool {
+		q.Range(func(index int, ele *Element[int]) bool {
 			arr = append(arr, ele.Value())
 			return true
 		})
@@ -287,7 +287,7 @@ func TestDeque_Delete(t *testing.T) {
 		q.Remove(node.Addr())
 
 		var arr []int
-		q.Range(func(ele *Element[int]) bool {
+		q.Range(func(index int, ele *Element[int]) bool {
 			arr = append(arr, ele.Value())
 			return true
 		})
@@ -303,7 +303,7 @@ func TestDeque_Delete(t *testing.T) {
 		q.Remove(node.Addr())
 
 		var arr []int
-		q.Range(func(ele *Element[int]) bool {
+		q.Range(func(index int, ele *Element[int]) bool {
 			arr = append(arr, ele.Value())
 			return true
 		})
