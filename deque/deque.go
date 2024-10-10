@@ -89,7 +89,9 @@ func (c *Deque[T]) Reset() {
 func (c *Deque[T]) autoReset() {
 	c.head, c.tail, c.length = Nil, Nil, 0
 	c.stack = c.stack[:0]
-	c.elements = c.elements[:1]
+	if len(c.elements) > 0 {
+		c.elements = c.elements[:1]
+	}
 }
 
 func (c *Deque[T]) Len() int {
@@ -276,11 +278,13 @@ func (c *Deque[T]) doRemove(ele *Element[T]) {
 	}
 }
 
-func (c *Deque[T]) Range(f func(ele *Element[T]) bool) {
-	for i := c.Get(c.head); i != nil; i = c.Get(i.next) {
-		if !f(i) {
+func (c *Deque[T]) Range(f func(index int, ele *Element[T]) bool) {
+	var index = 0
+	for iter := c.Get(c.head); iter != nil; iter = c.Get(iter.next) {
+		if !f(index, iter) {
 			break
 		}
+		index++
 	}
 }
 

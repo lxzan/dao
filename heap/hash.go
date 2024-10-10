@@ -153,8 +153,16 @@ func (c *underlyingHeap[K, V]) down(i, n int) {
 }
 
 func (c *underlyingHeap[K, V]) Update(ele *Element[K, V], value V) {
-	var down = c.lessFunc(ele.value, value)
 	ele.value = value
+	var down bool
+	if ele.index == 0 {
+		down = true
+	} else {
+		var i = ele.index >> 2
+		var p = c.data[i]
+		down = c.lessFunc(p.value, ele.value)
+	}
+
 	if down {
 		c.down(ele.index, c.Len())
 	} else {
