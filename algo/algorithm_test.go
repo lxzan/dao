@@ -301,3 +301,11 @@ func TestSplitWithCallback(t *testing.T) {
 		assert.ElementsMatch(t, values, []string{"", "api"})
 	})
 }
+
+func TestSliceToMap(t *testing.T) {
+	var m = SliceToMap([]string{"a", "b", "c"}, func(i int, v string) (string, int) {
+		return v, i
+	})
+	assert.Equal(t, m["a"], 0)
+	assert.Equal(t, m["c"], 2)
+}

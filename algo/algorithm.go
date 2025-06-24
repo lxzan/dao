@@ -196,3 +196,12 @@ func SplitWithCallback(s string, sep string, cb func(index int, item string) boo
 	}
 	cb(index, s)
 }
+
+func SliceToMap[T any, K comparable, V any](arr []T, transfer func(i int, v T) (K, V)) map[K]V {
+	var m = make(map[K]V, len(arr))
+	for index, value := range arr {
+		key, val := transfer(index, value)
+		m[key] = val
+	}
+	return m
+}
